@@ -1,0 +1,41 @@
+---
+# Base style
+BasedOnStyle: LLVM
+
+# Indentation settings
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# Brace style (K&R)
+BreakBeforeBraces: Attach
+AllowShortIfStatementsOnASingleLine: false
+
+# Switch / case formatting
+IndentCaseLabels: true
+
+# Line length
+ColumnLimit: 0
+
+# Namespace formatting
+NamespaceIndentation: All
+
+# Classes and structures
+AccessModifierOffset: -4
+AlignAfterOpenBracket: Align
+
+# Functions
+AllowShortFunctionsOnASingleLine: Inline
+
+# Preprocessor directives
+IndentPPDirectives: BeforeHash
+
+# Spaces
+SpacesInParentheses: false
+SpacesInAngles: false
+
+# Pointer/Reference alignment
+PointerAlignment: Left
+
+# Comments
+FixNamespaceComments: false

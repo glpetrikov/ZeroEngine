@@ -1,0 +1,8 @@
+.exe
+Makefile
+
+build/
+.vscode
+
+
+.env

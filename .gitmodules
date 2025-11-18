@@ -1,0 +1,3 @@
+[submodule "FrameLog"]
+	path = vendor/FrameLog
+	url = https://github.com/glpetrikov/FrameLog.git
