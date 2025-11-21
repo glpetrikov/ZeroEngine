@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Core.h"
+#include "Events/Event.h"
+
+#include "Window.h"
 
 namespace Fykor {
     class FYKOR_API App {
@@ -12,5 +15,5 @@ namespace Fykor {
     };
 
     // defined is User
-    App* CreateApp();
+    App *CreateApp();
 }

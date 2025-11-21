@@ -1,4 +1,5 @@
 #include "App.h"
+
 namespace Fykor {
     App::App() {
     }
@@ -7,7 +8,5 @@ namespace Fykor {
     }
 
     void App::Run() {
-        while (true) {
-        }
     }
 }

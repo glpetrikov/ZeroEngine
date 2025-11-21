@@ -47,8 +47,17 @@ project "Fykor"
         "vendor/FrameLog/source/",
     }
 
+    libdirs {
+        "vendor/GLFW/build/src"
+    }
+
     links{
-        "FrameLog"
+        "FrameLog",
+        "glfw",
+        "dl",
+        "X11",
+        "pthread",
+        "GL"
     }
 
     filter "system:windows"
@@ -99,7 +108,16 @@ project "Sandbox"
         "vendor/FrameLog/source/",
     }
 
+    libdirs {
+        "vendor/GLFW/build/src"
+    }
+
     links{
         "Fykor",
-        "FrameLog"
+        "FrameLog",
+        "glfw",
+        "dl",
+        "X11",
+        "pthread",
+        "GL"
     }

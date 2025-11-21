@@ -13,3 +13,7 @@
 // === Fykor::Vectors
 #include "Vectors//Vector2.h"
 #include "Vectors/Vector3.h"
+
+#include "Window.h"
+
+#include "Common.h"
