@@ -4,12 +4,12 @@
 // #include "Debug/Log.hpp"
 
 // === EntryPoint ===
-#include "EntryPoint.hpp"
+#include "EntryPoint.h"
 //====================
 
 // === Fykor::Core ===
-#include "Core.hpp"
+#include "Core.h"
 
 // === Fykor::Vectors
-#include "Vectors//Vector2.hpp"
-#include "Vectors/Vector3.hpp"
+#include "Vectors//Vector2.h"
+#include "Vectors/Vector3.h"

@@ -1,39 +1,44 @@
 #pragma once
 
+#include "../Common.h"
+
 #include <cmath>
 #include <ostream>
 
 namespace Fykor::Vectors {
+
+    template <typename T>
+
     class Vector3 {
     public:
-        double x = 0.0;
-        double y = 0.0;
-        double z = 0.0;
+        T x = T(0);
+        T y = T(0);
+        T z = T(0);
 
         Vector3() = default;
-        constexpr Vector3(double x, double y, double z) noexcept
+        constexpr Vector3(T x, T y, T z) noexcept
             : x(x), y(y), z(z) {}
 
-        static inline Vector3 Zero() noexcept { return {0.0, 0.0, 0.0}; }
-        static inline Vector3 Forward() noexcept { return {0.0, 1.0, 0.0}; }
-        static inline Vector3 Back() noexcept { return {0.0, -1.0, 0.0}; }
-        static inline Vector3 Right() noexcept { return {1.0, 0.0, 0.0}; }
-        static inline Vector3 Left() noexcept { return {-1.0, 0.0, 0.0}; }
-        static inline Vector3 Up() noexcept { return {0.0, 0.0, 1.0}; }
-        static inline Vector3 Down() noexcept { return {0.0, 0.0, -1.0}; }
+        static inline Vector3 Zero() noexcept { return {T(0), T(0), T(0)}; }
+        static inline Vector3 Forward() noexcept { return {T(0), T(1), T(0)}; }
+        static inline Vector3 Back() noexcept { return {T(0), T(-1), T(0)}; }
+        static inline Vector3 Right() noexcept { return {T(1), T(0), T(0)}; }
+        static inline Vector3 Left() noexcept { return {T(-1), T(0), T(0)}; }
+        static inline Vector3 Up() noexcept { return {T(0), T(0), T(1)}; }
+        static inline Vector3 Down() noexcept { return {T(0), T(0), T(-1)}; }
 
-        static constexpr double EPS = 1e-9;
-        inline bool isNearlyEqual(const Vector3& other, double eps = EPS) const noexcept {
+        static constexpr T EPS = T(1e-9);
+        inline bool IsNearlyEqual(const Vector3& other, double eps = EPS) const noexcept {
             return std::abs(x - other.x) < eps &&
                    std::abs(y - other.y) < eps &&
                    std::abs(z - other.z) < eps;
         }
 
-        inline double Length() const noexcept {
+        inline T Length() const noexcept {
             return std::sqrt(x * x + y * y + z * z);
         }
 
-        inline double LengthSquared() const noexcept {
+        inline T LengthSquared() const noexcept {
             return x * x + y * y + z * z;
         }
 
@@ -49,7 +54,7 @@ namespace Fykor::Vectors {
             return *this;
         }
 
-        inline double Dot(const Vector3& other) const noexcept {
+        inline T Dot(const Vector3& other) const noexcept {
             return x * other.x + y * other.y + z * other.z;
         }
 
@@ -59,13 +64,13 @@ namespace Fykor::Vectors {
                 z * other.x - x * other.z,
                 x * other.y - y * other.x);
         }
-
-        friend std::ostream& operator<<(std::ostream& os, const Vector3& v) {
-            return os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
-        }
         // ========================================
         // Operators
         // ========================================
+
+        friend std::ostream& operator<<(std::ostream& os, const Vector3& v) {
+            return os << v.x << ", " << v.y << ", " << v.z;
+        }
 
         // === Plus ===
         inline Vector3 operator+(const Vector3& other) const noexcept {
@@ -93,7 +98,7 @@ namespace Fykor::Vectors {
         inline Vector3 operator*(const Vector3& other) const noexcept {
             return Vector3(x * other.x, y * other.y, z * other.z);
         }
-        inline Vector3 operator*=(const Vector3& other) noexcept {
+        inline Vector3& operator*=(const Vector3& other) noexcept {
             x *= other.x;
             y *= other.y;
             z *= other.z;
@@ -101,37 +106,25 @@ namespace Fykor::Vectors {
         }
         // === Division ===
         inline Vector3 operator/(const Vector3& other) const noexcept {
-            return Vector3(x / other.x, y / other.y, z / other.z);
+            if (other.x == 0 && other.y == 0 && other.z == 0) {
+                Debug::FykorLogger.ErrorLine("Division by zero vector!");
+            }
+            return Vector3(
+                other.x != 0 ? x / other.x : 0,
+                other.y != 0 ? y / other.y : 0,
+                other.z != 0 ? z / other.z : 0);
         }
         inline Vector3 operator/=(const Vector3& other) noexcept {
-            x /= other.x;
-            y /= other.y;
-            z /= other.z;
-            return *this;
-        }
-        // === Other ===
-
-        inline Vector3& operator=(const Vector3& other) noexcept {
-            if (this != &other) {
-                x = other.x;
-                y = other.y;
-                z = other.z;
+            if (other.x == 0 && other.y == 0 && other.z == 0) {
+                Debug::FykorLogger.ErrorLine("Division by zero vector!");
             }
+            other.x != 0 ? x /= other.x : x;
+            other.y != 0 ? y /= other.y : y;
+            other.z != 0 ? z /= other.z : z;
             return *this;
         }
-        inline bool operator==(const Vector3& other) const noexcept {
-            constexpr double EPS = 1e-9;
-            return std::abs(x - other.x) < EPS &&
-                   std::abs(y - other.y) < EPS &&
-                   std::abs(z - other.z) < EPS;
-        }
-        inline bool operator!=(const Vector3& other) const noexcept {
-            return !(*this == other);
-        }
-        Vector3 operator-() const noexcept {
-            return Vector3(-x, -y, -z);
-        }
-        // Scalar
+
+        // === Scalar ===
 
         inline Vector3 operator*(double scalar) const noexcept {
             return Vector3(x * scalar, y * scalar, z * scalar);
@@ -154,9 +147,31 @@ namespace Fykor::Vectors {
             z /= scalar;
             return *this;
         }
+
+        // === Other ===
+
+        inline Vector3& operator=(const Vector3& other) noexcept {
+            if (this != &other) {
+                x = other.x;
+                y = other.y;
+                z = other.z;
+            }
+            return *this;
+        }
+        inline bool operator==(const Vector3& other) const noexcept {
+            constexpr double EPS = 1e-9;
+            return IsNearlyEqual(other);
+        }
+        inline bool operator!=(const Vector3& other) const noexcept {
+            return !(*this == other);
+        }
+        Vector3 operator-() const noexcept {
+            return Vector3(-x, -y, -z);
+        }
     };
 
-    inline constexpr Vector3 operator*(double scalar, const Vector3& v) noexcept {
+    template <typename T>
+    inline Vector3<T> operator*(double scalar, const Vector3<T>& v) noexcept {
         return v * scalar;
     }
 } // namespace Fykor::Vectors

@@ -1,4 +1,4 @@
-#include <Fykor.hpp>
+#include <Fykor.h>
 
 class Sandbox : public Fykor::App {
 public:

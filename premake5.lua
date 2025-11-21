@@ -8,6 +8,25 @@ workspace "Fykor"
         "Release"
     }
 
+    vendor = {}
+    vendor["GLFW"] = "vendor/GLFW/include/"
+
+project "FrameLog"
+    location "vendor/FrameLog"
+    kind "SharedLib"
+    language "C++"
+    cppdialect "C++20"
+
+    targetdir("vendor/FrameLog/source/build/%{cfg.buildcfg}")
+    objdir("vendor/FrameLog/source/build/obj/%{cfg.buildcfg}")
+
+    files {
+        "vendor/FrameLog/source/**.h",
+        "vendor/FrameLog/source/**.hpp",
+        "vendor/FrameLog/source/**.cpp"
+    }
+
+
 project "Fykor"
     location ""
     kind "SharedLib"
@@ -25,32 +44,36 @@ project "Fykor"
     }
 
     includedirs{
-        "vendor/"
+        "vendor/FrameLog/source/",
+    }
+
+    links{
+        "FrameLog"
     }
 
     filter "system:windows"
-        cppdialect "C++17"
+        cppdialect "C++20"
         staticruntime "On"
         systemversion "latest"
 
         defines{
-            "FK_BUILD_DLL"
+            "FR_BUILD_DLL"
         }
 
     filter "system:linux"
-        cppdialect "C++17"
+        cppdialect "C++20"
         staticruntime "On"
         systemversion "latest"
 
         defines {
-            "FK_BUILD_SO"
+            "FR_BUILD_SO"
         }
 
     filter "configurations:Debug"
-        defines "FK_DEBUG"
+        defines "FR_DEBUG"
         symbols "On"
     filter "configurations:Release"
-        defines "FK_RELEASE"
+        defines "FR_RELEASE"
         symbols "Off"
         optimize "On"
 
@@ -73,9 +96,10 @@ project "Sandbox"
 
     includedirs{
         "Fykor/",
-        "vendor/"
+        "vendor/FrameLog/source/",
     }
 
     links{
-        "Fykor"
+        "Fykor",
+        "FrameLog"
     }

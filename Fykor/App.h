@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core.hpp"
+#include "Core.h"
 
 namespace Fykor {
     class FYKOR_API App {
