@@ -13,7 +13,7 @@ namespace Fykor::Window {
     struct WindowData {
         using EventCallbackFn = std::function<void(Events::Event &)>;
 
-        EventCallbackFn EventCallback;
+        EventCallbackFn EventCallback = [](Events::Event& event){};
 
         std::string Name;
         unsigned int Width;
@@ -46,7 +46,9 @@ namespace Fykor::Window {
 
         unsigned int GetHeight() const { return Data.Height; }
 
-        void SetEventCallback(const EventCallbackFn &callback) { Data.EventCallback = callback; }
+        void SetEventCallback(const EventCallbackFn &callback) {
+            Data.EventCallback = callback;
+        }
 
         void SetVSync(bool enable);
         bool IsVSync() const;

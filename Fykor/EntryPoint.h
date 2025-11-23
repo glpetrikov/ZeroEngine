@@ -9,15 +9,7 @@
 
 #ifdef FR_PLATFORM_LINUX
 int main(int argc, char **argv) {
-
-    Fykor::Vectors::Vector2<float> vector(1, 1);
-
-    using namespace Fykor::Debug;
-
-    FykorLogger.InfoLine("Engine Started!");
-    FykorLogger.Flush();
-
-    std::cout << vector << '\n';
+    FR_INFO("Engine Started!\n");
 
     auto *app = Fykor::CreateApp();
     app->Run();

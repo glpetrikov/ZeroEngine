@@ -3,6 +3,10 @@ Makefile
 
 build/
 .vscode
+.idea
 
 
+.cache
 .env
+
+CMakeLists.txt

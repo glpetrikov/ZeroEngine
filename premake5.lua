@@ -44,6 +44,7 @@ project "Fykor"
     }
 
     includedirs{
+        "Fykor/",
         "vendor/FrameLog/source/",
     }
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Common.h"
-#include "../Core.h"
+#include "Common.h"
+#include "Core.h"
 
 namespace Fykor::Events {
     enum class EventType {
@@ -39,14 +39,15 @@ namespace Fykor::Events {
         CategoryInput = BIT(1),
         CategoryKeyboard = BIT(2),
         CategoryMouse = BIT(3),
-        CategoryMouseButton = BIT(4)
+        CategoryMouseButton = BIT(4),
+        CategoryEntity = BIT(5)
     };
 
     class FYKOR_API Event {
     public:
         virtual ~Event() = default;
 
-        bool GetHandler() { return m_Handler; }
+        bool& GetHandler() { return m_Handler; }
         void SetHandler(bool is) {
             m_Handler = is;
             return;
