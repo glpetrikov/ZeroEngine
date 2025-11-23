@@ -6,7 +6,7 @@
 #elif __linux__
     #define FR_PLATFORM_LINUX
 #elif __APPLE__
-    #error Apple not support
+    #define FR_PLATFORM_MACOS
 #else
     #error Unknown platform
 #endif
@@ -19,6 +19,12 @@
         #define FYKOR_API __declspec(dllimport)
     #endif
 #elif defined(FR_PLATFORM_LINUX)
+    #ifdef FR_BUILD_SO
+        #define FYKOR_API __attribute__((visibility("default")))
+    #else
+        #define FYKOR_API
+    #endif
+#elif defined(FR_PLATFORM_MACOS)
     #ifdef FR_BUILD_SO
         #define FYKOR_API __attribute__((visibility("default")))
     #else
