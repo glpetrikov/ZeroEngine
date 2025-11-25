@@ -22,10 +22,8 @@
 #include "Common.h"
 #include "Core.h"
 #include "Events/Event.h"
-#include "Vectors/Vector2.h"
 
 namespace Fykor::Window {
-    using Vector2 = Vectors::Vector2<float>;
 
     struct WindowData {
         using EventCallbackFn = std::function<void(Events::Event &)>;
@@ -48,8 +46,6 @@ namespace Fykor::Window {
     };
 
     class FYKOR_API Window {
-
-        bool s_GLFWInitilized = false;
 
     public:
         using EventCallbackFn = std::function<void(Events::Event &)>;

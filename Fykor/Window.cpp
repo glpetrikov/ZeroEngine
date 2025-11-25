@@ -28,7 +28,7 @@ namespace Fykor::Window {
     static bool s_GLFWInitilized = false;
 
     static void glfwErrorCallback(int error, const char* message) {
-        FR_CORE_ERROR("GLFW Error: ({0}): {1}", error, message)
+        FR_CORE_ERROR("GLFW Error: ({0}): {1}", error, message);
     }
 
     Window *Window::Create(const WindowData &data) {
@@ -45,10 +45,6 @@ namespace Fykor::Window {
 
     void Window::Init(const WindowData &data) {
 
-        if (!Data.EventCallback) {
-            FR_CORE_ERROR("Callback is null BEFORE SetEventCallback!");
-        }
-
         Data.Name = data.Name;
         Data.Width = data.Width;
         Data.Height = data.Height;
@@ -62,8 +58,13 @@ namespace Fykor::Window {
         if (!s_GLFWInitilized) {
             glfwSetErrorCallback(glfwErrorCallback);
             int success = glfwInit();
-            FR_CORE_ASSERT(success, "Could not Initilize GLFW!")
 
+            if (!success) {
+                FR_CORE_ERROR("Could not Initialize GLFW!");
+                return;
+            }
+
+            FR_CORE_INFO("GLFW Initialized successfully!");
             s_GLFWInitilized = true;
         }
         window = glfwCreateWindow((int)data.Width, (int)data.Height, Data.Name.c_str(), nullptr, nullptr);

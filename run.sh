@@ -1,11 +1,6 @@
-cd vendor/GLFW
-mkdir build 
-cd build
-cmake .. -DBUILD_SHARED_LIBS=ON
-make
+set -e
 
-cd ../../..
-
+mkdir -p build
 
 premake5 gmake2
 cd build

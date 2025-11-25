@@ -10,25 +10,12 @@ workspace "Fykor"
 
     vendor = {}
     vendor["GLFW"] = "vendor/GLFW/include/"
+    vendor["FrameLog"] = "vendor/FrameLog/source/"
 
-project "FrameLog"
-    location "vendor/FrameLog"
-    kind "SharedLib"
-    language "C++"
-    cppdialect "C++20"
-
-    targetdir("vendor/FrameLog/source/build/%{cfg.buildcfg}")
-    objdir("vendor/FrameLog/source/build/obj/%{cfg.buildcfg}")
-
-    files {
-        "vendor/FrameLog/source/**.h",
-        "vendor/FrameLog/source/**.hpp",
-        "vendor/FrameLog/source/**.cpp"
-    }
-
+include "vendor/premake5.lua"
 
 project "Fykor"
-    location ""
+    location "build"
     kind "SharedLib"
     language "C++"
     cppdialect "C++20"
@@ -45,20 +32,17 @@ project "Fykor"
 
     includedirs{
         "Fykor/",
-        "vendor/FrameLog/source/",
+        "%{vendor.FrameLog}",
+        "%{vendor.GLFW}"
     }
 
     libdirs {
-        "vendor/GLFW/build/src"
+        "vendor/build/%{cfg.buildcfg}"
     }
 
     links{
         "FrameLog",
-        "glfw",
-        "dl",
-        "X11",
-        "pthread",
-        "GL"
+        "GLFW",
     }
 
     filter "system:windows"
@@ -72,9 +56,7 @@ project "Fykor"
 
     filter "system:linux"
         cppdialect "C++20"
-        staticruntime "On"
-        systemversion "latest"
-
+        links {"GL", "X11", "pthread", "dl" }
         defines {
             "FR_BUILD_SO"
         }
@@ -106,19 +88,15 @@ project "Sandbox"
 
     includedirs{
         "Fykor/",
-        "vendor/FrameLog/source/",
+        "%{vendor.FrameLog}",
+        "%{vendor.GLFW}"
     }
 
     libdirs {
-        "vendor/GLFW/build/src"
+        "vendor/build/%{cfg.buildcfg}"
     }
 
     links{
         "Fykor",
         "FrameLog",
-        "glfw",
-        "dl",
-        "X11",
-        "pthread",
-        "GL"
     }

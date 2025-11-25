@@ -15,8 +15,8 @@
  * =================================================
  */
 
-#include "Types.h"
-#include "Vectors/Vector3.h"
+#include "Fykor/Types.h"
+#include "Fykor/Vectors/Vector3.h"
 
 namespace Fy::Components {
     class Transform {
