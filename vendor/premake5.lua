@@ -1,3 +1,6 @@
+--==============================
+-- FrameLog
+--==============================
 project "FrameLog"
     location "FrameLog"
     kind "SharedLib"
@@ -12,6 +15,9 @@ project "FrameLog"
         "FrameLog/source/**.hpp",
         "FrameLog/source/**.cpp"
     }
+--==============================
+-- GLFW
+--==============================
 project "GLFW"
     location "GLFW"
     kind "SharedLib"
