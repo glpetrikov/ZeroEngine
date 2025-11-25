@@ -1,7 +1,22 @@
-#include "Vectors/Vector3.h"
+/* =================================================
+* Fykor, Apache 2.0 - License
+ * ─────────────────────────────────────────────────
+ * FykorEngine
+ * Trasnform.h
+ * ─────────────────────────────────────────────────
+ * Updated on:
+ * 2025.11.25
+ * ─────────────────────────────────────────────────
+ * Made by:
+ * Gleb Petrikov
+ * ─────────────────────────────────────────────────
+ * Description:
+ * Transform Component
+ * =================================================
+ */
 
-using namespace Fykor::Vectors;
-using namespace Fykor;
+#include "Types.h"
+#include "Vectors/Vector3.h"
 
 namespace Fy::Components {
     class Transform {

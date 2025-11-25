@@ -9,7 +9,6 @@ cd ../../..
 
 premake5 gmake2
 cd build
-make clean
 make -j6
 cd Debug
 echo "Running..."

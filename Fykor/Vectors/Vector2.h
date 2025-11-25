@@ -1,3 +1,20 @@
+/* =================================================
+* Fykor, Apache 2.0 - License
+ * ─────────────────────────────────────────────────
+ * FykorEngine
+ * Vector2.h
+ * ─────────────────────────────────────────────────
+ * Updated on:
+ * 2025.11.25
+ * ─────────────────────────────────────────────────
+ * Made by:
+ * Gleb Petrikov
+ * ─────────────────────────────────────────────────
+ * Description:
+ * Vector2 Type
+ * =================================================
+ */
+
 #pragma once
 
 #include "Common.h"
@@ -18,10 +35,10 @@ namespace Fykor::Vectors {
         Vector2(T x, T y) : x(x), y(y) {}
 
         static inline Vector2 Zero() noexcept { return {0, 0}; }
-        static inline Vector2 Forward() noexcept { return {0.0, 1.0}; }
-        static inline Vector2 Back() noexcept { return {0.0, -1.0}; }
-        static inline Vector2 Right() noexcept { return {1.0, 0.0}; }
-        static inline Vector2 Left() noexcept { return {-1.0, 0.0}; }
+        static inline Vector2 Forward() noexcept { return {0, 1}; }
+        static inline Vector2 Back() noexcept { return {0, -1}; }
+        static inline Vector2 Right() noexcept { return {1, 0}; }
+        static inline Vector2 Left() noexcept { return {-1, 0}; }
 
         static constexpr T EPS = T(1e-9);
 
@@ -109,20 +126,20 @@ namespace Fykor::Vectors {
         }
         // === Scalar ===
 
-        inline Vector2 operator*(double scalar) const noexcept {
+        inline Vector2 operator*(T scalar) const noexcept {
             return Vector2(x * scalar, y * scalar);
         }
-        inline Vector2& operator*=(double scalar) noexcept {
+        inline Vector2& operator*=(T scalar) noexcept {
             x *= scalar;
             y *= scalar;
             return *this;
         }
 
-        inline Vector2 operator/(double scalar) const noexcept {
+        inline Vector2 operator/(T scalar) const noexcept {
             return Vector2(x / scalar, y / scalar);
         }
 
-        inline Vector2& operator/=(double scalar) noexcept {
+        inline Vector2& operator/=(T scalar) noexcept {
             x /= scalar;
             y /= scalar;
             return *this;
@@ -150,7 +167,7 @@ namespace Fykor::Vectors {
     };
 
     template <typename T>
-    inline Vector2<T> operator*(double scalar, const Vector2<T>& v) noexcept {
+    inline Vector2<T> operator*(T scalar, const Vector2<T>& v) noexcept {
         return Vector2<T>(v.x * scalar, v.y * scalar);
     }
 }

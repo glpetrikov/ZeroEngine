@@ -1,3 +1,20 @@
+/* =================================================
+* Fykor, Apache 2.0 - License
+ * ─────────────────────────────────────────────────
+ * FykorEngine
+ * Vector2.h
+ * ─────────────────────────────────────────────────
+ * Updated on:
+ * 2025.11.25
+ * ─────────────────────────────────────────────────
+ * Made by:
+ * Gleb Petrikov
+ * ─────────────────────────────────────────────────
+ * Description:
+ * Vector3 Type
+ * =================================================
+ */
+
 #pragma once
 
 #include "Common.h"
@@ -114,7 +131,7 @@ namespace Fykor::Vectors {
                 other.y != 0 ? y / other.y : 0,
                 other.z != 0 ? z / other.z : 0);
         }
-        inline Vector3 operator/=(const Vector3& other) noexcept {
+        inline Vector3& operator/=(const Vector3& other) noexcept {
             if (other.x == 0 && other.y == 0 && other.z == 0) {
                 Debug::FykorLogger.ErrorLine("Division by zero vector!");
             }
@@ -126,22 +143,22 @@ namespace Fykor::Vectors {
 
         // === Scalar ===
 
-        inline Vector3 operator*(double scalar) const noexcept {
+        inline Vector3 operator*(T scalar) const noexcept {
             return Vector3(x * scalar, y * scalar, z * scalar);
         }
 
-        inline Vector3& operator*=(double scalar) noexcept {
+        inline Vector3& operator*=(T scalar) noexcept {
             x *= scalar;
             y *= scalar;
             z *= scalar;
             return *this;
         }
 
-        inline Vector3 operator/(double scalar) const noexcept {
+        inline Vector3 operator/(T scalar) const noexcept {
             return Vector3(x / scalar, y / scalar, z / scalar);
         }
 
-        inline Vector3& operator/=(double scalar) noexcept {
+        inline Vector3& operator/=(T scalar) noexcept {
             x /= scalar;
             y /= scalar;
             z /= scalar;
@@ -171,7 +188,7 @@ namespace Fykor::Vectors {
     };
 
     template <typename T>
-    inline Vector3<T> operator*(double scalar, const Vector3<T>& v) noexcept {
+    inline Vector3<T> operator*(T scalar, const Vector3<T>& v) noexcept {
         return v * scalar;
     }
 } // namespace Fykor::Vectors
