@@ -37,6 +37,7 @@ class Sandbox : public Fykor::App {
 public:
     Sandbox() {
         PushLayer(new ExampleLayer());
+        PushOverlay(new Fykor::Layers::ImGuiLayer());
     }
 
     ~Sandbox() {

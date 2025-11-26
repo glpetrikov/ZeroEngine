@@ -17,11 +17,11 @@
 
 #pragma once
 
-#include <GLFW/glfw3.h>
-
 #include "Common.h"
 #include "Core.h"
 #include "Events/Event.h"
+
+struct GLFWwindow;
 
 namespace Fykor::Window {
 

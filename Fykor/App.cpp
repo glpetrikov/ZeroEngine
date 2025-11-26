@@ -17,12 +17,18 @@
 
 #include "App.h"
 #include "Events/AppEvent.h"
+#include <glad/glad.h>
 #include "Common.h"
 
 namespace Fykor {
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
+    App* App::s_Instance = nullptr;
+
     App::App() {
+        FR_CORE_ASSERT(!s_Instance, "Application already exists!");
+        s_Instance = this;
+
         window = std::unique_ptr<Window::Window>(Window::Window::Create());
         window->SetEventCallback(BIND_EVENT_FN(App::OnEvent));
     }
@@ -43,7 +49,8 @@ namespace Fykor {
         dispatcher.Dispatch<Events::WindowCloseEvent>(BIND_EVENT_FN(App::OnWindowClose));
 
         for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); ) {
-            (*--it)->OnEvent(event);
+            --it;
+            (*it)->OnEvent(event);
             if (event.GetHandler()) {
                 break;
             }

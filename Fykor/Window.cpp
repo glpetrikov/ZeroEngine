@@ -23,6 +23,7 @@
 #include "Events/AppEvent.h"
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
+#include <glad/glad.h>
 
 namespace Fykor::Window {
     static bool s_GLFWInitilized = false;
@@ -68,13 +69,22 @@ namespace Fykor::Window {
             s_GLFWInitilized = true;
         }
         window = glfwCreateWindow((int)data.Width, (int)data.Height, Data.Name.c_str(), nullptr, nullptr);
+        int w, h;
+        glfwGetFramebufferSize(window, &w, &h);
+
+        Data.Width = (unsigned int)w;
+        Data.Height = (unsigned int)h;
+
         glfwMakeContextCurrent(window);
+        int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
         glfwSetWindowUserPointer(window, &Data);
         SetVSync(true);
 
+
+
         // Set GLFW CallBack's
 
-        glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+        glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
             data.Width = width;
@@ -142,12 +152,6 @@ namespace Fykor::Window {
             Events::MouseMovedEvent event((float)xPos, (float)yPos);
             data.EventCallback(event);
         });
-
-        if (Data.EventCallback) {
-            FR_CORE_INFO("EventCallback is SET!");
-        } else {
-            FR_CORE_ERROR("EventCallback is NULL!");
-        }
     }
 
     void Window::ShutDown() {

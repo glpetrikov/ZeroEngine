@@ -9,8 +9,10 @@ workspace "Fykor"
     }
 
     vendor = {}
-    vendor["GLFW"] = "vendor/GLFW/include/"
-    vendor["FrameLog"] = "vendor/FrameLog/source/"
+    vendor["GLFW"] = "vendor/GLFW/include"
+    vendor["FrameLog"] = "vendor/FrameLog/source"
+    vendor["Glad"] = "vendor/Glad/include"
+    vendor["ImGui"] = "vendor/ImGui"
 
 include "vendor/premake5.lua"
 
@@ -24,7 +26,7 @@ project "Fykor"
     targetdir("build/%{cfg.buildcfg}")
     objdir("build/obj/%{cfg.buildcfg}")
 
-    files{
+    files {
         "Fykor/**.h", 
         "Fykor/**.hpp", 
         "Fykor/**.cpp"
@@ -33,7 +35,14 @@ project "Fykor"
     includedirs{
         "Fykor/",
         "%{vendor.FrameLog}",
-        "%{vendor.GLFW}"
+        "%{vendor.GLFW}",
+        "%{vendor.Glad}",
+        "%{vendor.ImGui}",
+        "%{vendor.ImGui}/backends",
+    }
+
+    defines {
+        "GLFW_INCLUDE_NONE"
     }
 
     libdirs {
@@ -43,6 +52,8 @@ project "Fykor"
     links{
         "FrameLog",
         "GLFW",
+        "Glad",
+        "ImGui"
     }
 
     filter "system:windows"
@@ -89,7 +100,9 @@ project "Sandbox"
     includedirs{
         "Fykor/",
         "%{vendor.FrameLog}",
-        "%{vendor.GLFW}"
+        "%{vendor.GLFW}",
+        "%{vendor.ImGui}",
+        "%{vendor.ImGui}/backends",
     }
 
     libdirs {
@@ -99,4 +112,6 @@ project "Sandbox"
     links{
         "Fykor",
         "FrameLog",
+        "GLFW",
+        "ImGui"
     }

@@ -34,6 +34,21 @@ namespace Fykor {
         void PushLayer(Layers::Layer* layer);
         void PushOverlay(Layers::Layer* overlay);
 
+        inline static App& Get() {
+            return *s_Instance;
+        }
+
+        inline Window::Window& GetWindow() {
+            return *window;
+        }
+
+        inline unsigned int GetWindowWidth() {
+            return window->GetWidth();
+        }
+        inline unsigned int GetWindowHeight() {
+            return window->GetHeight();
+        }
+
         void OnEvent(Events::Event& event);
 
         virtual void Run();
@@ -43,6 +58,8 @@ namespace Fykor {
         std::unique_ptr<Window::Window> window;
         bool IsRunning = true;
         Layers::LayerStack m_LayerStack;
+
+        static App* s_Instance;
     };
 
     // defined is User

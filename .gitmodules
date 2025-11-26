@@ -1,9 +1,9 @@
-[submodule "FrameLog"]
-	path = vendor/FrameLog
-	url = https://github.com/glpetrikov/FrameLog.git
+[submodule "vendor/GLFW"]
+	path = vendor/GLFW
+	url = https://github.com/glfw/glfw.git
 [submodule "vendor/FrameLog"]
 	path = vendor/FrameLog
 	url = https://github.com/glpetrikov/FrameLog.git
-[submodule "vendor/GLFW"]
-	path = vendor/GLFW
-	url = https://github.com/glfw/glfw
+[submodule "vendor/ImGui"]
+	path = vendor/ImGui
+	url = https://github.com/ocornut/imgui.git
