@@ -2,7 +2,7 @@
 * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
- * App.h
+ * Layer.h
  * ─────────────────────────────────────────────────
  * Updated on:
  * 2025.11.26
@@ -11,40 +11,27 @@
  * Gleb Petrikov
  * ─────────────────────────────────────────────────
  * Description:
- * Application class
+ * Layer class
  * =================================================
  */
-
 #pragma once
 
 #include "Core.h"
 #include "Events/Event.h"
-#include "Events/AppEvent.h"
-#include "Events/KeyEvent.h"
-#include "Events/MouseEvent.h"
-#include "Window.h"
-#include "Layers/LayerStack.h"
 
-namespace Fykor {
-    class FYKOR_API App {
+namespace Fykor::Layers {
+    class FYKOR_API Layer {
     public:
-        App();
-        virtual ~App();
+        Layer(const std::string& debugname = "Default");
+        virtual ~Layer();
 
-        void PushLayer(Layers::Layer* layer);
-        void PushOverlay(Layers::Layer* overlay);
+        virtual void OnAttach() {}
+        virtual void OnDetach() {}
+        virtual void OnUpdate() {}
+        virtual void OnEvent(Events::Event& event) {}
 
-        void OnEvent(Events::Event& event);
-
-        virtual void Run();
-    private:
-        bool OnWindowClose(Events::WindowCloseEvent& event);
-
-        std::unique_ptr<Window::Window> window;
-        bool IsRunning = true;
-        Layers::LayerStack m_LayerStack;
+        inline const std::string& GetName() const { return m_DebugName; }
+    protected:
+        std::string m_DebugName;
     };
-
-    // defined is User
-    App *CreateApp();
 }

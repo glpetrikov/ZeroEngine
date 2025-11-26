@@ -5,7 +5,7 @@
  * App.cpp
  * ─────────────────────────────────────────────────
  * Updated on:
- * 2025.11.25
+ * 2025.11.26
  * ─────────────────────────────────────────────────
  * Made by:
  * Gleb Petrikov
@@ -30,16 +30,31 @@ namespace Fykor {
     App::~App() {
     }
 
+    void App::PushLayer(Layers::Layer* layer) {
+        m_LayerStack.PushLayer(layer);
+    }
+    void App::PushOverlay(Layers::Layer* overlay) {
+        m_LayerStack.PushOverlay(overlay);
+    }
+
     void App::OnEvent(Events::Event& event) {
         Events::EventDispatcher dispatcher(event);
 
         dispatcher.Dispatch<Events::WindowCloseEvent>(BIND_EVENT_FN(App::OnWindowClose));
 
-        FR_CORE_INFO("{0}", event.ToString());
+        for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); ) {
+            (*--it)->OnEvent(event);
+            if (event.GetHandler()) {
+                break;
+            }
+        }
     }
 
     void App::Run() {
         while (IsRunning) {
+            for (Layers::Layer* layer : m_LayerStack) {
+                layer->OnUpdate();
+            }
             window->OnUpdate();
             Fykor::Debug::FykorLogger.Flush();
             Fykor::Debug::Logger.Flush();

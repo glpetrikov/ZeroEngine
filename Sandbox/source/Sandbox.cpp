@@ -19,9 +19,24 @@
 
 using namespace Fykor;
 
+class ExampleLayer : public Layers::Layer {
+public:
+    ExampleLayer() : Layer("Example") {
+    }
+
+    void OnUpdate() {
+        FR_INFO("ExampleLayer::Update");
+    }
+
+    void OnEvent(Events::Event& event) {
+        FR_INFO("Event: {0}", event.ToString());
+    }
+};
+
 class Sandbox : public Fykor::App {
 public:
     Sandbox() {
+        PushLayer(new ExampleLayer());
     }
 
     ~Sandbox() {

@@ -17,8 +17,8 @@
 
 #pragma once
 
-#include "Common.h"
 #include "Core.h"
+#include "Common.h"
 
 namespace Fykor::Events {
     enum class EventType {

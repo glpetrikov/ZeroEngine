@@ -2,7 +2,7 @@
 * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
- * App.h
+ * LayerStack.h
  * ─────────────────────────────────────────────────
  * Updated on:
  * 2025.11.26
@@ -11,40 +11,31 @@
  * Gleb Petrikov
  * ─────────────────────────────────────────────────
  * Description:
- * Application class
+ * LayerStack class
  * =================================================
  */
-
 #pragma once
 
 #include "Core.h"
-#include "Events/Event.h"
-#include "Events/AppEvent.h"
-#include "Events/KeyEvent.h"
-#include "Events/MouseEvent.h"
-#include "Window.h"
-#include "Layers/LayerStack.h"
+#include "Layer.h"
 
-namespace Fykor {
-    class FYKOR_API App {
+#include <vector>
+
+namespace Fykor::Layers {
+    class LayerStack {
     public:
-        App();
-        virtual ~App();
+        LayerStack();
+        ~LayerStack();
 
-        void PushLayer(Layers::Layer* layer);
-        void PushOverlay(Layers::Layer* overlay);
+        void PushLayer(Layer* layer);
+        void PushOverlay(Layer* overlay);
+        void PopLayer(Layer* layer);
+        void PopOverlay(Layer* overlay);
 
-        void OnEvent(Events::Event& event);
-
-        virtual void Run();
+        std::vector<Layer*>::iterator begin();
+        std::vector<Layer*>::iterator end();
     private:
-        bool OnWindowClose(Events::WindowCloseEvent& event);
-
-        std::unique_ptr<Window::Window> window;
-        bool IsRunning = true;
-        Layers::LayerStack m_LayerStack;
+        std::vector<Layer*> m_Layers;
+        std::vector<Layer*>::iterator m_LayerInsert;
     };
-
-    // defined is User
-    App *CreateApp();
 }

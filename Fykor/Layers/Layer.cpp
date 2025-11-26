@@ -2,7 +2,7 @@
 * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
- * App.h
+ * Layer.cpp
  * ─────────────────────────────────────────────────
  * Updated on:
  * 2025.11.26
@@ -11,40 +11,18 @@
  * Gleb Petrikov
  * ─────────────────────────────────────────────────
  * Description:
- * Application class
+ * Layer class
  * =================================================
  */
+#include "Layer.h"
+#include "Common.h"
 
-#pragma once
+namespace Fykor::Layers {
+    Layer::Layer(const std::string & debugname) : m_DebugName(debugname) {
 
-#include "Core.h"
-#include "Events/Event.h"
-#include "Events/AppEvent.h"
-#include "Events/KeyEvent.h"
-#include "Events/MouseEvent.h"
-#include "Window.h"
-#include "Layers/LayerStack.h"
+    }
 
-namespace Fykor {
-    class FYKOR_API App {
-    public:
-        App();
-        virtual ~App();
+    Layer::~Layer() {
 
-        void PushLayer(Layers::Layer* layer);
-        void PushOverlay(Layers::Layer* overlay);
-
-        void OnEvent(Events::Event& event);
-
-        virtual void Run();
-    private:
-        bool OnWindowClose(Events::WindowCloseEvent& event);
-
-        std::unique_ptr<Window::Window> window;
-        bool IsRunning = true;
-        Layers::LayerStack m_LayerStack;
-    };
-
-    // defined is User
-    App *CreateApp();
+    }
 }
