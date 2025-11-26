@@ -25,7 +25,7 @@ public:
     }
 
     void OnUpdate() {
-        FR_INFO("ExampleLayer::Update");
+        //FR_INFO("ExampleLayer::Update");
     }
 
     void OnEvent(Events::Event& event) {

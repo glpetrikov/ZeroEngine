@@ -70,7 +70,7 @@ namespace Fykor::Events {
     public:
         MouseScrolledEvent(const float xOffset, const float yOffset) {
             offset.x = xOffset;
-            offset.y = xOffset;
+            offset.y = yOffset;
         }
 
         float GetOffsetX() const { return offset.x; }
