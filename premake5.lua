@@ -9,7 +9,7 @@ workspace "Fykor"
     }
 
     vendor = {}
-    vendor["GLFW"] = "vendor/GLFW/include"
+    vendor["GLFW"] = "vendor/GLFW"
     vendor["FrameLog"] = "vendor/FrameLog/source"
     vendor["Glad"] = "vendor/Glad"
     vendor["ImGui"] = "vendor/ImGui"
@@ -35,7 +35,7 @@ project "Fykor"
     includedirs{
         "Fykor/",
         "%{vendor.FrameLog}",
-        "%{vendor.GLFW}",
+        "%{vendor.GLFW}/include",
         "%{vendor.Glad}/include",
         "%{vendor.ImGui}",
         "%{vendor.ImGui}/backends",
@@ -100,7 +100,7 @@ project "Sandbox"
     includedirs{
         "Fykor/",
         "%{vendor.FrameLog}",
-        "%{vendor.GLFW}",
+        "%{vendor.GLFW}/include",
         "%{vendor.ImGui}",
         "%{vendor.ImGui}/backends",
     }

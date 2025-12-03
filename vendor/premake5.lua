@@ -15,6 +15,10 @@ project "FrameLog"
         "FrameLog/source/**.hpp",
         "FrameLog/source/**.cpp"
     }
+
+    includedirs {
+        "FrameLog/source/"
+    }
 --==============================
 -- GLFW
 --==============================
@@ -27,10 +31,13 @@ project "GLFW"
     objdir("build/obj/%{cfg.buildcfg}")
 
     files {
-        "GLFW/src/**.h",
-        "GLFW/src/**.hpp",
         "GLFW/src/**.cpp",
         "GLFW/src/**.c"
+}
+
+    includedirs {
+        "GLFW/include",
+        "GLFW/"
     }
 
     filter "system:linux"
@@ -83,6 +90,6 @@ project "ImGui"
     includedirs {
         "ImGui",
         "ImGui/backends",
-        "%{vendor.GLFW}",
-        "%{vendor.Glad}/include"
+        "GLFW//include",
+        "Glad/include"
     }

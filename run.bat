@@ -5,4 +5,4 @@ cd build
 make -j6
 cd Debug
 echo "Running..."
-./Sandbox
+./Sandbox.exe
