@@ -1,4 +1,5 @@
 # Fykor Engine
+or just Fykor.
 Fykor is C++ Game Engine
 
 ## info
@@ -15,7 +16,28 @@ Fykor is C++ Game Engine
 ![GitHub issues](https://img.shields.io/github/issues/glpetrikov/FykorEngine)
 
 ## features
-Empty
+- Cross-platform Windowing
+The window is created via GLFW and runs on Linux/Windows/macOS.
+
+- Event System (basic)
+Basic events: resize, close, key/mouse input.
+(If you have them, add them; if you're unsure, I'll help.)
+
+- LayerStack Architecture
+Minimal layer system: you can push layers and overlays, call OnUpdate() and OnImGuiRender().
+
+- ImGui Integration
+It has its own ImGuiLayer, which renders on top of everything. Convenient for debugging.
+
+- Logging System via FrameLog
+A beautifully structured logger as a separate submodule.
+
+- Premake5 Build System
+Project generation for Linux/Windows/Mac. Easy to extend.
+
+- Vendor modularity
+Vendors are included as submodules (GLFW, FrameLog, ImGui).
+Easy to update and maintain.
 
 ## License
 FrameLog is distributed under the **Apache 2.0 License**.  

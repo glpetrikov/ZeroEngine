@@ -11,7 +11,7 @@ workspace "Fykor"
     vendor = {}
     vendor["GLFW"] = "vendor/GLFW/include"
     vendor["FrameLog"] = "vendor/FrameLog/source"
-    vendor["Glad"] = "vendor/Glad/include"
+    vendor["Glad"] = "vendor/Glad"
     vendor["ImGui"] = "vendor/ImGui"
 
 include "vendor/premake5.lua"
@@ -36,7 +36,7 @@ project "Fykor"
         "Fykor/",
         "%{vendor.FrameLog}",
         "%{vendor.GLFW}",
-        "%{vendor.Glad}",
+        "%{vendor.Glad}/include",
         "%{vendor.ImGui}",
         "%{vendor.ImGui}/backends",
     }

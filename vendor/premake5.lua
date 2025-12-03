@@ -55,7 +55,7 @@ project "Glad"
     }
 
     includedirs {
-        "Glad/include/"
+        "Glad/include"
     }
 --==============================
 -- ImGui
@@ -83,6 +83,6 @@ project "ImGui"
     includedirs {
         "ImGui",
         "ImGui/backends",
-        "%{vendor.GLFW}/include",
+        "%{vendor.GLFW}",
         "%{vendor.Glad}/include"
     }

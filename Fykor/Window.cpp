@@ -77,6 +77,10 @@ namespace Fykor::Window {
 
         glfwMakeContextCurrent(window);
         int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+        if (!status) {
+            FR_CORE_ERROR("Failed to initialize GLAD!");
+            return;
+        }
         glfwSetWindowUserPointer(window, &Data);
         SetVSync(true);
 

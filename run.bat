@@ -1,10 +1,3 @@
-set -e
-
-cd Fykor
-find . -name "*.cpp" -o -name "*.h" | xargs wc -l | sort -nr
-cd ..
-
-
 mkdir -p build
 
 premake5 gmake2
