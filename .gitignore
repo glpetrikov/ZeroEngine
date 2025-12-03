@@ -1,12 +1,57 @@
-.exe
-Makefile
-
-build/
+#Directories
 .vscode
-.idea
-cmake-build-debug
+#Build
+x64/
 
-.cache
-.env
+#VS Project
+Hazel.sln
+
+# Build artifacts
+x64/
+*.exe
+*.dll
+*.so
+*.lib
+*.a
+*.obj
+*.o
+*.idb
+*.lik
+*.pdb
+*.exe.recipe
+*.tlog
+*.d
+build/
 
 CMakeLists.txt
+cmake-build-debug
+
+
+# Visual Studio
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.suo
+*.user
+
+# Makefiles
+Makefile
+build/Makefile
+vendor/build/Makefile
+*.make
+
+# Premake generated
+*.workspace
+
+# IDE specific
+.vscode/
+.idea/
+*.cbp
+*.kdev4
+.keydev4/
+.cache
+
+#other
+imgui.ini

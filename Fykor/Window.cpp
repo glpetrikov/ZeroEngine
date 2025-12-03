@@ -126,6 +126,13 @@ namespace Fykor::Window {
             }
         });
 
+        glfwSetCharCallback(window, [](GLFWwindow* window, unsigned int keycode) {
+            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+            Events::KeyTypedEvent event(keycode);
+            data.EventCallback(event);
+
+        });
+
         glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
