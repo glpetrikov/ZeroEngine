@@ -58,7 +58,7 @@ project "Fykor"
 
     filter "system:windows"
         cppdialect "C++20"
-        staticruntime "On"
+        staticruntime "on"
         systemversion "latest"
 
         defines{
@@ -74,11 +74,11 @@ project "Fykor"
 
     filter "configurations:Debug"
         defines "FR_DEBUG"
-        symbols "On"
+        symbols "on"
     filter "configurations:Release"
         defines "FR_RELEASE"
         symbols "Off"
-        optimize "On"
+        optimize "on"
 
 
 project "Sandbox"

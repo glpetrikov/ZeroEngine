@@ -7,8 +7,8 @@ project "FrameLog"
     language "C++"
     cppdialect "C++20"
 
-    targetdir("build/%{cfg.buildcfg}")
-    objdir("build/obj/%{cfg.buildcfg}")
+    targetdir("../build/%{cfg.buildcfg}")
+    objdir("../build/obj/%{cfg.buildcfg}")
 
     files {
         "FrameLog/source/**.h",
@@ -27,8 +27,8 @@ project "GLFW"
     kind "SharedLib"
     language "C"
 
-    targetdir("build/%{cfg.buildcfg}")
-    objdir("build/obj/%{cfg.buildcfg}")
+    targetdir("../build/%{cfg.buildcfg}")
+    objdir("../build/obj/%{cfg.buildcfg}")
 
     files {
         "GLFW/src/**.cpp",
@@ -50,10 +50,10 @@ project "GLFW"
 project "Glad"
     kind "StaticLib"
     language "C"
-    pic "On"
+    pic "on"
 
-    targetdir("build/%{cfg.buildcfg}")
-    objdir("build/obj/%{cfg.buildcfg}")
+    targetdir("../build/%{cfg.buildcfg}")
+    objdir("../build/obj/%{cfg.buildcfg}")
 
     files {
         "Glad/include/glad/glad.h",
@@ -71,10 +71,10 @@ project "ImGui"
     location "ImGui"
     kind "StaticLib"
     language "C++"
-    pic "On"
+    pic "on"
 
-    targetdir("build/%{cfg.buildcfg}")
-    objdir("build/obj/%{cfg.buildcfg}")
+    targetdir("../build/%{cfg.buildcfg}")
+    objdir("../build/obj/%{cfg.buildcfg}")
 
     files {
         "ImGui/imgui.cpp",
