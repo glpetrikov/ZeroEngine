@@ -17,8 +17,8 @@
 
 #pragma once
 
-#include "Common.h"
-#include "Core.h"
+#include "../Common.h"
+#include "../Core.h"
 
 namespace Fykor::Events
 {

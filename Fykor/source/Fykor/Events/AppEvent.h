@@ -16,8 +16,8 @@
  */
 #pragma once
 
-#include "Common.h"
-#include "Core.h"
+#include "../Common.h"
+#include "../Core.h"
 
 #include "Event.h"
 

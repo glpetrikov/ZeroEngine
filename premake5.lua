@@ -9,12 +9,12 @@ workspace "Fykor"
     }
 
     vendor = {}
-    vendor["GLFW"] = "vendor/GLFW"
-    vendor["FrameLog"] = "vendor/FrameLog/source"
-    vendor["Glad"] = "vendor/Glad"
-    vendor["ImGui"] = "vendor/ImGui"
+    vendor["GLFW"] = "Fykor/vendor/GLFW"
+    vendor["FrameLog"] = "Fykor/vendor/FrameLog/source"
+    vendor["Glad"] = "Fykor/vendor/Glad"
+    vendor["ImGui"] = "Fykor/vendor/ImGui"
 
-include "vendor/premake5.lua"
+include "Fykor/vendor/premake5.lua"
 
 project "Fykor"
     location "build"
@@ -27,13 +27,14 @@ project "Fykor"
     objdir("build/obj/%{cfg.buildcfg}")
 
     files {
-        "Fykor/**.h", 
-        "Fykor/**.hpp", 
-        "Fykor/**.cpp"
+        "Fykor/source/**.h",
+        "Fykor/source/**.hpp",
+        "Fykor/source/**.cpp"
     }
 
     includedirs{
-        "Fykor/",
+        "Fykor/source/",
+        "Fykor/source/Fykor/",
         "%{vendor.FrameLog}",
         "%{vendor.GLFW}/include",
         "%{vendor.Glad}/include",
@@ -98,7 +99,7 @@ project "Sandbox"
     }
 
     includedirs{
-        "Fykor/",
+        "Fykor/source/",
         "%{vendor.FrameLog}",
         "%{vendor.GLFW}/include",
         "%{vendor.ImGui}",

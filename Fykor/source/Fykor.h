@@ -18,26 +18,26 @@
 #pragma once
 
 // Debug
-#include "Log.h"
+#include "Fykor/Log.h"
 
 // === EntryPoint ===
-#include "EntryPoint.h"
+#include "Fykor/EntryPoint.h"
 //====================
 
 // === Fykor::Core ===
-#include "Core.h"
+#include "Fykor/Core.h"
 
 // === Types ===
-#include "Types.h"
+#include "Fykor/Types.h"
 
 // === Window ===
-#include "Window.h"
+#include "Fykor/Window.h"
 
 // === Common ===
-#include "Common.h"
+#include "Fykor/Common.h"
 
-#include "Layers/ImGuiLayer.h"
-#include "Layers/Layer.h"
+#include "Fykor/Layers/ImGuiLayer.h"
+#include "Fykor/Layers/Layer.h"
 
 // Fykor::UI
-#include "UI/Button.h"
+#include "Fykor/UI/Button.h"

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Events/AppEvent.h"
-#include "Events/KeyEvent.h"
-#include "Events/MouseEvent.h"
+#include "../Events/AppEvent.h"
+#include "../Events/KeyEvent.h"
+#include "../Events/MouseEvent.h"
 #include "Layer.h"
 
 namespace Fykor::Layers

@@ -15,7 +15,7 @@
  * =================================================
  */
 #include "LayerStack.h"
-#include "Common.h"
+#include "../Common.h"
 
 namespace Fykor::Layers
 {

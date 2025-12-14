@@ -1,15 +1,15 @@
 #include "ImGuiLayer.h"
-#include "Common.h"
+#include "../Common.h"
 
-#include "Common.h"
-#include "Events/AppEvent.h"
-#include "Events/Event.h"
-#include "Events/KeyEvent.h"
-#include "Events/MouseEvent.h"
+#include "../Common.h"
+#include "../Events/AppEvent.h"
+#include "../Events/Event.h"
+#include "../Events/KeyEvent.h"
+#include "../Events/MouseEvent.h"
 
 #include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>
-#include "App.h"
+#include "../App.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 
