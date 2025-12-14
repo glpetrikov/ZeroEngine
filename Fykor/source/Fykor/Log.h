@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <FrameLog.hpp>
+#include <FrameLog/FrameLog.h>
 #include "Platform.h"
 
 namespace Fykor::Debug

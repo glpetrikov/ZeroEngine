@@ -10,7 +10,7 @@ workspace "Fykor"
 
     vendor = {}
     vendor["GLFW"] = "Fykor/vendor/GLFW"
-    vendor["FrameLog"] = "Fykor/vendor/FrameLog/source"
+    vendor["FrameLog"] = "Fykor/vendor/FrameLog/include"
     vendor["Glad"] = "Fykor/vendor/Glad"
     vendor["ImGui"] = "Fykor/vendor/ImGui"
 

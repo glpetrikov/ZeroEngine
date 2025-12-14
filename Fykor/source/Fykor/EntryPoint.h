@@ -16,10 +16,8 @@
  */
 
 #pragma once
-#include "Common.h"
-
-#include <FrameLog.hpp>
 #include "App.h"
+#include "Common.h"
 
 #ifdef FR_PLATFORM_LINUX
 int main(int argc, char** argv)

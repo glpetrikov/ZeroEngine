@@ -1,5 +1,19 @@
 set -e
 
+cd Fykor/vendor/GLFW
+git checkout master
+git pull
+cd ..
+cd FrameLog
+git checkout main
+git pull
+cd ..
+cd GLFW
+git checkout master
+git pull
+cd ../../..
+
+
 #cd Fykor
 #find . -name "*.cpp" -o -name "*.h" | xargs wc -l | sort -nr
 #cd ..
