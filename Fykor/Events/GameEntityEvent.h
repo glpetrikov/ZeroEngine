@@ -1,5 +1,5 @@
 /* =================================================
-* Fykor, Apache 2.0 - License
+ * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
  * GameEntityEvent.h
@@ -17,24 +17,28 @@
 
 #pragma once
 
-#include "Event.h"
 #include "Common.h"
+#include "Event.h"
 #include "Vectors/Vector3.h"
 
-namespace Fykor::Events{
-    class EntityEvent : public Event {
-    public:
-        inline int GetEntityId() const { return EntityId; }
+namespace Fykor::Events
+{
+	class EntityEvent : public Event
+	{
+	public:
+		inline int GetEntityId() const { return EntityId; }
 
-        virtual int GetCategoryFlags() const { return EventCategory::CategoryEntity; }
+		virtual int GetCategoryFlags() const { return EventCategory::CategoryEntity; }
 
-   	protected:
-        EntityEvent(int entityId) : EntityId(entityId) {}
+	protected:
+		EntityEvent(int entityId) : EntityId(entityId) {}
 
-        int EntityId;
-    }
+		int EntityId;
+	};
 
-	class EntityMovedEvent : public EntityEvent {
+	class EntityMovedEvent : public EntityEvent
+
+	{
 	public:
 		EntityMovedEvent(int entityId, Vectors::Vector3<float> position) : Position(position), EntityEvent(entityId) {}
 
@@ -42,10 +46,7 @@ namespace Fykor::Events{
 
 	private:
 		Vectors::Vector3<float> Position;
-	}
-}
+	};
+} // namespace Fykor::Events
 
-EntityMoved,
-		EntityDestroy,
-		EntityCreated,
-		EntityAddComponent
+// EntityMoved, EntityDestroy, EntityCreated, EntityAddComponent

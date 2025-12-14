@@ -1,5 +1,5 @@
 /* =================================================
-* Fykor, Apache 2.0 - License
+ * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
  * MouseEvent.h
@@ -20,153 +20,127 @@
 #include "../Common.h"
 #include "Event.h"
 
-#include "../Vectors/Vector2.h"
+namespace Fykor::Events
+{
 
-namespace Fykor::Events {
+	class MouseMovedEvent : public Event
+	{
 
-    using Vector2 = Vectors::Vector2<float>;
+	public:
+		MouseMovedEvent(const float x, const float y) : x(x), y(y) {}
 
-    class MouseMovedEvent : public Event {
+		float GetX() const { return x; }
 
-    public:
-        MouseMovedEvent(const float x, const float y) {
-            position.x = x;
-            position.y = y;
-        }
+		float GetY() const { return y; }
 
-        float GetX() const { return position.x; }
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "MouseMovedEvent: " << x << ", " << y;
+			return ss.str();
+		}
 
-        float GetY() const { return position.y; }
+		virtual int GetCategoryFlags() const override
+		{
+			return EventCategory::CategoryInput | EventCategory::CategoryMouse;
+		}
 
-        Vector2 GetPosition() const { return position; }
+		static EventType GetType() { return EventType::MouseMoved; }
 
-        std::string ToString() const override {
-            std::stringstream ss;
-            ss << "MouseMovedEvent: " << position.x << ", " << position.y;
-            return ss.str();
-        }
+		virtual EventType GetEventType() const override { return GetType(); }
 
-        virtual int GetCategoryFlags() const override {
-            return EventCategory::CategoryInput | EventCategory::CategoryMouse;
-        }
+		virtual std::string GetName() const override { return "MouseMoved"; }
 
-        static EventType GetType() {
-            return EventType::MouseMoved;
-        }
+	private:
+		int x, y;
+	};
 
-        virtual EventType GetEventType() const override {
-            return GetType();
-        }
+	class MouseScrolledEvent : public Event
+	{
+	public:
+		MouseScrolledEvent(const float xOffset, const float yOffset)
+		{
+			x = xOffset;
+			y = yOffset;
+		}
 
-        virtual std::string GetName() const override {
-            return "MouseMoved";
-        }
+		float GetOffsetX() const { return x; }
 
-    private:
-        Vector2 position;
-    };
+		float GetOffsetY() const { return y; }
 
-    class MouseScrolledEvent : public Event {
-    public:
-        MouseScrolledEvent(const float xOffset, const float yOffset) {
-            offset.x = xOffset;
-            offset.y = yOffset;
-        }
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "MouseScrolledEvent: " << x << ", " << y;
+			return ss.str();
+		}
 
-        float GetOffsetX() const { return offset.x; }
+		virtual int GetCategoryFlags() const override
+		{
+			return EventCategory::CategoryInput | EventCategory::CategoryMouse;
+		}
 
-        float GetOffsetY() const { return offset.y; }
+		static EventType GetType() { return EventType::MouseScrolled; }
 
-        Vector2 GetOffset() const { return offset; }
+		virtual EventType GetEventType() const override { return GetType(); }
 
-        std::string ToString() const override {
-            std::stringstream ss;
-            ss << "MouseScrolledEvent: " << offset.x << ", " << offset.y;
-            return ss.str();
-        }
+		virtual std::string GetName() const override { return "MouseScrolled"; }
 
-        virtual int GetCategoryFlags() const override {
-            return EventCategory::CategoryInput | EventCategory::CategoryMouse;
-        }
+	private:
+		int x, y;
+	};
 
-        static EventType GetType() {
-            return EventType::MouseScrolled;
-        }
+	class MouseButtonEvent : public Event
+	{
+	public:
+		inline int GetMouseButton() const { return m_Button; }
 
-        virtual EventType GetEventType() const override {
-            return GetType();
-        }
+		virtual int GetCategoryFlags() const override
+		{
+			return EventCategory::CategoryInput | EventCategory::CategoryMouse;
+		}
 
-        virtual std::string GetName() const override {
-            return "MouseScrolled";
-        }
+	protected:
+		MouseButtonEvent(const int button) : m_Button(button) {}
 
-    private:
-        Vector2 offset;
-    };
+		int m_Button;
+	};
 
-    class MouseButtonEvent : public Event {
-    public:
-        inline int GetMouseButton() const {
-            return m_Button;
-        }
+	class MouseButtonPressedEvent : public MouseButtonEvent
+	{
+	public:
+		MouseButtonPressedEvent(const int button) : MouseButtonEvent(button) {}
 
-        virtual int GetCategoryFlags() const override {
-            return EventCategory::CategoryInput | EventCategory::CategoryMouse;
-        }
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "MouseButtonPressedEvent: " << m_Button;
+			return ss.str();
+		}
 
-    protected:
-        MouseButtonEvent(const int button)
-            : m_Button(button) {}
+		static EventType GetType() { return EventType::MouseButtonPressed; }
 
-        int m_Button;
-    };
+		virtual EventType GetEventType() const override { return GetType(); }
 
-    class MouseButtonPressedEvent : public MouseButtonEvent {
-    public:
-        MouseButtonPressedEvent(const int button)
-            : MouseButtonEvent(button) {}
+		virtual std::string GetName() const override { return "MouseButtonPressed"; }
+	};
 
-        std::string ToString() const override {
-            std::stringstream ss;
-            ss << "MouseButtonPressedEvent: " << m_Button;
-            return ss.str();
-        }
+	class MouseButtonReleasedEvent : public MouseButtonEvent
+	{
+	public:
+		MouseButtonReleasedEvent(const int button) : MouseButtonEvent(button) {}
 
-        static EventType GetType() {
-            return EventType::MouseButtonPressed;
-        }
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "MouseButtonReleasedEvent: " << m_Button;
+			return ss.str();
+		}
 
-        virtual EventType GetEventType() const override {
-            return GetType();
-        }
+		static EventType GetType() { return EventType::MouseButtonReleased; }
 
-        virtual std::string GetName() const override {
-            return "MouseButtonPressed";
-        }
-    };
+		virtual EventType GetEventType() const override { return GetType(); }
 
-    class MouseButtonReleasedEvent : public MouseButtonEvent {
-    public:
-        MouseButtonReleasedEvent(const int button)
-            : MouseButtonEvent(button) {}
-
-        std::string ToString() const override {
-            std::stringstream ss;
-            ss << "MouseButtonReleasedEvent: " << m_Button;
-            return ss.str();
-        }
-
-        static EventType GetType() {
-            return EventType::MouseButtonReleased;
-        }
-
-        virtual EventType GetEventType() const override {
-            return GetType();
-        }
-
-        virtual std::string GetName() const override {
-            return "MouseButtonReleased";
-        }
-    };
-}
+		virtual std::string GetName() const override { return "MouseButtonReleased"; }
+	};
+} // namespace Fykor::Events

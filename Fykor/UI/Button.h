@@ -1,45 +1,44 @@
 /* =================================================
  * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
- * FykorEngine
- * Types.h
+ * Fykor
+ * Button.h
  * ─────────────────────────────────────────────────
  * Updated on:
- * 2025.11.25
+ * 2025.12.14
  * ─────────────────────────────────────────────────
  * Made by:
  * Gleb Petrikov
  * ─────────────────────────────────────────────────
  * Description:
- * type aliases for ease of use
+ * Button class
  * =================================================
  */
-
 #pragma once
+#include <imgui.h>
+#include "../Common.h"
 
-// #include "Vectors/Vector2.h"
-// #include "Vectors/Vector3.h"
-//
-// // Floats
-//
-// using Vector2 = Fykor::Vectors::Vector2<float>;
-// using Vector3 = Fykor::Vectors::Vector3<float>;
-//
-// using Vec2 = Fykor::Vectors::Vector2<float>;
-// using Vec3 = Fykor::Vectors::Vector3<float>;
-//
-// // Double
-//
-// using Vector2d = Fykor::Vectors::Vector2<double>;
-// using Vector3d = Fykor::Vectors::Vector3<double>;
-//
-// using Vec2d = Fykor::Vectors::Vector2<double>;
-// using Vec3d = Fykor::Vectors::Vector3<double>;
-//
-// // Integers
-//
-// using Vector2i = Fykor::Vectors::Vector2<int>;
-// using Vector3i = Fykor::Vectors::Vector3<int>;
-//
-// using Vec2i = Fykor::Vectors::Vector2<int>;
-// using Vec3i = Fykor::Vectors::Vector3<int>;
+namespace Fykor::UI
+{
+	class Button
+	{
+	public:
+		Button(const std::string& label, const ImVec2& size = ImVec2(0, 0)) : m_Label(label), m_Size(size) {}
+
+		void SetCallback(const std::function<void()>& callback) { m_Callback = callback; }
+
+		void Draw()
+		{
+			if (ImGui::Button(m_Label.c_str(), m_Size))
+			{
+				if (m_Callback)
+					m_Callback();
+			}
+		}
+
+	private:
+		std::string m_Label;
+		ImVec2 m_Size;
+		std::function<void()> m_Callback;
+	};
+} // namespace Fykor::UI

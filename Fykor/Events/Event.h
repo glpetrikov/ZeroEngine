@@ -1,5 +1,5 @@
 /* =================================================
-* Fykor, Apache 2.0 - License
+ * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
  * Event.h
@@ -17,89 +17,95 @@
 
 #pragma once
 
-#include "Core.h"
 #include "Common.h"
+#include "Core.h"
 
-namespace Fykor::Events {
-    enum class EventType {
-        None = 0,
+namespace Fykor::Events
+{
+	enum class EventType
+	{
+		None = 0,
 
-        // Window Events
-        WindowClose,
-        WindowResize,
-        WindowFocus,
-        WindowLostFocus,
-        WindowMoved,
-        // App Events
-        AppTick,
-        AppUpdate,
-        AppRender,
-        // Key Events
-        KeyPressed,
-        KeyReleased,
-        KeyTyped,
-        // Mouse Events
-        MouseButtonPressed,
-        MouseButtonReleased,
-        MouseMoved,
-        MouseScrolled,
-        // Game Entity Events
-        EntityMoved,
-        EntityDestroy,
-        EntityCreated,
-        EntityAddComponent
-    };
+		// Window Events
+		WindowClose,
+		WindowResize,
+		WindowFocus,
+		WindowLostFocus,
+		WindowMoved,
+		// App Events
+		AppTick,
+		AppUpdate,
+		AppRender,
+		// Key Events
+		KeyPressed,
+		KeyReleased,
+		KeyTyped,
+		// Mouse Events
+		MouseButtonPressed,
+		MouseButtonReleased,
+		MouseMoved,
+		MouseScrolled,
+		// Game Entity Events
+		EntityMoved,
+		EntityDestroy,
+		EntityCreated,
+		EntityAddComponent
+	};
 
-    enum EventCategory {
-        None = 0,
-        CategoryApplication = BIT(0),
-        CategoryInput = BIT(1),
-        CategoryKeyboard = BIT(2),
-        CategoryMouse = BIT(3),
-        CategoryMouseButton = BIT(4),
-        CategoryEntity = BIT(5)
-    };
+	enum EventCategory
+	{
+		None = 0,
+		CategoryApplication = BIT(0),
+		CategoryInput = BIT(1),
+		CategoryKeyboard = BIT(2),
+		CategoryMouse = BIT(3),
+		CategoryMouseButton = BIT(4),
+		CategoryEntity = BIT(5)
+	};
 
-    class FYKOR_API Event {
-    public:
-        virtual ~Event() = default;
+	class FYKOR_API Event
+	{
+	public:
+		virtual ~Event() = default;
 
-        bool& GetHandler() { return m_Handler; }
-        void SetHandler(bool is) {
-            m_Handler = is;
-            return;
-        }
+		bool& GetHandler() { return m_Handler; }
 
-        virtual EventType GetEventType() const = 0;
-        virtual std::string GetName() const = 0;
+		void SetHandler(bool is)
+		{
+			m_Handler = is;
+			return;
+		}
 
-        virtual int GetCategoryFlags() const = 0;
+		virtual EventType GetEventType() const = 0;
+		virtual std::string GetName() const = 0;
 
-        virtual std::string ToString() const { return GetName(); }
+		virtual int GetCategoryFlags() const = 0;
 
-        inline bool IsInCategory(EventCategory Category) {
-            return GetCategoryFlags() & Category;
-        }
+		virtual std::string ToString() const { return GetName(); }
 
-    protected:
-        bool m_Handler = false;
-    };
+		inline bool IsInCategory(EventCategory Category) { return GetCategoryFlags() & Category; }
 
-    class EventDispatcher {
-    public:
-        EventDispatcher(Event& event) : m_Event(event) {
-        }
+	protected:
+		bool m_Handler = false;
+	};
 
-        template <typename T, typename F>
-        bool Dispatch(const F& func) {
-            if (m_Event.GetEventType() == T::GetType()) {
-                m_Event.GetHandler() |= func(static_cast<T&>(m_Event));
-                return true;
-            }
-            return false;
-        }
+	class EventDispatcher
+	{
+	public:
+		EventDispatcher(Event& event) : m_Event(event) {}
 
-    private:
-        Event& m_Event;
-    };
-}
+		template <typename T, typename F>
+		bool Dispatch(const F& func)
+		{
+			if (m_Event.GetEventType() == T::GetType())
+			{
+				m_Event.GetHandler() |= func(static_cast<T&>(m_Event));
+				return true;
+			}
+			return false;
+		}
+
+	private:
+		Event& m_Event;
+	};
+} // namespace Fykor::Events

@@ -1,31 +1,34 @@
+# Templates
+
+## === Includes =====
+``` cpp
+// ──[ Standard Library ]───────
+#include <>
+
+// ──[ External Libraries ]─────
+#include <>
+
+// ──[ Project Headers ]────────
+#include ""
+```
+
+
+## === Start Of File =====
+``` cpp
 /* =================================================
-* Fykor, Apache 2.0 - License
+ * Fy, Apache 2.0 - License
  * ─────────────────────────────────────────────────
- * FykorEngine
- * Trasnform.h
+ * ProjectName
+ * FileName
  * ─────────────────────────────────────────────────
  * Updated on:
- * 2025.11.25
+ * Date
  * ─────────────────────────────────────────────────
  * Made by:
- * Gleb Petrikov
+ * Names
  * ─────────────────────────────────────────────────
  * Description:
- * Transform Component
+ * Description
  * =================================================
  */
-
-#include "Types.h"
-#include "Vectors/Vector3.h"
-
-namespace Fy::Components {
-    class Transform {
-    public:
-        Vector3<float> Position;
-        Vector3<float> Rotation;
-        Vector3<float> Scale;
-
-        Transform() :
-            Position(Vector3<float>::Zero()), Rotation(Vector3<float>::Zero()), Scale(Vector3<float>(1, 1, 1)) {}
-    };
-}
+```

@@ -1,5 +1,5 @@
 /* =================================================
-* Fykor, Apache 2.0 - License
+ * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
  * Layer.cpp
@@ -17,12 +17,9 @@
 #include "Layer.h"
 #include "Common.h"
 
-namespace Fykor::Layers {
-    Layer::Layer(const std::string & debugname) : m_DebugName(debugname) {
+namespace Fykor::Layers
+{
+	Layer::Layer(const std::string& debugname) : m_DebugName(debugname) {}
 
-    }
-
-    Layer::~Layer() {
-
-    }
-}
+	Layer::~Layer() {}
+} // namespace Fykor::Layers

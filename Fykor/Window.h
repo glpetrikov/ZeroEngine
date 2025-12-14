@@ -1,5 +1,5 @@
 /* =================================================
-* Fykor, Apache 2.0 - License
+ * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
  * Window.h
@@ -23,57 +23,57 @@
 
 struct GLFWwindow;
 
-namespace Fykor::Window {
+namespace Fykor::Window
+{
 
-    struct WindowData {
-        using EventCallbackFn = std::function<void(Events::Event &)>;
+	struct WindowData
+	{
+		using EventCallbackFn = std::function<void(Events::Event&)>;
 
-        EventCallbackFn EventCallback = [](Events::Event& event){};
+		EventCallbackFn EventCallback = [](Events::Event& event) {};
 
-        std::string Name;
-        unsigned int Width;
-        unsigned int Height;
+		std::string Name;
+		unsigned int Width;
+		unsigned int Height;
 
-        bool VSync;
+		bool VSync;
 
-        inline WindowData(const std::string &name = "Fykor Engine",
-                          unsigned int width = 1280,
-                          unsigned int height = 720)
-            : Name(name) {
-            Width = width;
-            Height = height;
-        }
-    };
+		inline WindowData(const std::string& name = "Fykor Engine", unsigned int width = 1280,
+						  unsigned int height = 720) : Name(name)
+		{
+			Width = width;
+			Height = height;
+		}
+	};
 
-    class FYKOR_API Window {
+	class FYKOR_API Window
+	{
 
-    public:
-        using EventCallbackFn = std::function<void(Events::Event &)>;
+	public:
+		using EventCallbackFn = std::function<void(Events::Event&)>;
 
-        Window(const WindowData &data);
-        ~Window();
+		Window(const WindowData& data);
+		~Window();
 
-        void OnUpdate();
+		void OnUpdate();
 
-        unsigned int GetWidth() const { return Data.Width; }
+		unsigned int GetWidth() const { return Data.Width; }
 
-        unsigned int GetHeight() const { return Data.Height; }
+		unsigned int GetHeight() const { return Data.Height; }
 
-        void SetEventCallback(const EventCallbackFn &callback) {
-            Data.EventCallback = callback;
-        }
+		void SetEventCallback(const EventCallbackFn& callback) { Data.EventCallback = callback; }
 
-        void SetVSync(bool enable);
-        bool IsVSync() const;
+		void SetVSync(bool enable);
+		bool IsVSync() const;
 
-        static Window *Create(const WindowData &data = WindowData());
+		static Window* Create(const WindowData& data = WindowData());
 
-    private:
-        void Init(const WindowData &data);
-        void ShutDown();
+	private:
+		void Init(const WindowData& data);
+		void ShutDown();
 
-        GLFWwindow *window;
+		GLFWwindow* window;
 
-        WindowData Data;
-    };
-}
+		WindowData Data;
+	};
+} // namespace Fykor::Window

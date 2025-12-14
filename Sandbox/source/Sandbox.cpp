@@ -1,11 +1,11 @@
 /* =================================================
-* Fykor, Apache 2.0 - License
+ * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * Sandbox
  * Sandbox.cpp
  * ─────────────────────────────────────────────────
  * Updated on:
- * 2025.11.25
+ * 2025.12.14
  * ─────────────────────────────────────────────────
  * Made by:
  * Gleb Petrikov
@@ -19,31 +19,26 @@
 
 using namespace Fykor;
 
-class ExampleLayer : public Layers::Layer {
+class ExampleLayer : public Layers::Layer
+{
 public:
-    ExampleLayer() : Layer("Example") {
-    }
+	ExampleLayer() : Layer("Example") {}
 
-    void OnUpdate() {
-        //FR_INFO("ExampleLayer::Update");
-    }
+	void OnUpdate() {}
 
-    void OnEvent(Events::Event& event) {
-        FR_INFO("Event: {0}", event.ToString());
-    }
+	void OnEvent(Events::Event& event) {}
 };
 
-class Sandbox : public Fykor::App {
+class Sandbox : public Fykor::App
+{
 public:
-    Sandbox() {
-        PushLayer(new ExampleLayer());
-        PushOverlay(new Fykor::Layers::ImGuiLayer());
-    }
+	Sandbox()
+	{
+		PushLayer(new ExampleLayer());
+		PushOverlay(new Fykor::Layers::ImGuiLayer());
+	}
 
-    ~Sandbox() {
-    }
+	~Sandbox() {}
 };
 
-Fykor::App *Fykor::CreateApp() {
-    return new Sandbox;
-}
+Fykor::App* Fykor::CreateApp() { return new Sandbox; }

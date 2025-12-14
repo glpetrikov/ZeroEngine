@@ -1,5 +1,5 @@
 /* =================================================
-* Fykor, Apache 2.0 - License
+ * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
  * Common.h
@@ -29,5 +29,5 @@
 #include <unordered_set>
 #include <vector>
 
-#include "Debug/Log.h"
+#include "Log.h"
 #include "Platform.h"

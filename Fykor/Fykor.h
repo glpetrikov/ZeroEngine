@@ -1,5 +1,5 @@
 /* =================================================
-* Fykor, Apache 2.0 - License
+ * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
  * Fykor.h
@@ -18,7 +18,7 @@
 #pragma once
 
 // Debug
-#include "Debug/Log.h"
+#include "Log.h"
 
 // === EntryPoint ===
 #include "EntryPoint.h"
@@ -26,10 +26,6 @@
 
 // === Fykor::Core ===
 #include "Core.h"
-
-// === Fykor::Vectors
-#include "Vectors//Vector2.h"
-#include "Vectors/Vector3.h"
 
 // === Types ===
 #include "Types.h"
@@ -40,5 +36,8 @@
 // === Common ===
 #include "Common.h"
 
-#include "Layers/Layer.h"
 #include "Layers/ImGuiLayer.h"
+#include "Layers/Layer.h"
+
+// Fykor::UI
+#include "UI/Button.h"

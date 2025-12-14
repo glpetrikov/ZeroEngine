@@ -1,5 +1,5 @@
 /* =================================================
-* Fykor, Apache 2.0 - License
+ * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
  * Window.cpp
@@ -17,174 +17,191 @@
 
 #include "Window.h"
 
-#include "Common.h"
 #include <GLFW/glfw3.h>
+#include "Common.h"
 
+#include <glad/glad.h>
 #include "Events/AppEvent.h"
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
-#include <glad/glad.h>
 
-namespace Fykor::Window {
-    static bool s_GLFWInitilized = false;
+namespace Fykor::Window
+{
+	static bool s_GLFWInitilized = false;
 
-    static void glfwErrorCallback(int error, const char* message) {
-        FR_CORE_ERROR("GLFW Error: ({0}): {1}", error, message);
-    }
+	static void glfwErrorCallback(int error, const char* message)
+	{
+		FR_CORE_ERROR("GLFW Error: ({0}): {1}", error, message);
+	}
 
-    Window *Window::Create(const WindowData &data) {
-        return new Window(data);
-    }
+	Window* Window::Create(const WindowData& data) { return new Window(data); }
 
-    Window::Window(const WindowData &data) {
-        Init(data);
-    }
+	Window::Window(const WindowData& data) { Init(data); }
 
-    Window::~Window() {
-        ShutDown();
-    }
+	Window::~Window() { ShutDown(); }
 
-    void Window::Init(const WindowData &data) {
+	void Window::Init(const WindowData& data)
+	{
 
-        Data.Name = data.Name;
-        Data.Width = data.Width;
-        Data.Height = data.Height;
+		Data.Name = data.Name;
+		Data.Width = data.Width;
+		Data.Height = data.Height;
 
-        FR_CORE_INFO("Creating window {0} {1} {2}",
-        data.Name,
-        data.Width,
-        data.Height);
+		FR_CORE_INFO("Creating window {0} {1} {2}", data.Name, data.Width, data.Height);
 
 
-        if (!s_GLFWInitilized) {
-            glfwSetErrorCallback(glfwErrorCallback);
-            int success = glfwInit();
+		if (!s_GLFWInitilized)
+		{
+			glfwSetErrorCallback(glfwErrorCallback);
+			int success = glfwInit();
 
-            if (!success) {
-                FR_CORE_ERROR("Could not Initialize GLFW!");
-                return;
-            }
+			if (!success)
+			{
+				FR_CORE_ERROR("Could not Initialize GLFW!");
+				return;
+			}
 
-            FR_CORE_INFO("GLFW Initialized successfully!");
-            s_GLFWInitilized = true;
-        }
-        window = glfwCreateWindow((int)data.Width, (int)data.Height, Data.Name.c_str(), nullptr, nullptr);
-        int w, h;
-        glfwGetFramebufferSize(window, &w, &h);
+			FR_CORE_INFO("GLFW Initialized successfully!");
+			s_GLFWInitilized = true;
+		}
+		window = glfwCreateWindow((int)data.Width, (int)data.Height, Data.Name.c_str(), nullptr, nullptr);
+		int w, h;
+		glfwGetFramebufferSize(window, &w, &h);
 
-        Data.Width = (unsigned int)w;
-        Data.Height = (unsigned int)h;
+		Data.Width = (unsigned int)w;
+		Data.Height = (unsigned int)h;
 
-        glfwMakeContextCurrent(window);
-        int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-        if (!status) {
-            FR_CORE_ERROR("Failed to initialize GLAD!");
-            return;
-        }
-        glfwSetWindowUserPointer(window, &Data);
-        SetVSync(true);
+		glfwMakeContextCurrent(window);
+		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+		if (!status)
+		{
+			FR_CORE_ERROR("Failed to initialize GLAD!");
+			return;
+		}
+		glfwSetWindowUserPointer(window, &Data);
+		SetVSync(true);
 
 
+		// Set GLFW CallBack's
 
-        // Set GLFW CallBack's
+		glfwSetFramebufferSizeCallback(window,
+									   [](GLFWwindow* window, int width, int height)
+									   {
+										   WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-        glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+										   data.Width = width;
+										   data.Height = height;
 
-            data.Width = width;
-            data.Height = height;
+										   Events::WindowResizeEvent event(width, height);
+										   data.EventCallback(event);
+									   });
 
-            Events::WindowResizeEvent event(width, height);
-            data.EventCallback(event);
-        });
+		glfwSetWindowCloseCallback(window,
+								   [](GLFWwindow* window)
+								   {
+									   WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+									   Events::WindowCloseEvent event;
+									   data.EventCallback(event);
+								   });
 
-        glfwSetWindowCloseCallback(window, [](GLFWwindow* window) {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-            Events::WindowCloseEvent event;
-            data.EventCallback(event);
-        });
+		glfwSetKeyCallback(window,
+						   [](GLFWwindow* window, int key, int scancode, int action, int mods)
+						   {
+							   WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-        glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+							   switch (action)
+							   {
+							   case GLFW_PRESS:
+								   {
+									   Events::KeyPressedEvent event(key, 0);
+									   data.EventCallback(event);
+									   break;
+								   }
+							   case GLFW_RELEASE:
+								   {
+									   Events::KeyReleasedEvent event(key);
+									   data.EventCallback(event);
+									   break;
+								   }
+							   case GLFW_REPEAT:
+								   {
+									   Events::KeyPressedEvent event(key, 1);
+									   data.EventCallback(event);
+									   break;
+								   }
+							   }
+						   });
 
-            switch (action) {
-                case GLFW_PRESS: {
-                    Events::KeyPressedEvent event(key, 0);
-                    data.EventCallback(event);
-                    break;
-                }
-                case GLFW_RELEASE: {
-                    Events::KeyReleasedEvent event(key);
-                    data.EventCallback(event);
-                    break;
-                }
-                case GLFW_REPEAT: {
-                    Events::KeyPressedEvent event(key, 1);
-                    data.EventCallback(event);
-                    break;
-                }
-            }
-        });
+		glfwSetCharCallback(window,
+							[](GLFWwindow* window, unsigned int keycode)
+							{
+								WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+								Events::KeyTypedEvent event(keycode);
+								data.EventCallback(event);
+							});
 
-        glfwSetCharCallback(window, [](GLFWwindow* window, unsigned int keycode) {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-            Events::KeyTypedEvent event(keycode);
-            data.EventCallback(event);
+		glfwSetMouseButtonCallback(window,
+								   [](GLFWwindow* window, int button, int action, int mods)
+								   {
+									   WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-        });
+									   switch (action)
+									   {
+									   case GLFW_PRESS:
+										   {
+											   Events::MouseButtonPressedEvent event(button);
+											   data.EventCallback(event);
+											   break;
+										   }
+									   case GLFW_RELEASE:
+										   {
+											   Events::MouseButtonReleasedEvent event(button);
+											   data.EventCallback(event);
+											   break;
+										   }
+									   }
+								   });
 
-        glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+		glfwSetScrollCallback(window,
+							  [](GLFWwindow* window, double xoffset, double yoffset)
+							  {
+								  WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-            switch (action) {
-                case GLFW_PRESS: {
-                    Events::MouseButtonPressedEvent event(button);
-                    data.EventCallback(event);
-                    break;
-                }
-                case GLFW_RELEASE: {
-                    Events::MouseButtonReleasedEvent event(button);
-                    data.EventCallback(event);
-                    break;
-                }
-            }
-        });
+								  Events::MouseScrolledEvent event((float)xoffset, (float)yoffset);
+								  data.EventCallback(event);
+							  });
 
-        glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset) {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+		glfwSetCursorPosCallback(window,
+								 [](GLFWwindow* window, double xPos, double yPos)
+								 {
+									 WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-            Events::MouseScrolledEvent event((float)xoffset, (float)yoffset);
-            data.EventCallback(event);
-        });
+									 Events::MouseMovedEvent event((float)xPos, (float)yPos);
+									 data.EventCallback(event);
+								 });
+	}
 
-        glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xPos, double yPos) {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+	void Window::ShutDown() { glfwDestroyWindow(window); }
 
-            Events::MouseMovedEvent event((float)xPos, (float)yPos);
-            data.EventCallback(event);
-        });
-    }
+	void Window::OnUpdate()
+	{
+		glfwPollEvents();
+		glfwSwapBuffers(window);
+	}
 
-    void Window::ShutDown() {
-        glfwDestroyWindow(window);
-    }
+	void Window::SetVSync(bool enable)
+	{
+		if (enable)
+		{
+			glfwSwapInterval(1);
+		}
+		else
+		{
+			glfwSwapInterval(0);
+		}
 
-    void Window::OnUpdate() {
-        glfwPollEvents();
-        glfwSwapBuffers(window);
-    }
+		Data.VSync = enable;
+	}
 
-    void Window::SetVSync(bool enable) {
-        if (enable) {
-            glfwSwapInterval(1);
-        } else {
-            glfwSwapInterval(0);
-        }
-
-        Data.VSync = enable;
-    }
-
-    bool Window::IsVSync() const {
-        return Data.VSync;
-    }
-}
+	bool Window::IsVSync() const { return Data.VSync; }
+} // namespace Fykor::Window

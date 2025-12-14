@@ -1,5 +1,5 @@
 /* =================================================
-* Fykor, Apache 2.0 - License
+ * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
  * App.cpp
@@ -16,62 +16,67 @@
  */
 
 #include "App.h"
-#include "Events/AppEvent.h"
 #include <glad/glad.h>
 #include "Common.h"
+#include "Events/AppEvent.h"
 
-namespace Fykor {
+namespace Fykor
+{
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
-    App* App::s_Instance = nullptr;
+	App* App::s_Instance = nullptr;
 
-    App::App() {
-        FR_CORE_ASSERT(!s_Instance, "Application already exists!");
-        s_Instance = this;
+	App::App()
+	{
+		FR_CORE_ASSERT(!s_Instance, "Application already exists!");
+		s_Instance = this;
 
-        window = std::unique_ptr<Window::Window>(Window::Window::Create());
-        window->SetEventCallback(BIND_EVENT_FN(App::OnEvent));
-    }
+		window = std::unique_ptr<Window::Window>(Window::Window::Create());
+		window->SetEventCallback(BIND_EVENT_FN(App::OnEvent));
+	}
 
-    App::~App() {
-    }
+	App::~App() {}
 
-    void App::PushLayer(Layers::Layer* layer) {
-        m_LayerStack.PushLayer(layer);
-    }
-    void App::PushOverlay(Layers::Layer* overlay) {
-        m_LayerStack.PushOverlay(overlay);
-    }
+	void App::PushLayer(Layers::Layer* layer) { m_LayerStack.PushLayer(layer); }
 
-    void App::OnEvent(Events::Event& event) {
-        Events::EventDispatcher dispatcher(event);
+	void App::PushOverlay(Layers::Layer* overlay) { m_LayerStack.PushOverlay(overlay); }
 
-        dispatcher.Dispatch<Events::WindowCloseEvent>(BIND_EVENT_FN(App::OnWindowClose));
+	void App::OnEvent(Events::Event& event)
+	{
+		Events::EventDispatcher dispatcher(event);
 
-        for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); ) {
-            --it;
-            (*it)->OnEvent(event);
-            if (event.GetHandler()) {
-                break;
-            }
-        }
-    }
+		dispatcher.Dispatch<Events::WindowCloseEvent>(BIND_EVENT_FN(App::OnWindowClose));
 
-    void App::Run() {
-        while (IsRunning) {
-            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            for (Layers::Layer* layer : m_LayerStack) {
-                layer->OnUpdate();
-            }
-            window->OnUpdate();
-            Fykor::Debug::FykorLogger.Flush();
-            Fykor::Debug::Logger.Flush();
-        }
-    }
+		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
+		{
+			--it;
+			(*it)->OnEvent(event);
+			if (event.GetHandler())
+			{
+				break;
+			}
+		}
+	}
 
-    bool App::OnWindowClose(Events::WindowCloseEvent &event) {
-        IsRunning = false;
-        return true;
-    }
-}
+	void App::Run()
+	{
+		while (IsRunning)
+		{
+			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			for (Layers::Layer* layer : m_LayerStack)
+			{
+				layer->OnUpdate();
+			}
+			window->OnUpdate();
+			Fykor::Debug::FykorLogger.Flush();
+			Fykor::Debug::Logger.Flush();
+		}
+	}
+
+	bool App::OnWindowClose(Events::WindowCloseEvent& event)
+	{
+		IsRunning = false;
+		return true;
+	}
+} // namespace Fykor
