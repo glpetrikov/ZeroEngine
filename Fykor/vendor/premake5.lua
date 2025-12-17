@@ -7,8 +7,9 @@ include "FrameLog/include/FrameLog/premake5.lua"
 --==============================
 project "GLFW"
     location "GLFW"
-    kind "SharedLib"
+    kind "StaticLib"
     language "C"
+    pic "on"
 
     targetdir("../../build/%{cfg.buildcfg}")
     objdir("../../build/obj/%{cfg.buildcfg}")
@@ -26,6 +27,10 @@ project "GLFW"
     filter "system:linux"
         defines {
             "_GLFW_X11"
+        }
+    filter "system:windows"
+        defines {
+            "_GLFW_WIN32"
         }
     filter "configurations:Debug"
         runtime "Debug"

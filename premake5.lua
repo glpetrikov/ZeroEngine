@@ -18,7 +18,7 @@ workspace "Fykor"
 include "Fykor/vendor/premake5.lua"
 
 project "Fykor"
-    location "build"
+    location "Fykor"
     kind "SharedLib"
     language "C++"
     cppdialect "C++20"
@@ -67,6 +67,15 @@ project "Fykor"
         defines{
             "FR_BUILD_DLL"
         }
+    links {
+            "Glad",
+            "glfw",
+            "ImGui",
+            "GL",
+            "X11",
+            "pthread",
+            "dl"
+        }
 
     filter "system:linux"
         cppdialect "C++20"
@@ -87,7 +96,7 @@ project "Fykor"
 
 
 project "Sandbox"
-    location "build"
+    location "Sandbox"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++20"
@@ -117,10 +126,10 @@ project "Sandbox"
 
     links{
         "Fykor",
-        "FrameLog",
-        "GLFW",
-        "ImGui"
     }
+
+    filter "system:windows"
+        links { "Glad", "GLFW", "opengl32", "gdi32", "user32", "shell32" }
 
     filter "configurations:Debug"
         defines "FR_DEBUG"
