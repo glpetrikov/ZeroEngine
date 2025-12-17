@@ -57,6 +57,8 @@ namespace Fykor
 		bool IsRunning = true;
 		Layers::LayerStack m_LayerStack;
 
+		unsigned int m_VertexArray, m_VertexBuffer, m_IndexBuffer;
+
 		static App* s_Instance;
 	};
 

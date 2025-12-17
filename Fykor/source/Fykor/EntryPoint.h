@@ -22,7 +22,7 @@
 #ifdef FR_PLATFORM_LINUX
 int main(int argc, char** argv)
 {
-	FR_INFO("Engine Started!\n");
+	FR_CORE_INFO("Engine Started!\n");
 
 	auto* app = Fykor::CreateApp();
 	app->Run();
