@@ -19,7 +19,7 @@ include "Fykor/vendor/premake5.lua"
 
 project "Fykor"
     location "Fykor"
-    kind "SharedLib"
+    kind "StaticLib"
     language "C++"
     cppdialect "C++20"
     staticruntime "Off"
@@ -124,10 +124,16 @@ project "Sandbox"
         "vendor/build/%{cfg.buildcfg}"
     }
 
-    links{
+    links {
         "Fykor",
+        "FrameLog",
+        "GLFW",
+        "Glad",
+        "ImGui",
     }
 
+    filter "system:linux"
+        links { "GL", "X11", "pthread", "dl" }
     filter "system:windows"
         links { "Glad", "GLFW", "opengl32", "gdi32", "user32", "shell32" }
 

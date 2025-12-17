@@ -29,22 +29,26 @@
 #endif
 
 // ---------- DLL / .SO ----------
-#ifdef FR_PLATFORM_WINDOWS
-#	ifdef FR_BUILD_DLL
-#		define FYKOR_API __declspec(dllexport)
-#	else
-#		define FYKOR_API __declspec(dllimport)
-#	endif
-#elif defined(FR_PLATFORM_LINUX)
-#	ifdef FR_BUILD_SO
-#		define FYKOR_API __attribute__((visibility("default")))
-#	else
-#		define FYKOR_API
-#	endif
-#elif defined(FR_PLATFORM_MACOS)
-#	ifdef FR_BUILD_SO
-#		define FYKOR_API __attribute__((visibility("default")))
-#	else
-#		define FYKOR_API
+#ifdef FR_BUILD_DINAMIC
+#	ifdef FR_PLATFORM_WINDOWS
+#		ifdef FR_BUILD_DLL
+#			define FYKOR_API __declspec(dllexport)
+#		else
+#			define FYKOR_API __declspec(dllimport)
+#		endif
+#	elif defined(FR_PLATFORM_LINUX)
+#		ifdef FR_BUILD_SO
+#			define FYKOR_API __attribute__((visibility("default")))
+#		else
+#			define FYKOR_API
+#		endif
+#	elif defined(FR_PLATFORM_MACOS)
+#		ifdef FR_BUILD_SO
+#			define FYKOR_API __attribute__((visibility("default")))
+#		else
+#			define FYKOR_API
+#		endif
 #	endif
 #endif
+
+#define FYKOR_API
