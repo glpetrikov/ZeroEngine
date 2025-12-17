@@ -19,6 +19,7 @@
 #include <glad/glad.h>
 #include "Common.h"
 #include "Events/AppEvent.h"
+#include "Input.h"
 
 namespace Fykor
 {
@@ -31,8 +32,8 @@ namespace Fykor
 		FR_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		window = std::unique_ptr<Window::Window>(Window::Window::Create());
-		window->SetEventCallback(BIND_EVENT_FN(App::OnEvent));
+		m_Window = std::unique_ptr<Window::Window>(Window::Window::Create());
+		m_Window->SetEventCallback(BIND_EVENT_FN(App::OnEvent));
 	}
 
 	App::~App() {}
@@ -68,7 +69,7 @@ namespace Fykor
 			{
 				layer->OnUpdate();
 			}
-			window->OnUpdate();
+			m_Window->OnUpdate();
 			Fykor::Debug::FykorLogger.Flush();
 			Fykor::Debug::Logger.Flush();
 		}

@@ -38,11 +38,11 @@ namespace Fykor
 
 		inline static App& Get() { return *s_Instance; }
 
-		inline Window::Window& GetWindow() { return *window; }
+		inline Window::Window& GetWindow() { return *m_Window; }
 
-		inline unsigned int GetWindowWidth() { return window->GetWidth(); }
+		inline unsigned int GetWindowWidth() { return m_Window->GetWidth(); }
 
-		inline unsigned int GetWindowHeight() { return window->GetHeight(); }
+		inline unsigned int GetWindowHeight() { return m_Window->GetHeight(); }
 
 		void OnEvent(Events::Event& event);
 
@@ -51,7 +51,7 @@ namespace Fykor
 	private:
 		bool OnWindowClose(Events::WindowCloseEvent& event);
 
-		std::unique_ptr<Window::Window> window;
+		std::unique_ptr<Window::Window> m_Window;
 		bool IsRunning = true;
 		Layers::LayerStack m_LayerStack;
 

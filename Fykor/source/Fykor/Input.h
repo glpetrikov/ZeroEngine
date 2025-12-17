@@ -2,41 +2,43 @@
  * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
- * Types.h
+ * Input.cpp
  * ─────────────────────────────────────────────────
  * Updated on:
- * 2025.11.25
+ * 2025.12.17
  * ─────────────────────────────────────────────────
  * Made by:
  * Gleb Petrikov
  * ─────────────────────────────────────────────────
  * Description:
- * type aliases for ease of use
+ * Input
  * =================================================
  */
 
 #pragma once
 
-// /// Floats
-//
-// using Vector2 = Fykor::Vectors::Vector2<float>;
-// using Vector3 = Fykor::Vectors::Vector3<float>;
-//
-// using Vec2 = Fykor::Vectors::Vector2<float>;
-// using Vec3 = Fykor::Vectors::Vector3<float>;
-//
-// /// Double
-//
-// using Vector2d = Fykor::Vectors::Vector2<double>;
-// using Vector3d = Fykor::Vectors::Vector3<double>;
-//
-// using Vec2d = Fykor::Vectors::Vector2<double>;
-// using Vec3d = Fykor::Vectors::Vector3<double>;
-//
-// /// Integers
-//
-// using Vector2i = Fykor::Vectors::Vector2<int>;
-// using Vector3i = Fykor::Vectors::Vector3<int>;
-//
-// using Vec2i = Fykor::Vectors::Vector2<int>;
-// using Vec3i = Fykor::Vectors::Vector3<int>;
+#include "Core.h"
+
+namespace Fykor
+{
+	class FYKOR_API Input
+	{
+	public:
+		inline static bool IsKeyPressed(int keycode) { return IsKeyPressedImpl(keycode); }
+
+		inline static bool IsMouseButtonPressed(int button) { return IsMouseButtonPressedImpl(button); }
+
+		inline static std::pair<float, float> GetMousePosition() { return GetMousePositionImpl(); }
+
+		inline static float GetMouseX() { return GetMouseX(); }
+
+		inline static float GetMouseY() { return GetMouseY(); }
+
+	private:
+		bool static IsKeyPressedImpl(int keycode);
+		bool static IsMouseButtonPressedImpl(int button);
+		inline static std::pair<float, float> GetMousePositionImpl();
+		inline static float GetMouseXImpl();
+		inline static float GetMouseYImpl();
+	};
+} // namespace Fykor

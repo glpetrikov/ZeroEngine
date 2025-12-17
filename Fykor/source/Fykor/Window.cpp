@@ -64,27 +64,27 @@ namespace Fykor::Window
 			FR_CORE_INFO("GLFW Initialized successfully!");
 			s_GLFWInitilized = true;
 		}
-		window = glfwCreateWindow((int)data.Width, (int)data.Height, Data.Name.c_str(), nullptr, nullptr);
+		m_Window = glfwCreateWindow((int)data.Width, (int)data.Height, Data.Name.c_str(), nullptr, nullptr);
 		int w, h;
-		glfwGetFramebufferSize(window, &w, &h);
+		glfwGetFramebufferSize(m_Window, &w, &h);
 
 		Data.Width = (unsigned int)w;
 		Data.Height = (unsigned int)h;
 
-		glfwMakeContextCurrent(window);
+		glfwMakeContextCurrent(m_Window);
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		if (!status)
 		{
 			FR_CORE_ERROR("Failed to initialize GLAD!");
 			return;
 		}
-		glfwSetWindowUserPointer(window, &Data);
+		glfwSetWindowUserPointer(m_Window, &Data);
 		SetVSync(true);
 
 
 		// Set GLFW CallBack's
 
-		glfwSetFramebufferSizeCallback(window,
+		glfwSetFramebufferSizeCallback(m_Window,
 									   [](GLFWwindow* window, int width, int height)
 									   {
 										   WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -96,7 +96,7 @@ namespace Fykor::Window
 										   data.EventCallback(event);
 									   });
 
-		glfwSetWindowCloseCallback(window,
+		glfwSetWindowCloseCallback(m_Window,
 								   [](GLFWwindow* window)
 								   {
 									   WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -104,7 +104,7 @@ namespace Fykor::Window
 									   data.EventCallback(event);
 								   });
 
-		glfwSetKeyCallback(window,
+		glfwSetKeyCallback(m_Window,
 						   [](GLFWwindow* window, int key, int scancode, int action, int mods)
 						   {
 							   WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -132,7 +132,7 @@ namespace Fykor::Window
 							   }
 						   });
 
-		glfwSetCharCallback(window,
+		glfwSetCharCallback(m_Window,
 							[](GLFWwindow* window, unsigned int keycode)
 							{
 								WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -140,7 +140,7 @@ namespace Fykor::Window
 								data.EventCallback(event);
 							});
 
-		glfwSetMouseButtonCallback(window,
+		glfwSetMouseButtonCallback(m_Window,
 								   [](GLFWwindow* window, int button, int action, int mods)
 								   {
 									   WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -162,7 +162,7 @@ namespace Fykor::Window
 									   }
 								   });
 
-		glfwSetScrollCallback(window,
+		glfwSetScrollCallback(m_Window,
 							  [](GLFWwindow* window, double xoffset, double yoffset)
 							  {
 								  WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -171,7 +171,7 @@ namespace Fykor::Window
 								  data.EventCallback(event);
 							  });
 
-		glfwSetCursorPosCallback(window,
+		glfwSetCursorPosCallback(m_Window,
 								 [](GLFWwindow* window, double xPos, double yPos)
 								 {
 									 WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -181,12 +181,12 @@ namespace Fykor::Window
 								 });
 	}
 
-	void Window::ShutDown() { glfwDestroyWindow(window); }
+	void Window::ShutDown() { glfwDestroyWindow(m_Window); }
 
 	void Window::OnUpdate()
 	{
 		glfwPollEvents();
-		glfwSwapBuffers(window);
+		glfwSwapBuffers(m_Window);
 	}
 
 	void Window::SetVSync(bool enable)

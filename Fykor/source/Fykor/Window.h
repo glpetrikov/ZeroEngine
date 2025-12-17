@@ -68,11 +68,13 @@ namespace Fykor::Window
 
 		static Window* Create(const WindowData& data = WindowData());
 
+		void* GetNativeWindow() const { return m_Window; }
+
 	private:
 		void Init(const WindowData& data);
 		void ShutDown();
 
-		GLFWwindow* window;
+		GLFWwindow* m_Window;
 
 		WindowData Data;
 	};
