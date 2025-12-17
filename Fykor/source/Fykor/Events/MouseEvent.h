@@ -27,16 +27,20 @@ namespace Fykor::Events
 	{
 
 	public:
-		MouseMovedEvent(const float x, const float y) : x(x), y(y) {}
+		MouseMovedEvent(const float x, const float y)
+		{
+			vec.x = x;
+			vec.y = y;
+		}
 
-		float GetX() const { return x; }
+		float GetX() const { return vec.x; }
 
-		float GetY() const { return y; }
+		float GetY() const { return vec.y; }
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseMovedEvent: " << x << ", " << y;
+			ss << "MouseMovedEvent: " << vec.x << ", " << vec.y;
 			return ss.str();
 		}
 
@@ -52,7 +56,7 @@ namespace Fykor::Events
 		virtual std::string GetName() const override { return "MouseMoved"; }
 
 	private:
-		int x, y;
+		Vector2 vec;
 	};
 
 	class MouseScrolledEvent : public Event
@@ -60,18 +64,20 @@ namespace Fykor::Events
 	public:
 		MouseScrolledEvent(const float xOffset, const float yOffset)
 		{
-			x = xOffset;
-			y = yOffset;
+			vec.x = xOffset;
+			vec.y = yOffset;
 		}
 
-		float GetOffsetX() const { return x; }
+		float GetOffsetX() const { return vec.x; }
 
-		float GetOffsetY() const { return y; }
+		float GetOffsetY() const { return vec.y; }
+
+		Vector2 GetOffset() const { return vec; }
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseScrolledEvent: " << x << ", " << y;
+			ss << "MouseScrolledEvent: " << vec.x << ", " << vec.y;
 			return ss.str();
 		}
 
@@ -87,7 +93,7 @@ namespace Fykor::Events
 		virtual std::string GetName() const override { return "MouseScrolled"; }
 
 	private:
-		int x, y;
+		Vector2 vec;
 	};
 
 	class MouseButtonEvent : public Event

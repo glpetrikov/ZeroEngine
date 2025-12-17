@@ -19,6 +19,8 @@
 
 #include "Core.h"
 
+#include "Types.h"
+
 namespace Fykor
 {
 	class FYKOR_API Input
@@ -28,7 +30,7 @@ namespace Fykor
 
 		inline static bool IsMouseButtonPressed(int button) { return IsMouseButtonPressedImpl(button); }
 
-		inline static std::pair<float, float> GetMousePosition() { return GetMousePositionImpl(); }
+		inline static Vector2 GetMousePosition() { return GetMousePositionImpl(); }
 
 		inline static float GetMouseX() { return GetMouseX(); }
 
@@ -37,8 +39,8 @@ namespace Fykor
 	private:
 		bool static IsKeyPressedImpl(int keycode);
 		bool static IsMouseButtonPressedImpl(int button);
-		inline static std::pair<float, float> GetMousePositionImpl();
-		inline static float GetMouseXImpl();
-		inline static float GetMouseYImpl();
+		static Vector2 GetMousePositionImpl();
+		static float GetMouseXImpl();
+		static float GetMouseYImpl();
 	};
 } // namespace Fykor

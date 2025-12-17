@@ -13,6 +13,7 @@ workspace "Fykor"
     vendor["FrameLog"] = "Fykor/vendor/FrameLog/include"
     vendor["Glad"] = "Fykor/vendor/Glad"
     vendor["ImGui"] = "Fykor/vendor/ImGui"
+    vendor["glm"] = "Fykor/vendor/glm"
 
 include "Fykor/vendor/premake5.lua"
 
@@ -40,6 +41,7 @@ project "Fykor"
         "%{vendor.Glad}/include",
         "%{vendor.ImGui}",
         "%{vendor.ImGui}/backends",
+        "%{vendor.glm}",
     }
 
     defines {
@@ -106,6 +108,7 @@ project "Sandbox"
         "%{vendor.GLFW}/include",
         "%{vendor.ImGui}",
         "%{vendor.ImGui}/backends",
+        "%{vendor.glm}",
     }
 
     libdirs {

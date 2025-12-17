@@ -38,24 +38,24 @@ namespace Fykor
 		return state == GLFW_PRESS;
 	}
 
-	std::pair<float, float> Input::GetMousePositionImpl()
+	Vector2 Input::GetMousePositionImpl()
 	{
 		auto window = static_cast<GLFWwindow*>(App::Get().GetWindow().GetNativeWindow());
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
-		return {(float)xpos, (float)ypos};
+		return Vector2((float)xpos, (float)ypos);
 	}
 
 	float Input::GetMouseXImpl()
 	{
-		auto v = GetMousePosition();
-		return std::get<0>(v);
+		Vector2 v = GetMousePosition();
+		return v.x;
 	}
 
 	float Input::GetMouseYImpl()
 	{
-		auto v = GetMousePosition();
-		return std::get<0>(v);
+		Vector2 v = GetMousePosition();
+		return v.y;
 	}
 
 } // namespace Fykor

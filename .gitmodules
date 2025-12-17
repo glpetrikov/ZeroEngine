@@ -7,3 +7,6 @@
 [submodule "Fykor/vendor/ImGui"]
 	path = Fykor/vendor/ImGui
 	url = https://github.com/ocornut/imgui.git
+[submodule "Fykor/vendor/glm"]
+	path = Fykor/vendor/glm
+	url = https://github.com/g-truc/glm.git

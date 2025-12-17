@@ -31,3 +31,4 @@
 
 #include "Log.h"
 #include "Platform.h"
+#include "Types.h"
