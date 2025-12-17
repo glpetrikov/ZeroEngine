@@ -27,6 +27,13 @@ project "GLFW"
         defines {
             "_GLFW_X11"
         }
+    filter "configurations:Debug"
+        runtime "Debug"
+        symbols "On"
+    filter "configurations:Release"
+        runtime "Release"
+        symbols "Off"
+        optimize "on"
 --==============================
 -- Glad
 --==============================
@@ -47,6 +54,14 @@ project "Glad"
     includedirs {
         "Glad/include"
     }
+
+    filter "configurations:Debug"
+        runtime "Debug"
+        symbols "On"
+    filter "configurations:Release"
+        runtime "Release"
+        symbols "Off"
+        optimize "on"
 --==============================
 -- ImGui
 --==============================
@@ -76,3 +91,11 @@ project "ImGui"
         "GLFW//include",
         "Glad/include"
     }
+
+    filter "configurations:Debug"
+        runtime "Debug"
+        symbols "On"
+    filter "configurations:Release"
+        runtime "Release"
+        symbols "Off"
+        optimize "on"

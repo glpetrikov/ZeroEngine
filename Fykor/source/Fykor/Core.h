@@ -27,18 +27,22 @@
 #	define FR_DEBUGBREAK() __builtin_trap()
 #endif
 
+#ifdef FR_DEBUG
+#	define FR_ENABLE_ASSERTS
+#endif
+
 #ifdef FR_ENABLE_ASSERTS
 #	define FR_ASSERT(x, ...)                                                                                          \
 		if (!(x))                                                                                                      \
 		{                                                                                                              \
-			FykorLogger.Error(FykorLogger.Format("Assertion Failed: {0}", __VA_ARGS__));                               \
+			Fykor::Debug::FykorLogger.Error(("Assertion Failed: {0}", __VA_ARGS__);                               \
 			FR_DEBUGBREAK();                                                                                           \
 		}
 
 #	define FR_CORE_ASSERT(x, ...)                                                                                     \
 		if (!(x))                                                                                                      \
 		{                                                                                                              \
-			FykorLogger.Error(FykorLogger.Format("Assertion Failed: {0}", __VA_ARGS__));                               \
+			Fykor::Debug::FykorLogger.Error("Assertion Failed: {0}", __VA_ARGS__);                                     \
 			FR_DEBUGBREAK();                                                                                           \
 		}
 #else

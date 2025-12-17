@@ -75,9 +75,11 @@ project "Fykor"
 
     filter "configurations:Debug"
         defines "FR_DEBUG"
-        symbols "on"
+        runtime "Debug"
+        symbols "On"
     filter "configurations:Release"
         defines "FR_RELEASE"
+        runtime "Release"
         symbols "Off"
         optimize "on"
 
@@ -116,3 +118,13 @@ project "Sandbox"
         "GLFW",
         "ImGui"
     }
+
+    filter "configurations:Debug"
+        defines "FR_DEBUG"
+        runtime "Debug"
+        symbols "On"
+    filter "configurations:Release"
+        defines "FR_RELEASE"
+        runtime "Release"
+        symbols "Off"
+        optimize "on"
