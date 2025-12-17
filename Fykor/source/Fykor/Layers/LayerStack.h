@@ -5,7 +5,7 @@
  * LayerStack.h
  * ─────────────────────────────────────────────────
  * Updated on:
- * 2025.11.26
+ * 2025.12.17
  * ─────────────────────────────────────────────────
  * Made by:
  * Gleb Petrikov
@@ -39,6 +39,6 @@ namespace Fykor::Layers
 
 	private:
 		std::vector<Layer*> m_Layers;
-		std::vector<Layer*>::iterator m_LayerInsert;
+		unsigned int m_LayerInsertIndex = 0;
 	};
 } // namespace Fykor::Layers

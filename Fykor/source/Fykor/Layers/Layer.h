@@ -5,7 +5,7 @@
  * Layer.h
  * ─────────────────────────────────────────────────
  * Updated on:
- * 2025.11.26
+ * 2025.12.17
  * ─────────────────────────────────────────────────
  * Made by:
  * Gleb Petrikov
@@ -32,6 +32,8 @@ namespace Fykor::Layers
 		virtual void OnDetach() {}
 
 		virtual void OnUpdate() {}
+
+		virtual void OnImGuiRender() {}
 
 		virtual void OnEvent(Events::Event& event) {}
 

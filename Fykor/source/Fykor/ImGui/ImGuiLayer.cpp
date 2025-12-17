@@ -1,15 +1,27 @@
+/* =================================================
+ * Fykor, Apache 2.0 - License
+ * ─────────────────────────────────────────────────
+ * FykorEngine
+ * ImGuiLayer.cpp
+ * ─────────────────────────────────────────────────
+ * Updated on:
+ * 2025.12.17
+ * ─────────────────────────────────────────────────
+ * Made by:
+ * Gleb Petrikov
+ * ─────────────────────────────────────────────────
+ * Description:
+ * ImGuiLayer class
+ * =================================================
+ */
+
 #include "ImGuiLayer.h"
-#include "../Common.h"
+#include "Common.h"
 
-#include "../Common.h"
-#include "../Events/AppEvent.h"
-#include "../Events/Event.h"
-#include "../Events/KeyEvent.h"
-#include "../Events/MouseEvent.h"
-
+#include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>
-#include "../App.h"
+#include "App.h"
 
 #define IMGUI_IMPL_OPENGL_LOADER_GLAD
 
@@ -17,7 +29,7 @@
 #include <glad/glad.h>
 #include "GLFW/glfw3.h"
 
-namespace Fykor::Layers
+namespace Fykor
 {
 
 	static ImGuiKey GLFWKeyToImGuiKey(int glfwKey)
@@ -85,128 +97,71 @@ namespace Fykor::Layers
 		}
 	}
 
-	ImGuiLayer::ImGuiLayer() : Layer("ImGuiLayer") {}
+	ImGuiLayer::ImGuiLayer() : Layers::Layer("ImGuiLayer") {}
 
 	ImGuiLayer::~ImGuiLayer() = default;
 
 	void ImGuiLayer::OnAttach()
 	{
+		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImGui::StyleColorsDark();
-
 		ImGuiIO& io = ImGui::GetIO();
-		io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
-		io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
+		ImGui::StyleColorsDark();
+		// ImGui::StyleColorsClassic();
+
+
+		ImGuiStyle& style = ImGui::GetStyle();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
+
+		App& app = App::Get();
+		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
+
+		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 410");
 	}
 
-	void ImGuiLayer::OnDetach() {}
+	void ImGuiLayer::OnDetach()
+	{
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
+	}
 
-	void ImGuiLayer::OnUpdate()
+	void ImGuiLayer::Begin()
+	{
+		ImGui_ImplGlfw_NewFrame();
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui::NewFrame();
+	}
+
+	void ImGuiLayer::End()
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		App& app = App::Get();
-
 		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
-
-		float time = (float)glfwGetTime();
-		io.DeltaTime = m_Time > 0.0f ? (time - m_Time) : (1.0f / 60.0f);
-		m_Time = time;
-
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui::NewFrame();
-
-		static bool show = true;
-		ImGui::ShowDemoWindow(&show);
-
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	}
-
-	void ImGuiLayer::OnEvent(Events::Event& event)
-	{
-		Events::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Events::MouseButtonPressedEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::OnMouseButtonPressedEvent));
-		dispatcher.Dispatch<Events::MouseButtonReleasedEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::OnMouseButtonReleasedEvent));
-		dispatcher.Dispatch<Events::MouseMovedEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::OnMouseMovedEvent));
-		dispatcher.Dispatch<Events::MouseScrolledEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::OnMouseScrolledEvent));
-		dispatcher.Dispatch<Events::KeyPressedEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::OnKeyPressedEvent));
-		dispatcher.Dispatch<Events::KeyReleasedEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::OnKeyReleasedEvent));
-		dispatcher.Dispatch<Events::KeyTypedEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::OnKeyTypedEvent));
-		dispatcher.Dispatch<Events::WindowResizeEvent>(HZ_BIND_EVENT_FN(ImGuiLayer::OnWindowResizeEvent));
-	}
-
-	bool ImGuiLayer::OnMouseButtonPressedEvent(Events::MouseButtonPressedEvent& event)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.MouseDown[event.GetMouseButton()] = true;
-
-		return false;
-	}
-
-	bool ImGuiLayer::OnMouseButtonReleasedEvent(Events::MouseButtonReleasedEvent& event)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.MouseDown[event.GetMouseButton()] = false;
-
-		return false;
-	}
-
-	bool ImGuiLayer::OnMouseMovedEvent(Events::MouseMovedEvent& event)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.MousePos = ImVec2(event.GetX(), event.GetY());
-
-		return false;
-	}
-
-	bool ImGuiLayer::OnMouseScrolledEvent(Events::MouseScrolledEvent& event)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.MouseWheelH += event.GetOffsetX();
-		io.MouseWheel += event.GetOffsetY();
-
-		return false;
-	}
-
-	bool ImGuiLayer::OnKeyPressedEvent(Events::KeyPressedEvent& event)
-	{
-		ImGuiKey key = GLFWKeyToImGuiKey(event.GetKeyCode());
-		if (key != ImGuiKey_None)
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
-			ImGui::GetIO().AddKeyEvent(key, true);
+			GLFWwindow* backup_current_context = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
 		}
-		return false;
 	}
 
-	bool ImGuiLayer::OnKeyReleasedEvent(Events::KeyReleasedEvent& event)
+	void ImGuiLayer::OnImGuiRender()
 	{
-		ImGuiKey key = GLFWKeyToImGuiKey(event.GetKeyCode());
-		if (key != ImGuiKey_None)
-		{
-			ImGui::GetIO().AddKeyEvent(key, false);
-		}
-		return false;
+		static bool show = true;
+		ImGui::ShowDemoWindow(&show);
 	}
-
-	bool ImGuiLayer::OnKeyTypedEvent(Events::KeyTypedEvent& event)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		int keycode = event.GetKeyCode();
-		if (keycode > 0 && keycode < 0x10000)
-		{
-			io.AddInputCharacter((unsigned short)keycode);
-		}
-		return false;
-	}
-
-	bool ImGuiLayer::OnWindowResizeEvent(Events::WindowResizeEvent& event)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.DisplaySize = ImVec2(event.GetWidth(), event.GetHeight());
-		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-		glViewport(0, 0, event.GetWidth(), event.GetHeight());
-		return false;
-	}
-} // namespace Fykor::Layers
+} // namespace Fykor

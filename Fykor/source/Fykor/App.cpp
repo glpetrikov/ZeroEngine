@@ -20,6 +20,7 @@
 #include "Common.h"
 #include "Events/AppEvent.h"
 #include "Input.h"
+#include "imgui.h"
 
 namespace Fykor
 {
@@ -34,6 +35,9 @@ namespace Fykor
 
 		m_Window = std::unique_ptr<Window::Window>(Window::Window::Create());
 		m_Window->SetEventCallback(BIND_EVENT_FN(App::OnEvent));
+
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
 	}
 
 	App::~App() {}
@@ -45,7 +49,6 @@ namespace Fykor
 	void App::OnEvent(Events::Event& event)
 	{
 		Events::EventDispatcher dispatcher(event);
-
 		dispatcher.Dispatch<Events::WindowCloseEvent>(BIND_EVENT_FN(App::OnWindowClose));
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
@@ -65,10 +68,19 @@ namespace Fykor
 		{
 			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 			for (Layers::Layer* layer : m_LayerStack)
 			{
 				layer->OnUpdate();
 			}
+
+			m_ImGuiLayer->Begin();
+			for (Layers::Layer* layer : m_LayerStack)
+			{
+				layer->OnImGuiRender();
+			}
+			m_ImGuiLayer->End();
+
 			m_Window->OnUpdate();
 			Fykor::Debug::FykorLogger.Flush();
 			Fykor::Debug::Logger.Flush();

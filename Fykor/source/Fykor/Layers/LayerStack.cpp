@@ -5,7 +5,7 @@
  * LayerStack.cpp
  * ─────────────────────────────────────────────────
  * Updated on:
- * 2025.11.26
+ * 2025.12.17
  * ─────────────────────────────────────────────────
  * Made by:
  * Gleb Petrikov
@@ -15,11 +15,11 @@
  * =================================================
  */
 #include "LayerStack.h"
-#include "../Common.h"
+#include "Common.h"
 
 namespace Fykor::Layers
 {
-	LayerStack::LayerStack() { m_LayerInsert = m_Layers.begin(); }
+	LayerStack::LayerStack() { m_LayerInsertIndex = 0; }
 
 	LayerStack::~LayerStack()
 	{
@@ -31,7 +31,8 @@ namespace Fykor::Layers
 
 	void LayerStack::PushLayer(Layer* layer)
 	{
-		m_LayerInsert = m_Layers.emplace(m_LayerInsert, layer);
+		m_Layers.emplace(m_Layers.begin() + m_LayerInsertIndex, layer);
+		m_LayerInsertIndex++;
 		layer->OnAttach();
 	}
 
@@ -47,7 +48,7 @@ namespace Fykor::Layers
 		if (it != m_Layers.end())
 		{
 			m_Layers.erase(it);
-			m_LayerInsert--;
+			m_LayerInsertIndex--;
 		}
 	}
 

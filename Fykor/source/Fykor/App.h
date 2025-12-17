@@ -22,6 +22,7 @@
 #include "Events/Event.h"
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
+#include "ImGui/ImGuiLayer.h"
 #include "Layers/LayerStack.h"
 #include "Window.h"
 
@@ -51,6 +52,7 @@ namespace Fykor
 	private:
 		bool OnWindowClose(Events::WindowCloseEvent& event);
 
+		ImGuiLayer* m_ImGuiLayer;
 		std::unique_ptr<Window::Window> m_Window;
 		bool IsRunning = true;
 		Layers::LayerStack m_LayerStack;

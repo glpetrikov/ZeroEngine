@@ -1,37 +1,40 @@
+/* =================================================
+ * Fykor, Apache 2.0 - License
+ * ─────────────────────────────────────────────────
+ * FykorEngine
+ * ImGuiLayer.h
+ * ─────────────────────────────────────────────────
+ * Updated on:
+ * 2025.12.17
+ * ─────────────────────────────────────────────────
+ * Made by:
+ * Gleb Petrikov
+ * ─────────────────────────────────────────────────
+ * Description:
+ * ImGuiLayer class
+ * =================================================
+ */
+
 #pragma once
 
-#include "../Events/AppEvent.h"
-#include "../Events/KeyEvent.h"
-#include "../Events/MouseEvent.h"
 #include "../Layers/Layer.h"
 
-namespace Fykor::Layers
+namespace Fykor
 {
 	class FYKOR_API ImGuiLayer : public Layers::Layer
 	{
 	public:
 		ImGuiLayer();
 		~ImGuiLayer();
-		void OnAttach() override;
-		void OnDetach() override;
-		void OnUpdate() override;
-		void OnEvent(Events::Event& event) override;
 
-	private:
-		bool OnMouseButtonPressedEvent(Events::MouseButtonPressedEvent& event);
-		bool OnMouseButtonReleasedEvent(Events::MouseButtonReleasedEvent& event);
-		bool OnMouseMovedEvent(Events::MouseMovedEvent& event);
-		bool OnMouseScrolledEvent(Events::MouseScrolledEvent& event);
+		virtual void OnAttach() override;
+		virtual void OnDetach() override;
+		virtual void OnImGuiRender() override;
 
-	private:
-		bool OnKeyPressedEvent(Events::KeyPressedEvent& event);
-		bool OnKeyReleasedEvent(Events::KeyReleasedEvent& event);
-		bool OnKeyTypedEvent(Events::KeyTypedEvent& event);
-
-	private:
-		bool OnWindowResizeEvent(Events::WindowResizeEvent& event);
+		void Begin();
+		void End();
 
 	private:
 		float m_Time = 0.0f;
 	};
-} // namespace Fykor::Layers
+} // namespace Fykor
