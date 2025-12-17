@@ -23,8 +23,8 @@
 
 /// Floats
 
-using Vector3 = glm::vec2;
+using Vector3 = glm::vec3;
 using Vector2 = glm::vec2;
 
-using Vec3 = glm::vec2;
+using Vec3 = glm::vec3;
 using Vec2 = glm::vec2;
