@@ -26,7 +26,14 @@ public:
 
 	void OnUpdate() {}
 
-	void OnEvent(Events::Event& event) {}
+	void OnEvent(Events::Event& event)
+	{
+		if (event.GetEventType() == Events::EventType::KeyPressed)
+		{
+			Events::KeyPressedEvent& e = (Events::KeyPressedEvent&)event;
+			FR_INFO("Key pressed: {0}", (char)e.GetKeyCode());
+		}
+	}
 };
 
 class Sandbox : public Fykor::App

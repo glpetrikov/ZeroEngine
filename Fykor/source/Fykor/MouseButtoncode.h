@@ -2,42 +2,31 @@
  * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
- * Fykor.h
+ * MouseButtoncodes.h
  * ─────────────────────────────────────────────────
  * Updated on:
- * 2025.11.26
+ * 2025.12.17
  * ─────────────────────────────────────────────────
  * Made by:
  * Gleb Petrikov
  * ─────────────────────────────────────────────────
  * Description:
- * Engine header
+ * MouseButtoncodes
  * =================================================
  */
 
 #pragma once
 
-// Debug
-#include "Fykor/Log.h"
-
-// === EntryPoint ===
-#include "Fykor/EntryPoint.h"
-//====================
-
-// === Fykor::Core ===
-#include "Fykor/Core.h"
-
-// === Types ===
-#include "Fykor/Types.h"
-
-// === Window ===
-#include "Fykor/Window.h"
-
-// === Common ===
-#include "Fykor/Common.h"
-
-#include "Fykor/ImGui/ImGuiLayer.h"
-#include "Fykor/Layers/Layer.h"
-
-#include "Fykor/Keycodes.h"
-#include "Fykor/MouseButtoncode.h"
+// From glfw3.h
+#define HZ_MOUSE_BUTTON_1 0
+#define HZ_MOUSE_BUTTON_2 1
+#define HZ_MOUSE_BUTTON_3 2
+#define HZ_MOUSE_BUTTON_4 3
+#define HZ_MOUSE_BUTTON_5 4
+#define HZ_MOUSE_BUTTON_6 5
+#define HZ_MOUSE_BUTTON_7 6
+#define HZ_MOUSE_BUTTON_8 7
+#define HZ_MOUSE_BUTTON_LAST HZ_MOUSE_BUTTON_8
+#define HZ_MOUSE_BUTTON_LEFT HZ_MOUSE_BUTTON_1
+#define HZ_MOUSE_BUTTON_RIGHT HZ_MOUSE_BUTTON_2
+#define HZ_MOUSE_BUTTON_MIDDLE HZ_MOUSE_BUTTON_3

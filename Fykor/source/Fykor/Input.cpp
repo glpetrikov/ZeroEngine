@@ -38,7 +38,7 @@ namespace Fykor
 		return state == GLFW_PRESS;
 	}
 
-	std::pair<float, float> GetMousePositionImpl()
+	std::pair<float, float> Input::GetMousePositionImpl()
 	{
 		auto window = static_cast<GLFWwindow*>(App::Get().GetWindow().GetNativeWindow());
 		double xpos, ypos;
