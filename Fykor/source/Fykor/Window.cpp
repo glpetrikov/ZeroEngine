@@ -20,10 +20,10 @@
 #include <GLFW/glfw3.h>
 #include "Common.h"
 
-#include <glad/glad.h>
 #include "Events/AppEvent.h"
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
+#include "Renderer/OpenGL/OpenGLContext.h"
 
 namespace Fykor::Window
 {
@@ -38,11 +38,14 @@ namespace Fykor::Window
 
 	Window::Window(const WindowData& data) { Init(data); }
 
-	Window::~Window() { ShutDown(); }
+	Window::~Window()
+	{
+		delete m_Context;
+		ShutDown();
+	}
 
 	void Window::Init(const WindowData& data)
 	{
-
 		Data.Name = data.Name;
 		Data.Width = data.Width;
 		Data.Height = data.Height;
@@ -53,34 +56,29 @@ namespace Fykor::Window
 		if (!s_GLFWInitilized)
 		{
 			glfwSetErrorCallback(glfwErrorCallback);
-			int success = glfwInit();
 
-			if (!success)
+			if (!glfwInit())
 			{
-				FR_CORE_ERROR("Could not Initialize GLFW!");
+				FR_CORE_ERROR("Could not initialize GLFW!");
 				return;
 			}
 
-			FR_CORE_INFO("GLFW Initialized successfully!");
 			s_GLFWInitilized = true;
 		}
+
+		++s_WindowCount;
 		m_Window = glfwCreateWindow((int)data.Width, (int)data.Height, Data.Name.c_str(), nullptr, nullptr);
 		int w, h;
 		glfwGetFramebufferSize(m_Window, &w, &h);
 
 		Data.Width = (unsigned int)w;
 		Data.Height = (unsigned int)h;
-
-		glfwMakeContextCurrent(m_Window);
-		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		if (!status)
-		{
-			FR_CORE_ERROR("Failed to initialize GLAD!");
-			return;
-		}
 		glfwSetWindowUserPointer(m_Window, &Data);
-		SetVSync(true);
 
+		m_Context = new OpenGLContext(m_Window);
+		m_Context->Init();
+
+		SetVSync(true);
 
 		// Set GLFW CallBack's
 
@@ -181,26 +179,36 @@ namespace Fykor::Window
 								 });
 	}
 
-	void Window::ShutDown() { glfwDestroyWindow(m_Window); }
+	void Window::ShutDown()
+	{
+		glfwDestroyWindow(m_Window);
+		--s_WindowCount;
+
+		if (s_WindowCount == 0)
+		{
+			glfwTerminate();
+			s_GLFWInitilized = false;
+		}
+	}
 
 	void Window::OnUpdate()
 	{
 		glfwPollEvents();
-		glfwSwapBuffers(m_Window);
+		m_Context->SwapBuffers();
 	}
 
 	void Window::SetVSync(bool enable)
 	{
-		if (enable)
+		if (m_Context == nullptr)
 		{
-			glfwSwapInterval(1);
+			FR_CORE_FATAL("To set vertical immobility, the context must be initialized (in Window.cpp)")
+			exit(1);
 		}
 		else
 		{
-			glfwSwapInterval(0);
+			m_Context->SetVSync(enable);
+			Data.VSync = enable;
 		}
-
-		Data.VSync = enable;
 	}
 
 	bool Window::IsVSync() const { return Data.VSync; }

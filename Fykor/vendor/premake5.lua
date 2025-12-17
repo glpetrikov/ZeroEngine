@@ -9,7 +9,6 @@ project "GLFW"
     location "GLFW"
     kind "StaticLib"
     language "C"
-    pic "on"
 
     targetdir("../../build/%{cfg.buildcfg}")
     objdir("../../build/obj/%{cfg.buildcfg}")
@@ -45,7 +44,6 @@ project "GLFW"
 project "Glad"
     kind "StaticLib"
     language "C"
-    pic "on"
 
     targetdir("../../build/%{cfg.buildcfg}")
     objdir("../../build/obj/%{cfg.buildcfg}")
@@ -74,7 +72,6 @@ project "ImGui"
     location "ImGui"
     kind "StaticLib"
     language "C++"
-    pic "on"
 
     targetdir("../../build/%{cfg.buildcfg}")
     objdir("../../build/obj/%{cfg.buildcfg}")

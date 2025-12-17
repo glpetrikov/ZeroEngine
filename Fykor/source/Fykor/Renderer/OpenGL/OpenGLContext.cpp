@@ -1,55 +1,44 @@
 /* =================================================
  * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
- * Sandbox
- * Sandbox.cpp
+ * FykorEngine
+ * OpenGLContext.cpp
  * ─────────────────────────────────────────────────
  * Updated on:
- * 2025.12.14
+ * 2025.12.17
  * ─────────────────────────────────────────────────
  * Made by:
  * Gleb Petrikov
  * ─────────────────────────────────────────────────
  * Description:
- * Test Project of Fykor
+ * Graphics Context
  * =================================================
  */
+#include "OpenGLContext.h"
+#include "../../Common.h"
+#include "../../Core.h"
 
-#include <Fykor.h>
-#include <imgui.h>
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
-using namespace Fykor;
-
-class ExampleLayer : public Layers::Layer
+namespace Fykor
 {
-public:
-	ExampleLayer() : Layer("Example") {}
 
-	void OnUpdate() {}
-
-	void OnEvent(Events::Event& event)
+	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle) : m_WindowHandle(windowHandle)
 	{
-		if (event.GetEventType() == Events::EventType::KeyPressed)
-		{
-			Events::KeyPressedEvent& e = (Events::KeyPressedEvent&)event;
-			FR_INFO("Key pressed: {0}", (char)e.GetKeyCode());
-		}
+		FR_CORE_ASSERT(windowHandle, "Window handle is null!");
 	}
 
-	void OnImGuiRender()
+	void OpenGLContext::Init()
 	{
-		ImGui::Begin("Sandbox");
-		ImGui::Text("Hello from Sandbox!");
-		ImGui::End();
+		glfwMakeContextCurrent(m_WindowHandle);
+		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+		FR_CORE_ASSERT(status, "Failed to Init Glad!");
 	}
-};
 
-class Sandbox : public Fykor::App
-{
-public:
-	Sandbox() { PushLayer(new ExampleLayer()); }
+	void OpenGLContext::SwapBuffers() { glfwSwapBuffers(m_WindowHandle); }
 
-	~Sandbox() {}
-};
+	void OpenGLContext::SetVSync(bool enable) { glfwSwapInterval(enable ? 1 : 0); }
 
-Fykor::App* Fykor::CreateApp() { return new Sandbox; }
+
+} // namespace Fykor

@@ -1,55 +1,30 @@
 /* =================================================
  * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
- * Sandbox
- * Sandbox.cpp
+ * FykorEngine
+ * GraphicsContext.h
  * ─────────────────────────────────────────────────
  * Updated on:
- * 2025.12.14
+ * 2025.12.17
  * ─────────────────────────────────────────────────
  * Made by:
  * Gleb Petrikov
  * ─────────────────────────────────────────────────
  * Description:
- * Test Project of Fykor
+ * Graphics Context
  * =================================================
  */
+#pragma once
 
-#include <Fykor.h>
-#include <imgui.h>
-
-using namespace Fykor;
-
-class ExampleLayer : public Layers::Layer
+namespace Fykor
 {
-public:
-	ExampleLayer() : Layer("Example") {}
-
-	void OnUpdate() {}
-
-	void OnEvent(Events::Event& event)
+	class GraphicsContext
 	{
-		if (event.GetEventType() == Events::EventType::KeyPressed)
-		{
-			Events::KeyPressedEvent& e = (Events::KeyPressedEvent&)event;
-			FR_INFO("Key pressed: {0}", (char)e.GetKeyCode());
-		}
-	}
+	public:
+		virtual ~GraphicsContext() = default;
 
-	void OnImGuiRender()
-	{
-		ImGui::Begin("Sandbox");
-		ImGui::Text("Hello from Sandbox!");
-		ImGui::End();
-	}
-};
-
-class Sandbox : public Fykor::App
-{
-public:
-	Sandbox() { PushLayer(new ExampleLayer()); }
-
-	~Sandbox() {}
-};
-
-Fykor::App* Fykor::CreateApp() { return new Sandbox; }
+		virtual void Init() = 0;
+		virtual void SwapBuffers() = 0;
+		virtual void SetVSync(bool enable) = 0;
+	};
+} // namespace Fykor

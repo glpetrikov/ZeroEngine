@@ -21,10 +21,13 @@
 #include "Core.h"
 #include "Events/Event.h"
 
+#include "Renderer/GraphicsContext.h"
+
 struct GLFWwindow;
 
 namespace Fykor::Window
 {
+	inline static uint32_t s_WindowCount = 0;
 
 	struct WindowData
 	{
@@ -77,5 +80,7 @@ namespace Fykor::Window
 		GLFWwindow* m_Window;
 
 		WindowData Data;
+
+		GraphicsContext* m_Context;
 	};
 } // namespace Fykor::Window

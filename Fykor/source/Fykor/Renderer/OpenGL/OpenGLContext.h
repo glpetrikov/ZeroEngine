@@ -1,55 +1,35 @@
 /* =================================================
  * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
- * Sandbox
- * Sandbox.cpp
+ * FykorEngine
+ * OpenGLContext.h
  * ─────────────────────────────────────────────────
  * Updated on:
- * 2025.12.14
+ * 2025.12.17
  * ─────────────────────────────────────────────────
  * Made by:
  * Gleb Petrikov
  * ─────────────────────────────────────────────────
  * Description:
- * Test Project of Fykor
+ * Graphics Context
  * =================================================
  */
+#pragma once
+#include "../GraphicsContext.h"
 
-#include <Fykor.h>
-#include <imgui.h>
+struct GLFWwindow;
 
-using namespace Fykor;
-
-class ExampleLayer : public Layers::Layer
+namespace Fykor
 {
-public:
-	ExampleLayer() : Layer("Example") {}
-
-	void OnUpdate() {}
-
-	void OnEvent(Events::Event& event)
+	class OpenGLContext : public GraphicsContext
 	{
-		if (event.GetEventType() == Events::EventType::KeyPressed)
-		{
-			Events::KeyPressedEvent& e = (Events::KeyPressedEvent&)event;
-			FR_INFO("Key pressed: {0}", (char)e.GetKeyCode());
-		}
-	}
+	public:
+		OpenGLContext(GLFWwindow* windowHandle);
+		virtual void Init() override;
+		virtual void SwapBuffers() override;
+		virtual void SetVSync(bool enable) override;
 
-	void OnImGuiRender()
-	{
-		ImGui::Begin("Sandbox");
-		ImGui::Text("Hello from Sandbox!");
-		ImGui::End();
-	}
-};
-
-class Sandbox : public Fykor::App
-{
-public:
-	Sandbox() { PushLayer(new ExampleLayer()); }
-
-	~Sandbox() {}
-};
-
-Fykor::App* Fykor::CreateApp() { return new Sandbox; }
+	private:
+		GLFWwindow* m_WindowHandle;
+	};
+} // namespace Fykor
