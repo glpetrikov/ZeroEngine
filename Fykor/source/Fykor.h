@@ -36,7 +36,7 @@
 // === Common ===
 #include "Fykor/Common.h"
 
-#include "Fykor/Layers/ImGuiLayer.h"
+#include "Fykor/ImGui/ImGuiLayer.h"
 #include "Fykor/Layers/Layer.h"
 
 // Fykor::UI

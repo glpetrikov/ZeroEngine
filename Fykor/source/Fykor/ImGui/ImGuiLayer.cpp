@@ -87,7 +87,7 @@ namespace Fykor::Layers
 
 	ImGuiLayer::ImGuiLayer() : Layer("ImGuiLayer") {}
 
-	ImGuiLayer::~ImGuiLayer() {}
+	ImGuiLayer::~ImGuiLayer() = default;
 
 	void ImGuiLayer::OnAttach()
 	{
