@@ -19,7 +19,6 @@
 #include "App.h"
 #include "Common.h"
 
-#ifdef FR_PLATFORM_LINUX
 int main(int argc, char** argv)
 {
 	FR_CORE_INFO("Engine Started!\n");
@@ -28,4 +27,3 @@ int main(int argc, char** argv)
 	app->Run();
 	delete app;
 }
-#endif
