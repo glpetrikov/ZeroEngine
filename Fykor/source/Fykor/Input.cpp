@@ -21,41 +21,45 @@
 #include "App.h"
 #include "GLFW/glfw3.h"
 
-namespace Fykor
+namespace Fykor::Input
 {
-
-	bool Input::IsKeyPressedImpl(int keycode)
+	namespace
 	{
-		auto window = static_cast<GLFWwindow*>(App::Get().GetWindow().GetNativeWindow());
-		auto state = glfwGetKey(window, keycode);
-		return state == GLFW_PRESS || state == GLFW_REPEAT;
-	}
+		bool IsKeyPressedImpl(int keycode)
+		{
+			auto window = static_cast<GLFWwindow*>(App::Get().GetWindow().GetNativeWindow());
+			auto state = glfwGetKey(window, keycode);
+			return state == GLFW_PRESS || state == GLFW_REPEAT;
+		}
 
-	bool Input::IsMouseButtonPressedImpl(int button)
-	{
-		auto window = static_cast<GLFWwindow*>(App::Get().GetWindow().GetNativeWindow());
-		auto state = glfwGetMouseButton(window, button);
-		return state == GLFW_PRESS;
-	}
+		bool IsMouseButtonPressedImpl(int button)
+		{
+			auto window = static_cast<GLFWwindow*>(App::Get().GetWindow().GetNativeWindow());
+			auto state = glfwGetMouseButton(window, button);
+			return state == GLFW_PRESS;
+		}
 
-	Vector2 Input::GetMousePositionImpl()
-	{
-		auto window = static_cast<GLFWwindow*>(App::Get().GetWindow().GetNativeWindow());
-		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
-		return Vector2((float)xpos, (float)ypos);
-	}
+		Vector2 GetMousePositionImpl()
+		{
+			auto window = static_cast<GLFWwindow*>(App::Get().GetWindow().GetNativeWindow());
+			double xpos, ypos;
+			glfwGetCursorPos(window, &xpos, &ypos);
+			return Vector2(static_cast<float>(xpos), static_cast<float>(ypos));
+		}
 
-	float Input::GetMouseXImpl()
-	{
-		Vector2 v = GetMousePosition();
-		return v.x;
-	}
+		float GetMouseXImpl() { return GetMousePositionImpl().x; }
 
-	float Input::GetMouseYImpl()
-	{
-		Vector2 v = GetMousePosition();
-		return v.y;
-	}
+		float GetMouseYImpl() { return GetMousePositionImpl().y; }
+	} // namespace
 
-} // namespace Fykor
+	bool IsKeyPressed(int keycode) { return IsKeyPressedImpl(keycode); }
+
+	bool IsMouseButtonPressed(int button) { return IsMouseButtonPressedImpl(button); }
+
+	Vector2 GetMousePosition() { return GetMousePositionImpl(); }
+
+	float GetMouseX() { return GetMouseXImpl(); }
+
+	float GetMouseY() { return GetMouseYImpl(); }
+
+} // namespace Fykor::Input

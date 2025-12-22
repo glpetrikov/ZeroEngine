@@ -23,29 +23,8 @@
 
 #include <GLFW/glfw3.h>
 
-namespace Fykor
+namespace Fykor::Input
 {
-	class FYKOR_API Input
-	{
-	public:
-		inline static bool IsKeyPressed(int keycode) { return IsKeyPressedImpl(keycode); }
-
-		inline static bool IsMouseButtonPressed(int button) { return IsMouseButtonPressedImpl(button); }
-
-		inline static Vector2 GetMousePosition() { return GetMousePositionImpl(); }
-
-		inline static float GetMouseX() { return GetMouseXImpl(); }
-
-		inline static float GetMouseY() { return GetMouseYImpl(); }
-
-	private:
-		bool static IsKeyPressedImpl(int keycode);
-		bool static IsMouseButtonPressedImpl(int button);
-		static Vector2 GetMousePositionImpl();
-		static float GetMouseXImpl();
-		static float GetMouseYImpl();
-	};
-
 	enum class Keycode
 	{
 		Space = GLFW_KEY_SPACE,
@@ -194,7 +173,17 @@ namespace Fykor
 		ButtonLast = GLFW_MOUSE_BUTTON_LAST,
 	};
 
-	int Keycode2Int(Keycode key) { return static_cast<int>(key); }
+	inline int Keycode2Int(Keycode key) { return static_cast<int>(key); }
 
-	int MouseButton2Int(MouseButton button) { return static_cast<int>(button); }
-} // namespace Fykor
+	inline int MouseButton2Int(MouseButton button) { return static_cast<int>(button); }
+
+	FYKOR_API bool IsKeyPressed(int keycode);
+
+	FYKOR_API bool IsMouseButtonPressed(int button);
+
+	FYKOR_API Vector2 GetMousePosition();
+
+	FYKOR_API float GetMouseX();
+
+	FYKOR_API float GetMouseY();
+} // namespace Fykor::Input
