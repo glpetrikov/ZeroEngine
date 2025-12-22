@@ -18,6 +18,7 @@
 #pragma once
 
 #include "../Common.h"
+#include "../Input.h"
 #include "Event.h"
 
 namespace Fykor::Events
@@ -25,7 +26,7 @@ namespace Fykor::Events
 	class FYKOR_API KeyEvent : public Event
 	{
 	public:
-		inline int GetKeyCode() const { return m_KeyCode; }
+		inline Input::Keycode GetKeyCode() const { return m_KeyCode; }
 
 		virtual int GetCategoryFlags() const override
 		{
@@ -33,22 +34,22 @@ namespace Fykor::Events
 		}
 
 	protected:
-		KeyEvent(int keycode) : m_KeyCode(keycode) {}
+		KeyEvent(Input::Keycode keycode) : m_KeyCode(keycode) {}
 
-		int m_KeyCode;
+		Input::Keycode m_KeyCode;
 	};
 
 	class FYKOR_API KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(int keycode, int repeatCount) : KeyEvent(keycode), m_RepeatCount(repeatCount) {}
+		KeyPressedEvent(Input::Keycode keycode, int repeatCount) : KeyEvent(keycode), m_RepeatCount(repeatCount) {}
 
 		inline int GetRepeatCount() const { return m_RepeatCount; }
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyPressedEvent: " << m_KeyCode << "(" << m_RepeatCount << " repeats)";
+			ss << "KeyPressedEvent: " << Input::Keycode2Int(m_KeyCode) << "(" << m_RepeatCount << " repeats)";
 			return ss.str();
 		}
 
@@ -65,12 +66,12 @@ namespace Fykor::Events
 	class FYKOR_API KeyReleasedEvent : public KeyEvent
 	{
 	public:
-		KeyReleasedEvent(int keycode) : KeyEvent(keycode) {}
+		KeyReleasedEvent(Input::Keycode keycode) : KeyEvent(keycode) {}
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyReleasedEvent: " << m_KeyCode;
+			ss << "KeyReleasedEvent: " << Input::Keycode2Int(m_KeyCode);
 			return ss.str();
 		}
 
@@ -84,12 +85,12 @@ namespace Fykor::Events
 	class KeyTypedEvent : public KeyEvent
 	{
 	public:
-		KeyTypedEvent(const int keycode) : KeyEvent(keycode) {}
+		KeyTypedEvent(const Input::Keycode keycode) : KeyEvent(keycode) {}
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "KeyTypedEvent: " << m_KeyCode;
+			ss << "KeyTypedEvent: " << Input::Keycode2Int(m_KeyCode);
 			return ss.str();
 		}
 

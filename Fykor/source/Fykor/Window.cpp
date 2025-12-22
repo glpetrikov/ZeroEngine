@@ -111,19 +111,19 @@ namespace Fykor::Window
 							   {
 							   case GLFW_PRESS:
 								   {
-									   Events::KeyPressedEvent event(key, 0);
+									   Events::KeyPressedEvent event(Input::Int2Keycode(key), 0);
 									   data.EventCallback(event);
 									   break;
 								   }
 							   case GLFW_RELEASE:
 								   {
-									   Events::KeyReleasedEvent event(key);
+									   Events::KeyReleasedEvent event(Input::Int2Keycode(key));
 									   data.EventCallback(event);
 									   break;
 								   }
 							   case GLFW_REPEAT:
 								   {
-									   Events::KeyPressedEvent event(key, 1);
+									   Events::KeyPressedEvent event(Input::Int2Keycode(key), 1);
 									   data.EventCallback(event);
 									   break;
 								   }
@@ -134,7 +134,7 @@ namespace Fykor::Window
 							[](GLFWwindow* window, unsigned int keycode)
 							{
 								WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-								Events::KeyTypedEvent event(keycode);
+								Events::KeyTypedEvent event(Input::Int2Keycode(keycode));
 								data.EventCallback(event);
 							});
 
@@ -147,13 +147,13 @@ namespace Fykor::Window
 									   {
 									   case GLFW_PRESS:
 										   {
-											   Events::MouseButtonPressedEvent event(button);
+											   Events::MouseButtonPressedEvent event(Input::Int2MouseButton(button));
 											   data.EventCallback(event);
 											   break;
 										   }
 									   case GLFW_RELEASE:
 										   {
-											   Events::MouseButtonReleasedEvent event(button);
+											   Events::MouseButtonReleasedEvent event(Input::Int2MouseButton(button));
 											   data.EventCallback(event);
 											   break;
 										   }

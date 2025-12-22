@@ -38,6 +38,3 @@
 
 #include "Fykor/ImGui/ImGuiLayer.h"
 #include "Fykor/Layers/Layer.h"
-
-#include "Fykor/Keycodes.h"
-#include "Fykor/MouseButtoncode.h"
