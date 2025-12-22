@@ -2,10 +2,10 @@
  * Fykor, Apache 2.0 - License
  * ─────────────────────────────────────────────────
  * FykorEngine
- * Input.cpp
+ * Input.h
  * ─────────────────────────────────────────────────
  * Updated on:
- * 2025.12.17
+ * 2025.12.22
  * ─────────────────────────────────────────────────
  * Made by:
  * Gleb Petrikov
@@ -197,3 +197,147 @@ namespace Fykor::Input
 
 	FYKOR_API inline bool IsPressed(MouseButton button) { return IsMouseButtonPressed(button); }
 } // namespace Fykor::Input
+
+// Key Defines
+
+#define FR_KEY_SPACE ::Fykor::Input::Keycode::Space
+#define FR_KEY_APOSTROPHE ::Fykor::Input::Keycode::Apostrophe
+#define FR_KEY_COMMA ::Fykor::Input::Keycode::Comma
+#define FR_KEY_MINUS ::Fykor::Input::Keycode::Minus
+#define FR_KEY_PERIOD ::Fykor::Input::Keycode::Period
+#define FR_KEY_SLASH ::Fykor::Input::Keycode::Slash
+#define FR_KEY_0 ::Fykor::Input::Keycode::K0
+#define FR_KEY_1 ::Fykor::Input::Keycode::K1
+#define FR_KEY_2 ::Fykor::Input::Keycode::K2
+#define FR_KEY_3 ::Fykor::Input::Keycode::K3
+#define FR_KEY_4 ::Fykor::Input::Keycode::K4
+#define FR_KEY_5 ::Fykor::Input::Keycode::K5
+#define FR_KEY_6 ::Fykor::Input::Keycode::K6
+#define FR_KEY_7 ::Fykor::Input::Keycode::K7
+#define FR_KEY_8 ::Fykor::Input::Keycode::K8
+#define FR_KEY_9 ::Fykor::Input::Keycode::K9
+#define FR_KEY_SEMICOLON ::Fykor::Input::Keycode::Semicolon
+#define FR_KEY_EQUAL ::Fykor::Input::Keycode::Equal
+#define FR_KEY_A ::Fykor::Input::Keycode::A
+#define FR_KEY_B ::Fykor::Input::Keycode::B
+#define FR_KEY_C ::Fykor::Input::Keycode::C
+#define FR_KEY_D ::Fykor::Input::Keycode::D
+#define FR_KEY_E ::Fykor::Input::Keycode::E
+#define FR_KEY_F ::Fykor::Input::Keycode::F
+#define FR_KEY_G ::Fykor::Input::Keycode::G
+#define FR_KEY_H ::Fykor::Input::Keycode::H
+#define FR_KEY_I ::Fykor::Input::Keycode::I
+#define FR_KEY_J ::Fykor::Input::Keycode::J
+#define FR_KEY_K ::Fykor::Input::Keycode::K
+#define FR_KEY_L ::Fykor::Input::Keycode::L
+#define FR_KEY_M ::Fykor::Input::Keycode::M
+#define FR_KEY_N ::Fykor::Input::Keycode::N
+#define FR_KEY_O ::Fykor::Input::Keycode::O
+#define FR_KEY_P ::Fykor::Input::Keycode::P
+#define FR_KEY_Q ::Fykor::Input::Keycode::Q
+#define FR_KEY_R ::Fykor::Input::Keycode::R
+#define FR_KEY_S ::Fykor::Input::Keycode::S
+#define FR_KEY_T ::Fykor::Input::Keycode::T
+#define FR_KEY_U ::Fykor::Input::Keycode::U
+#define FR_KEY_V ::Fykor::Input::Keycode::V
+#define FR_KEY_W ::Fykor::Input::Keycode::W
+#define FR_KEY_X ::Fykor::Input::Keycode::X
+#define FR_KEY_Y ::Fykor::Input::Keycode::Y
+#define FR_KEY_Z ::Fykor::Input::Keycode::Z
+#define FR_KEY_LEFT_BRACKET ::Fykor::Input::Keycode::LeftBracket
+#define FR_KEY_BACKSLASH ::Fykor::Input::Keycode::Backslash
+#define FR_KEY_RIGHT_BRACKET ::Fykor::Input::Keycode::RightBracket
+#define FR_KEY_GRAVE_ACCENT ::Fykor::Input::Keycode::GraveAccent
+#define FR_KEY_WORLD_1 ::Fykor::Input::Keycode::World1
+#define FR_KEY_WORLD_2 ::Fykor::Input::Keycode::World2
+
+#define FR_KEY_ESCAPE ::Fykor::Input::Keycode::Escape
+#define FR_KEY_ENTER ::Fykor::Input::Keycode::Enter
+#define FR_KEY_TAB ::Fykor::Input::Keycode::Tab
+#define FR_KEY_BACKSPACE ::Fykor::Input::Keycode::Backspace
+#define FR_KEY_INSERT ::Fykor::Input::Keycode::Insert
+#define FR_KEY_DELETE ::Fykor::Input::Keycode::Delete
+#define FR_KEY_RIGHT ::Fykor::Input::Keycode::RightArrow
+#define FR_KEY_LEFT ::Fykor::Input::Keycode::LeftArrow
+#define FR_KEY_DOWN ::Fykor::Input::Keycode::DownArrow
+#define FR_KEY_UP ::Fykor::Input::Keycode::UpArrow
+#define FR_KEY_PAGE_UP ::Fykor::Input::Keycode::PageUp
+#define FR_KEY_PAGE_DOWN ::Fykor::Input::Keycode::PageDown
+#define FR_KEY_HOME ::Fykor::Input::Keycode::Home
+#define FR_KEY_END ::Fykor::Input::Keycode::End
+#define FR_KEY_CAPS_LOCK ::Fykor::Input::Keycode::CapsLock
+#define FR_KEY_SCROLL_LOCK ::Fykor::Input::Keycode::ScrollLock
+#define FR_KEY_NUM_LOCK ::Fykor::Input::Keycode::NumLock
+#define FR_KEY_PRINT_SCREEN ::Fykor::Input::Keycode::PrintScreen
+#define FR_KEY_PAUSE ::Fykor::Input::Keycode::Pause
+
+#define FR_KEY_F1 ::Fykor::Input::Keycode::F1
+#define FR_KEY_F2 ::Fykor::Input::Keycode::F2
+#define FR_KEY_F3 ::Fykor::Input::Keycode::F3
+#define FR_KEY_F4 ::Fykor::Input::Keycode::F4
+#define FR_KEY_F5 ::Fykor::Input::Keycode::F5
+#define FR_KEY_F6 ::Fykor::Input::Keycode::F6
+#define FR_KEY_F7 ::Fykor::Input::Keycode::F7
+#define FR_KEY_F8 ::Fykor::Input::Keycode::F8
+#define FR_KEY_F9 ::Fykor::Input::Keycode::F9
+#define FR_KEY_F10 ::Fykor::Input::Keycode::F10
+#define FR_KEY_F11 ::Fykor::Input::Keycode::F11
+#define FR_KEY_F12 ::Fykor::Input::Keycode::F12
+#define FR_KEY_F13 ::Fykor::Input::Keycode::F13
+#define FR_KEY_F14 ::Fykor::Input::Keycode::F14
+#define FR_KEY_F15 ::Fykor::Input::Keycode::F15
+#define FR_KEY_F16 ::Fykor::Input::Keycode::F16
+#define FR_KEY_F17 ::Fykor::Input::Keycode::F17
+#define FR_KEY_F18 ::Fykor::Input::Keycode::F18
+#define FR_KEY_F19 ::Fykor::Input::Keycode::F19
+#define FR_KEY_F20 ::Fykor::Input::Keycode::F20
+#define FR_KEY_F21 ::Fykor::Input::Keycode::F21
+#define FR_KEY_F22 ::Fykor::Input::Keycode::F22
+#define FR_KEY_F23 ::Fykor::Input::Keycode::F23
+#define FR_KEY_F24 ::Fykor::Input::Keycode::F24
+#define FR_KEY_F25 ::Fykor::Input::Keycode::F25
+
+#define FR_KEY_KP_0 ::Fykor::Input::Keycode::KP0
+#define FR_KEY_KP_1 ::Fykor::Input::Keycode::KP1
+#define FR_KEY_KP_2 ::Fykor::Input::Keycode::KP2
+#define FR_KEY_KP_3 ::Fykor::Input::Keycode::KP3
+#define FR_KEY_KP_4 ::Fykor::Input::Keycode::KP4
+#define FR_KEY_KP_5 ::Fykor::Input::Keycode::KP5
+#define FR_KEY_KP_6 ::Fykor::Input::Keycode::KP6
+#define FR_KEY_KP_7 ::Fykor::Input::Keycode::KP7
+#define FR_KEY_KP_8 ::Fykor::Input::Keycode::KP8
+#define FR_KEY_KP_9 ::Fykor::Input::Keycode::KP9
+#define FR_KEY_KP_DECIMAL ::Fykor::Input::Keycode::KPDecimal
+#define FR_KEY_KP_DIVIDE ::Fykor::Input::Keycode::KPDivide
+#define FR_KEY_KP_MULTIPLY ::Fykor::Input::Keycode::KPMultiply
+#define FR_KEY_KP_SUBTRACT ::Fykor::Input::Keycode::KPSubtract
+#define FR_KEY_KP_ADD ::Fykor::Input::Keycode::KPAdd
+#define FR_KEY_KP_ENTER ::Fykor::Input::Keycode::KPEnter
+#define FR_KEY_KP_EQUAL ::Fykor::Input::Keycode::KPEqual
+
+#define FR_KEY_LEFT_SHIFT ::Fykor::Input::Keycode::LeftShift
+#define FR_KEY_LEFT_CONTROL ::Fykor::Input::Keycode::LeftControl
+#define FR_KEY_LEFT_ALT ::Fykor::Input::Keycode::LeftAlt
+#define FR_KEY_LEFT_SUPER ::Fykor::Input::Keycode::LeftSuper
+#define FR_KEY_RIGHT_SHIFT ::Fykor::Input::Keycode::RightShift
+#define FR_KEY_RIGHT_CONTROL ::Fykor::Input::Keycode::RightControl
+#define FR_KEY_RIGHT_ALT ::Fykor::Input::Keycode::RightAlt
+#define FR_KEY_RIGHT_SUPER ::Fykor::Input::Keycode::RightSuper
+#define FR_KEY_MENU ::Fykor::Input::Keycode::Menu
+
+#define FR_KEY_LAST ::Fykor::Input::Keycode::LastKey
+
+// Mouse Defines
+
+#define FR_MOUSE_BUTTON_1 ::Fykor::Input::MouseButton::Button1
+#define FR_MOUSE_BUTTON_2 ::Fykor::Input::MouseButton::Button2
+#define FR_MOUSE_BUTTON_3 ::Fykor::Input::MouseButton::Button3
+#define FR_MOUSE_BUTTON_4 ::Fykor::Input::MouseButton::Button4
+#define FR_MOUSE_BUTTON_5 ::Fykor::Input::MouseButton::Button5
+#define FR_MOUSE_BUTTON_6 ::Fykor::Input::MouseButton::Button6
+#define FR_MOUSE_BUTTON_7 ::Fykor::Input::MouseButton::Button7
+#define FR_MOUSE_BUTTON_8 ::Fykor::Input::MouseButton::Button8
+#define FR_MOUSE_BUTTON_LAST ::Fykor::Input::MouseButton::ButtonLast
+#define FR_MOUSE_BUTTON_LEFT ::Fykor::Input::MouseButton::ButtonLeft
+#define FR_MOUSE_BUTTON_RIGHT ::Fykor::Input::MouseButton::ButtonRight
+#define FR_MOUSE_BUTTON_MIDDLE ::Fykor::Input::MouseButton::ButtonMiddle
