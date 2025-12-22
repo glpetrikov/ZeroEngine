@@ -18,6 +18,7 @@
 #pragma once
 
 #include "../Common.h"
+#include "../Input.h"
 #include "Event.h"
 
 namespace Fykor::Events
@@ -99,7 +100,7 @@ namespace Fykor::Events
 	class MouseButtonEvent : public Event
 	{
 	public:
-		inline int GetMouseButton() const { return m_Button; }
+		inline Input::MouseButton GetMouseButton() const { return m_Button; }
 
 		virtual int GetCategoryFlags() const override
 		{
@@ -107,20 +108,20 @@ namespace Fykor::Events
 		}
 
 	protected:
-		MouseButtonEvent(const int button) : m_Button(button) {}
+		MouseButtonEvent(const Input::MouseButton button) : m_Button(button) {}
 
-		int m_Button;
+		Input::MouseButton m_Button;
 	};
 
 	class MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonPressedEvent(const int button) : MouseButtonEvent(button) {}
+		MouseButtonPressedEvent(const Input::MouseButton button) : MouseButtonEvent(button) {}
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseButtonPressedEvent: " << m_Button;
+			ss << "MouseButtonPressedEvent: " << Input::MouseButton2Int(m_Button);
 			return ss.str();
 		}
 
@@ -134,12 +135,12 @@ namespace Fykor::Events
 	class MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonReleasedEvent(const int button) : MouseButtonEvent(button) {}
+		MouseButtonReleasedEvent(const Input::MouseButton button) : MouseButtonEvent(button) {}
 
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "MouseButtonReleasedEvent: " << m_Button;
+			ss << "MouseButtonReleasedEvent: " << Input::MouseButton2Int(m_Button);
 			return ss.str();
 		}
 

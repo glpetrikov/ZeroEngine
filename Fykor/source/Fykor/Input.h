@@ -177,11 +177,15 @@ namespace Fykor::Input
 
 	FYKOR_API inline int MouseButton2Int(MouseButton button) { return static_cast<int>(button); }
 
+	FYKOR_API inline Keycode Int2Keycode(int key) { return static_cast<Keycode>(key); }
+
+	FYKOR_API inline MouseButton Int2MouseButton(int button) { return static_cast<MouseButton>(button); }
+
 	// main Input Functions
 
-	FYKOR_API bool IsKeyPressed(int keycode);
+	FYKOR_API bool IsKeyPressed(Keycode keycode);
 
-	FYKOR_API bool IsMouseButtonPressed(int button);
+	FYKOR_API bool IsMouseButtonPressed(MouseButton button);
 
 	FYKOR_API Vector2 GetMousePosition();
 
@@ -189,7 +193,7 @@ namespace Fykor::Input
 
 	FYKOR_API float GetMouseY();
 
-	FYKOR_API inline bool IsPressed(Keycode key) { return IsKeyPressed(Keycode2Int(key)); }
+	FYKOR_API inline bool IsPressed(Keycode key) { return IsKeyPressed(key); }
 
-	FYKOR_API inline bool IsPressed(MouseButton button) { return IsKeyPressed(MouseButton2Int(button)); }
+	FYKOR_API inline bool IsPressed(MouseButton button) { return IsMouseButtonPressed(button); }
 } // namespace Fykor::Input

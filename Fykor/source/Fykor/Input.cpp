@@ -25,17 +25,17 @@ namespace Fykor::Input
 {
 	namespace
 	{
-		bool IsKeyPressedImpl(int keycode)
+		bool IsKeyPressedImpl(Keycode keycode)
 		{
 			auto window = static_cast<GLFWwindow*>(App::Get().GetWindow().GetNativeWindow());
-			auto state = glfwGetKey(window, keycode);
+			auto state = glfwGetKey(window, Keycode2Int(keycode));
 			return state == GLFW_PRESS || state == GLFW_REPEAT;
 		}
 
-		bool IsMouseButtonPressedImpl(int button)
+		bool IsMouseButtonPressedImpl(MouseButton button)
 		{
 			auto window = static_cast<GLFWwindow*>(App::Get().GetWindow().GetNativeWindow());
-			auto state = glfwGetMouseButton(window, button);
+			auto state = glfwGetMouseButton(window, MouseButton2Int(button));
 			return state == GLFW_PRESS;
 		}
 
@@ -52,9 +52,9 @@ namespace Fykor::Input
 		float GetMouseYImpl() { return GetMousePositionImpl().y; }
 	} // namespace
 
-	bool IsKeyPressed(int keycode) { return IsKeyPressedImpl(keycode); }
+	bool IsKeyPressed(Keycode keycode) { return IsKeyPressedImpl(keycode); }
 
-	bool IsMouseButtonPressed(int button) { return IsMouseButtonPressedImpl(button); }
+	bool IsMouseButtonPressed(MouseButton button) { return IsMouseButtonPressedImpl(button); }
 
 	Vector2 GetMousePosition() { return GetMousePositionImpl(); }
 
