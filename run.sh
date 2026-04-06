@@ -25,7 +25,7 @@ mkdir -p build
 
 premake5 gmake
 cd build
-make -jnproc
+make -j$(nproc)
 cd Debug
 echo "Running..."
 ./Sandbox
