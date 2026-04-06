@@ -17,11 +17,9 @@
 
 #pragma once
 
-#include "Core.h"
-
-#include "Types.h"
-
 #include <GLFW/glfw3.h>
+#include "Core.h"
+#include "Types.h"
 
 namespace Fykor::Input
 {

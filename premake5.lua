@@ -67,15 +67,6 @@ project "Fykor"
         defines{
             "FR_BUILD_DLL"
         }
-    links {
-            "Glad",
-            "glfw",
-            "ImGui",
-            "GL",
-            "X11",
-            "pthread",
-            "dl"
-        }
 
     filter "system:linux"
         cppdialect "C++20"
@@ -106,12 +97,12 @@ project "Sandbox"
     objdir("build/obj/%{cfg.buildcfg}")
 
     files{
-        "Sandbox/source/**.h", 
         "Sandbox/source/**.hpp", 
         "Sandbox/source/**.cpp"
     }
 
     includedirs{
+        "Sandbox/source/", 
         "Fykor/source/",
         "%{vendor.FrameLog}",
         "%{vendor.GLFW}/include",
@@ -135,7 +126,7 @@ project "Sandbox"
     filter "system:linux"
         links { "GL", "X11", "pthread", "dl" }
     filter "system:windows"
-        links { "Glad", "GLFW", "opengl32", "gdi32", "user32", "shell32" }
+        links { "opengl32", "gdi32", "user32", "shell32" }
 
     filter "configurations:Debug"
         defines "FR_DEBUG"

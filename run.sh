@@ -17,16 +17,15 @@ git pull
 cd ../../..
 
 
-#cd Fykor
+#cd Fykor/source/Fykor
 #find . -name "*.cpp" -o -name "*.h" | xargs wc -l | sort -nr
 #cd ..
 
-
 mkdir -p build
 
-premake5 gmake2
+premake5 gmake
 cd build
-make -j6
+make -jnproc
 cd Debug
 echo "Running..."
 ./Sandbox

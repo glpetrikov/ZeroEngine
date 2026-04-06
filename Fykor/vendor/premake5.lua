@@ -14,9 +14,8 @@ project "GLFW"
     objdir("../../build/obj/%{cfg.buildcfg}")
 
     files {
-        "GLFW/src/**.cpp",
         "GLFW/src/**.c"
-}
+    }
 
     includedirs {
         "GLFW/include",
