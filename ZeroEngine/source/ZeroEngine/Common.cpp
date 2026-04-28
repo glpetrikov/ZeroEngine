@@ -1,26 +1,10 @@
-# Templates
-
-## === Includes =====
-``` cpp
-// ──[ Standard Library ]───────
-#include <>
-
-// ──[ External Libraries ]─────
-#include <>
-
-// ──[ Project Headers ]────────
-#include ""
-```
-
-
-## === Start Of File =====
-```
 /* =================================================
  * ZeroEngine, Apache 2.0 - License
  * ─────────────────────────────────────────────────
- * FileName
+ * Common.cpp
  * ─────────────────────────────────────────────────
- * Description
+ * A limitation of Premake: why it requires a C++ file for a PCH header
  * =================================================
  */
-```
+
+#include "Common.h"

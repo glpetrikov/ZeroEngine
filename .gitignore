@@ -1,58 +1,13 @@
-#Directories
+# ZeroEngine gitignore
+
 .vscode
-#Build
-x64/
+.idea
+build
 
-#VS Project
-Hazel.sln
-
-# Build artifacts
-x64/
-*.exe
-*.dll
-*.so
-*.lib
-*.a
-*.obj
-*.o
-*.idb
-*.lik
-*.pdb
-*.exe.recipe
-*.tlog
-*.d
-build/
-
-CMakeLists.txt
-cmake-build-debug
-
-
-# Visual Studio
-.vs/
-*.vcxproj
-*.vcxproj.filters
-*.vcxproj.user
-*.sln
-*.suo
-*.user
-
-# Makefiles
 Makefile
-build/Makefile
-vendor/build/Makefile
 *.make
 
-# Premake generated
-*.workspace
-
-# IDE specific
-.vscode/
-.idea/
-*.cbp
-*.kdev4
-.keydev4/
-.cache
-
-#other
 imgui.ini
-Fykor/vendor/ImGui/Makefile
+
+.clangd
+.clang-format

@@ -1,4 +1,4 @@
-workspace "Fykor"
+workspace "ZeroEngine"
     architecture "x64"
     location "build"
     startproject "Sandbox"
@@ -9,16 +9,16 @@ workspace "Fykor"
     }
 
     vendor = {}
-    vendor["GLFW"] = "Fykor/vendor/GLFW"
-    vendor["FrameLog"] = "Fykor/vendor/FrameLog/include"
-    vendor["Glad"] = "Fykor/vendor/Glad"
-    vendor["ImGui"] = "Fykor/vendor/ImGui"
-    vendor["glm"] = "Fykor/vendor/glm"
+    vendor["GLFW"] = "ZeroEngine/vendor/GLFW"
+    vendor["FrameLog"] = "ZeroEngine/vendor/FrameLog/include"
+    vendor["Glad"] = "ZeroEngine/vendor/Glad"
+    vendor["ImGui"] = "ZeroEngine/vendor/ImGui"
+    vendor["glm"] = "ZeroEngine/vendor/glm"
 
-include "Fykor/vendor/premake5.lua"
+include "ZeroEngine/vendor/premake5.lua"
 
-project "Fykor"
-    location "Fykor"
+project "ZeroEngine"
+    location "ZeroEngine"
     kind "StaticLib"
     language "C++"
     cppdialect "C++20"
@@ -28,14 +28,12 @@ project "Fykor"
     objdir("build/obj/%{cfg.buildcfg}")
 
     files {
-        "Fykor/source/**.h",
-        "Fykor/source/**.hpp",
-        "Fykor/source/**.cpp"
+        "ZeroEngine/source/**.cpp",
     }
 
     includedirs{
-        "Fykor/source/",
-        "Fykor/source/Fykor/",
+        "ZeroEngine/source/",
+        "ZeroEngine/source/ZeroEngine/",
         "%{vendor.FrameLog}",
         "%{vendor.GLFW}/include",
         "%{vendor.Glad}/include",
@@ -97,13 +95,13 @@ project "Sandbox"
     objdir("build/obj/%{cfg.buildcfg}")
 
     files{
-        "Sandbox/source/**.hpp", 
+        "Sandbox/source/**.hpp",
         "Sandbox/source/**.cpp"
     }
 
     includedirs{
-        "Sandbox/source/", 
-        "Fykor/source/",
+        "Sandbox/source/",
+        "ZeroEngine/source/",
         "%{vendor.FrameLog}",
         "%{vendor.GLFW}/include",
         "%{vendor.ImGui}",
@@ -116,7 +114,7 @@ project "Sandbox"
     }
 
     links {
-        "Fykor",
+        "ZeroEngine",
         "FrameLog",
         "GLFW",
         "Glad",

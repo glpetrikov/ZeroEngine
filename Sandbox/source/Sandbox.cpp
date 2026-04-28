@@ -1,55 +1,44 @@
 /* =================================================
- * Fykor, Apache 2.0 - License
+ * Sandbox(ZeroEngine), Apache 2.0 - License
  * ─────────────────────────────────────────────────
- * Sandbox
  * Sandbox.cpp
  * ─────────────────────────────────────────────────
- * Updated on:
- * 2025.12.14
- * ─────────────────────────────────────────────────
- * Made by:
- * Gleb Petrikov
- * ─────────────────────────────────────────────────
- * Description:
- * Test Project of Fykor
+ * Sandbox
  * =================================================
  */
 
-#include <Fykor.h>
+#include <ZeroEngine.h>
 #include <imgui.h>
 
-using namespace Fykor;
+using namespace ZeroEngine;
 
-class ExampleLayer : public Layers::Layer
-{
-public:
+class ExampleLayer : public Layers::Layer {
+  public:
 	ExampleLayer() : Layer("Example") {}
 
 	void OnUpdate() {}
 
-	void OnEvent(Events::Event& event)
-	{
-		if (event.GetEventType() == Events::EventType::KeyPressed)
-		{
+	void OnEvent(Events::Event& event) {
+		if (event.GetEventType() == Events::EventType::KeyPressed) {
 			Events::KeyPressedEvent& e = (Events::KeyPressedEvent&)event;
-			FR_INFO("Key pressed: {0}", (char)e.GetKeyCode());
+			ZE_INFO("Key pressed: {0}", (char)e.GetKeyCode());
 		}
 	}
 
-	void OnImGuiRender()
-	{
+	void OnImGuiRender() {
 		ImGui::Begin("Sandbox");
-		ImGui::Text("Hello from Sandbox!");
+		ImGui::Text("Hello ZEom Sandbox!");
 		ImGui::End();
 	}
 };
 
-class Sandbox : public Fykor::App
-{
-public:
+class Sandbox : public ZeroEngine::App {
+  public:
 	Sandbox() { PushLayer(new ExampleLayer()); }
 
 	~Sandbox() {}
 };
 
-Fykor::App* Fykor::CreateApp() { return new Sandbox; }
+ZeroEngine::App* ZeroEngine::CreateApp() {
+	return new Sandbox;
+}

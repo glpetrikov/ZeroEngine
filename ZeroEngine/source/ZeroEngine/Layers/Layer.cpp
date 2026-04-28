@@ -1,26 +1,16 @@
-# Templates
-
-## === Includes =====
-``` cpp
-// ──[ Standard Library ]───────
-#include <>
-
-// ──[ External Libraries ]─────
-#include <>
-
-// ──[ Project Headers ]────────
-#include ""
-```
-
-
-## === Start Of File =====
-```
 /* =================================================
  * ZeroEngine, Apache 2.0 - License
  * ─────────────────────────────────────────────────
- * FileName
+ * Layer.cpp
  * ─────────────────────────────────────────────────
- * Description
+ * Layer class implementation
  * =================================================
  */
-```
+#include "../Common.h"
+#include "Layer.h"
+
+namespace ZeroEngine::Layers {
+Layer::Layer(const std::string& debugname) : m_DebugName(debugname) {}
+
+Layer::~Layer() {}
+} // namespace ZeroEngine::Layers

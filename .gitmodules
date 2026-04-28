@@ -1,12 +1,12 @@
-[submodule "Fykor/vendor/GLFW"]
-	path = Fykor/vendor/GLFW
+[submodule "ZeroEngine/vendor/GLFW"]
+	path = ZeroEngine/vendor/GLFW
 	url = https://github.com/glfw/glfw.git
-[submodule "Fykor/vendor/FrameLog"]
-	path = Fykor/vendor/FrameLog
+[submodule "ZeroEngine/vendor/FrameLog"]
+	path = ZeroEngine/vendor/FrameLog
 	url = https://github.com/glpetrikov/FrameLog.git
-[submodule "Fykor/vendor/ImGui"]
-	path = Fykor/vendor/ImGui
+[submodule "ZeroEngine/vendor/ImGui"]
+	path = ZeroEngine/vendor/ImGui
 	url = https://github.com/ocornut/imgui.git
-[submodule "Fykor/vendor/glm"]
-	path = Fykor/vendor/glm
+[submodule "ZeroEngine/vendor/glm"]
+	path = ZeroEngine/vendor/glm
 	url = https://github.com/g-truc/glm.git

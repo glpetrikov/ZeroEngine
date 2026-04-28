@@ -1,6 +1,6 @@
 set -e
 
-cd Fykor/vendor/ImGui
+cd ZeroEngine/vendor/ImGui
 git checkout docking
 cd ..
 cd GLFW
@@ -11,13 +11,13 @@ cd FrameLog
 git checkout main
 git pull
 cd ..
-cd GLFW
+cd glm
 git checkout master
 git pull
 cd ../../..
 
 
-#cd Fykor/source/Fykor
+#cd ZeroEngine/source/ZeroEngine
 #find . -name "*.cpp" -o -name "*.h" | xargs wc -l | sort -nr
 #cd ..
 
@@ -26,6 +26,7 @@ mkdir -p build
 premake5 gmake
 cd build
 make -j$(nproc)
+make config=release -j$(nproc)
 cd Debug
 echo "Running..."
 ./Sandbox
