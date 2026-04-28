@@ -1,0 +1,29 @@
+[workspace]
+members = [
+    "ZeroEngine/",
+    # "ZeroEngine/crates/zerengine_window/",
+]
+
+resolver = "2"
+
+[workspace.package]
+edition = "2024"
+license = "Apache-2.0"
+authors = ["Gleb"]
+version = "0.1.0"
+
+[profile.dev]
+opt-level = 1          # faster compile than 0, avoids debug sluggishness
+
+[profile.dev.package."*"]
+opt-level = 3          # dependencies always optimized, huge perf boost in dev
+
+[profile.release]
+opt-level = 3
+lto = "thin"           # link-time optimization, smaller + faster binary
+codegen-units = 1      # slower compile, better optimization
+strip = "symbols"      # smaller binary
+
+[profile.dist]
+inherits = "release"
+lto = "fat"            # max optimization for actual shipping

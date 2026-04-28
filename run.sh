@@ -21,6 +21,9 @@ cd ../../..
 #find . -name "*.cpp" -o -name "*.h" | xargs wc -l | sort -nr
 #cd ..
 
+cargo +nightly fmt
+
+
 mkdir -p build
 
 premake5 gmake
