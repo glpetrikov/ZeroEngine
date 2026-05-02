@@ -13,4 +13,3 @@ fn_single_line = true
 condense_wildcard_suffixes = true
 wrap_comments = true
 format_code_in_doc_comments = true
-max_blank_lines = 1
