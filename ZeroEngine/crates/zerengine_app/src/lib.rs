@@ -1,7 +1,7 @@
 use timetrace::*;
 use winit::{
 	application::ApplicationHandler,
-	event::WindowEvent,
+	event::{KeyEvent, WindowEvent},
 	event_loop::ActiveEventLoop,
 	keyboard::{KeyCode, PhysicalKey},
 	window::{Window, WindowId},
@@ -43,12 +43,13 @@ impl ApplicationHandler for App {
 			WindowEvent::CloseRequested => {
 				event_loop.exit();
 			}
-			WindowEvent::KeyboardInput { event, .. } => {
-				// TODO: TEMP!
-				if event.physical_key == PhysicalKey::Code(KeyCode::Escape) {
-					event_loop.exit();
-				}
-			}
+			WindowEvent::KeyboardInput {
+				event: KeyEvent {
+					physical_key: PhysicalKey::Code(KeyCode::Escape),
+					..
+				},
+				..
+			} => event_loop.exit(),
 			WindowEvent::RedrawRequested => {
 				// wgpu render here
 			}
