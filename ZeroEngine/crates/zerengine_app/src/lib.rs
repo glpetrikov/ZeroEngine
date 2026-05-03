@@ -1,3 +1,4 @@
+use timetrace::*;
 use winit::{
 	application::ApplicationHandler,
 	event::WindowEvent,
@@ -5,8 +6,6 @@ use winit::{
 	keyboard::{KeyCode, PhysicalKey},
 	window::{Window, WindowId},
 };
-
-use timetrace::*;
 
 impl ApplicationHandler for App {
 	#[profile_function]

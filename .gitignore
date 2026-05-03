@@ -12,7 +12,4 @@ Makefile
 
 imgui.ini
 
-.clangd
-.clang-format
-
 trace.json
