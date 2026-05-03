@@ -1,11 +1,11 @@
-use timetrace::*;
 use winit::{
 	application::ApplicationHandler,
-	event::{KeyEvent, WindowEvent},
+	event::WindowEvent,
 	event_loop::ActiveEventLoop,
-	keyboard::{KeyCode, PhysicalKey},
+	keyboard::PhysicalKey,
 	window::{Window, WindowId},
 };
+use zerengine_core::*;
 
 impl ApplicationHandler for App {
 	#[profile_function]
@@ -25,6 +25,7 @@ impl ApplicationHandler for App {
 		if let Some(window) = &self.window {
 			window.request_redraw();
 		}
+		Input::update_globally(|i| i.late_update());
 	}
 
 	// fn user_event(&mut self, _event_loop: &ActiveEventLoop, event: CustomEvent) {
@@ -43,13 +44,23 @@ impl ApplicationHandler for App {
 			WindowEvent::CloseRequested => {
 				event_loop.exit();
 			}
-			WindowEvent::KeyboardInput {
-				event: KeyEvent {
-					physical_key: PhysicalKey::Code(KeyCode::Escape),
-					..
-				},
-				..
-			} => event_loop.exit(),
+			WindowEvent::KeyboardInput { event: key_event, .. } => {
+				if let PhysicalKey::Code(code) = key_event.physical_key {
+					Input::update_globally(|i| {
+						i.set_key(ZKeyCode::from(code), key_event.state.is_pressed());
+					});
+				}
+			}
+			WindowEvent::CursorMoved { position, .. } => {
+				Input::update_globally(|i| {
+					i.mouse_pos = (position.x as f32, position.y as f32);
+				});
+			}
+			WindowEvent::MouseInput { state, button, .. } => {
+				Input::update_globally(|i| {
+					i.set_mouse_button(ZMouseCode::from(button), state.is_pressed());
+				});
+			}
 			WindowEvent::RedrawRequested => {
 				// wgpu render here
 			}

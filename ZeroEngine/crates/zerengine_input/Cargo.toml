@@ -3,4 +3,9 @@ name = "zerengine_input"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = ["winit"]
+winit = ["dep:winit"]
+
 [dependencies]
+winit = { version = "0.30.13", optional = true }

@@ -21,7 +21,7 @@ jobs:
           rustup toolchain install stable --profile minimal
           rustup component add clippy rustfmt
 
-      - name: Install Rust nightly (fmt only)
+      - name: Install Rust nightly (minimal profile)
         run: |
           rustup toolchain install nightly --profile minimal
           rustup component add rustfmt --toolchain nightly
