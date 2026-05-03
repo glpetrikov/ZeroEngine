@@ -6,3 +6,6 @@ license.workspace = true
 authors.workspace = true
 
 [dependencies]
+timetrace = "0.1.2"
+winit = "0.30.13"
+zerengine_app = { path = "crates/zerengine_app" }

@@ -1,7 +1,8 @@
 [workspace]
 members = [
     "ZeroEngine/",
-    # "ZeroEngine/crates/zerengine_window/",
+    "ZeroEngine/crates/zerengine_app",
+    "ZeroEngine/crates/zerengine_core",
 ]
 
 resolver = "2"
