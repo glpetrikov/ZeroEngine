@@ -1,0 +1,10 @@
+[package]
+name = "zerengine_log"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "time"] }
+tracing = "0.1"

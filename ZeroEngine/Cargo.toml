@@ -11,3 +11,4 @@ winit = "0.30.13"
 timetrace = "0.1.2"
 zerengine_app = { path = "crates/zerengine_app" }
 zerengine_core = { path = "crates/zerengine_core" }
+zerengine_log = { path = "crates/zerengine_log" }

@@ -3,7 +3,8 @@ members = [
     "ZeroEngine/",
     "ZeroEngine/crates/zerengine_app",
     "ZeroEngine/crates/zerengine_core",
-    "ZeroEngine/crates/zerengine_input"
+    "ZeroEngine/crates/zerengine_input",
+    "ZeroEngine/crates/zerengine_log"
 ]
 
 resolver = "3"
