@@ -1,15 +1,17 @@
 use timetrace::*;
-use winit::application::ApplicationHandler;
-use winit::event::WindowEvent;
-use winit::event_loop::ActiveEventLoop;
-use winit::keyboard::{KeyCode, PhysicalKey};
-use winit::window::{Window, WindowId};
+use winit::{
+	application::ApplicationHandler,
+	event::WindowEvent,
+	event_loop::ActiveEventLoop,
+	keyboard::{KeyCode, PhysicalKey},
+	window::{Window, WindowId},
+};
+use zerengine_input::*;
 
 #[derive(Debug)]
 pub enum CustomEvents {
 	Shutdown,
 }
-
 
 impl ApplicationHandler<CustomEvents> for App {
 	#[profile_function]
@@ -67,7 +69,7 @@ impl ApplicationHandler<CustomEvents> for App {
 				zerengine_log::debug!("Exiting...");
 				event_loop.exit();
 			}
-      WindowEvent::KeyboardInput { event, .. } if event.physical_key == PhysicalKey::Code(KeyCode::Escape) => {
+			WindowEvent::KeyboardInput { event, .. } if event.physical_key == PhysicalKey::Code(KeyCode::Escape) => {
 				event_loop.exit();
 			}
 			WindowEvent::KeyboardInput { event: key_event, .. } => {
