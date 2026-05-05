@@ -3,16 +3,6 @@
 .vscode
 .idea
 
-
-build
 target
-
-Makefile
-*.make
-
-imgui.ini
-
-.clangd
-.clang-format
 
 trace.json
