@@ -18,4 +18,6 @@ fn main() {
 
 	let mut app = App::default();
 	event_loop.run_app(&mut app).unwrap();
+
+	println!("{:?}", Input::get_mouse_pos());
 }
