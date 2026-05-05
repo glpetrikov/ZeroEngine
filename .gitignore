@@ -3,13 +3,6 @@
 .vscode
 .idea
 
-
-build
 target
-
-Makefile
-*.make
-
-imgui.ini
 
 trace.json
