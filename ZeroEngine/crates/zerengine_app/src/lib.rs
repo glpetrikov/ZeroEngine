@@ -1,13 +1,17 @@
-use winit::{
-	application::ApplicationHandler,
-	event::WindowEvent,
-	event_loop::ActiveEventLoop,
-	keyboard::PhysicalKey,
-	window::{Window, WindowId},
-};
-use zerengine_core::*;
+use timetrace::*;
+use winit::application::ApplicationHandler;
+use winit::event::WindowEvent;
+use winit::event_loop::ActiveEventLoop;
+use winit::keyboard::{KeyCode, PhysicalKey};
+use winit::window::{Window, WindowId};
 
-impl ApplicationHandler for App {
+#[derive(Debug)]
+pub enum CustomEvents {
+	Shutdown,
+}
+
+
+impl ApplicationHandler<CustomEvents> for App {
 	#[profile_function]
 	fn resumed(&mut self, event_loop: &ActiveEventLoop) {
 		let attrs = Window::default_attributes()
@@ -28,6 +32,15 @@ impl ApplicationHandler for App {
 		Input::update_globally(|i| i.late_update());
 	}
 
+	#[profile_function]
+	fn user_event(&mut self, event_loop: &ActiveEventLoop, event: CustomEvents) {
+		match event {
+			CustomEvents::Shutdown => {
+				event_loop.exit();
+			}
+		}
+	}
+
 	// fn user_event(&mut self, _event_loop: &ActiveEventLoop, event: CustomEvent) {
 	// 	match event {
 	// 		CustomEvent::Timer => {
@@ -42,6 +55,9 @@ impl ApplicationHandler for App {
 	fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
 		match event {
 			WindowEvent::CloseRequested => {
+				event_loop.exit();
+			}
+      WindowEvent::KeyboardInput { event, .. } if event.physical_key == PhysicalKey::Code(KeyCode::Escape) => {
 				event_loop.exit();
 			}
 			WindowEvent::KeyboardInput { event: key_event, .. } => {
