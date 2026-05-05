@@ -10,6 +10,7 @@ use zerengine_core::*;
 impl ApplicationHandler for App {
 	#[profile_function]
 	fn resumed(&mut self, event_loop: &ActiveEventLoop) {
+		zerengine_log::debug!("App resumed");
 		let attrs = Window::default_attributes()
 			.with_title("ZeroEngine")
 			.with_inner_size(winit::dpi::LogicalSize::new(1280.0, 720.0));
@@ -19,8 +20,15 @@ impl ApplicationHandler for App {
 
 	#[profile_function]
 	fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+		zerengine_log::debug!("App update");
+
 		profile_new_frame!();
 		event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
+
+		if Input::key_just_pressed(ZKeyCode::Escape) {
+			zerengine_log::info!("Exiting...");
+			event_loop.exit(); // TODO: TEMP
+		}
 
 		if let Some(window) = &self.window {
 			window.request_redraw();
@@ -40,8 +48,10 @@ impl ApplicationHandler for App {
 
 	#[profile_function]
 	fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
+		zerengine_log::debug!("window event");
 		match event {
 			WindowEvent::CloseRequested => {
+				zerengine_log::debug!("Exiting...");
 				event_loop.exit();
 			}
 			WindowEvent::KeyboardInput { event: key_event, .. } => {
@@ -62,6 +72,8 @@ impl ApplicationHandler for App {
 				});
 			}
 			WindowEvent::RedrawRequested => {
+				zerengine_log::debug!("RedrawRequested");
+
 				// wgpu render here
 			}
 			_ => {}
