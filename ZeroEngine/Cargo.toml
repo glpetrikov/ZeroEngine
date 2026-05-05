@@ -6,6 +6,7 @@ license.workspace = true
 authors.workspace = true
 
 [dependencies]
+ctrlc = "3.5.2"
 timetrace = "0.1.2"
 winit = "0.30.13"
 zerengine_app = { path = "crates/zerengine_app" }
