@@ -1,12 +1,10 @@
 # ZeroEngine
 
-ZeroEngine is a modern game engine written in Rust and C++.
+ZeroEngine is a modern game engine written in Rust.
 or just ZE.
 
 ## info
 
-![Platforms](https://img.shields.io/badge/platforms-cross--platform-lightgrey.svg)
-![C++](https://img.shields.io/badge/C%2B%2B-20%2B-blue.svg)
 ![Rust](https://img.shields.io/badge/Rust-2024-orange.svg)
 ![Status](https://img.shields.io/badge/status-alpha-orange.svg)
 
@@ -23,12 +21,14 @@ Requires [Rust](https://rustup.rs) (installed via rustup).
 ```bash
 git clone https://github.com/glpetrikov/ZeroEngine
 cd ZeroEngine
-cargo build
+cargo run
 ```
 
 ## Supported Platforms
-- Windows11(I sometimes test)
-- Linux(Arch Linux btw)
+![Windows11](https://img.shields.io/badge/Windows11-blue.svg) 
+![Any modern linux](https://img.shields.io/badge/Linux-orange.svg) 
+![MacOS](https://img.shields.io/badge/MacOS-white.svg)
+
 
 ## License
 
