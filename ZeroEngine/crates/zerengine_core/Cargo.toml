@@ -5,5 +5,4 @@ edition = "2024"
 
 [dependencies]
 zerengine_input = { path = "../zerengine_input" }
-timetrace = "0.1.2"
 glam = { version = "0.32.1", features = ["bytemuck", "serde", "zerocopy", "mint", "encase", "fast-math"] }

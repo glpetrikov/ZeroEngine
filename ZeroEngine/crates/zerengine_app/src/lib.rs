@@ -1,4 +1,3 @@
-use timetrace::*;
 use winit::{
 	application::ApplicationHandler,
 	event::WindowEvent,
@@ -14,7 +13,6 @@ pub enum CustomEvents {
 }
 
 impl ApplicationHandler<CustomEvents> for App {
-	#[profile_function]
 	fn resumed(&mut self, event_loop: &ActiveEventLoop) {
 		zerengine_log::debug!("App resumed");
 		let attrs = Window::default_attributes()
@@ -24,11 +22,9 @@ impl ApplicationHandler<CustomEvents> for App {
 		self.window = Some(event_loop.create_window(attrs).unwrap());
 	}
 
-	#[profile_function]
 	fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
 		zerengine_log::debug!("App update");
 
-		profile_new_frame!();
 		event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
 
 		if Input::key_just_pressed(ZKeyCode::Escape) {
@@ -42,7 +38,6 @@ impl ApplicationHandler<CustomEvents> for App {
 		Input::update_globally(|i| i.late_update());
 	}
 
-	#[profile_function]
 	fn user_event(&mut self, event_loop: &ActiveEventLoop, event: CustomEvents) {
 		match event {
 			CustomEvents::Shutdown => {
@@ -61,7 +56,6 @@ impl ApplicationHandler<CustomEvents> for App {
 	// 	}
 	// }
 
-	#[profile_function]
 	fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
 		zerengine_log::debug!("window event");
 		match event {
