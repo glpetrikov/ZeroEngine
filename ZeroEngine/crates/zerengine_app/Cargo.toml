@@ -8,4 +8,3 @@ zerengine_core = { path = "../zerengine_core" }
 zerengine_input = { path = "../zerengine_input" }
 zerengine_log = { path = "../zerengine_log" }
 winit = "0.30.13"
-timetrace = "0.1.2"

@@ -1,9 +1,6 @@
-use timetrace::*;
 use winit::event_loop::{ControlFlow, EventLoop};
 use zerengine_app::*;
 
-// #[profile_session("Main Loop", "trace.json")]
-#[profile_function]
 fn main() {
 	zerengine_log::init();
 
