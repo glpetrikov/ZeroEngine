@@ -4,6 +4,24 @@ use zerengine_app::*;
 fn main() {
 	zerengine_log::init();
 
+	zerengine_log::debug!("Setting up panic hook");
+
+	std::panic::set_hook(Box::new(|panic_info| {
+		let location = panic_info
+			.location()
+			.map(|l| format!("{}:{}:{}", l.file(), l.line(), l.column()))
+			.unwrap_or_else(|| "unknown".into());
+
+		let message = panic_info
+			.payload()
+			.downcast_ref::<&str>()
+			.copied()
+			.or_else(|| panic_info.payload().downcast_ref::<String>().map(|s| s.as_str()))
+			.unwrap_or("unknown panic");
+
+		zerengine_log::error!("ZEROENGINE FATAL ERROR at {}: {}", location, message);
+	}));
+
 	zerengine_log::debug!("Event Loop creating");
 	let event_loop = EventLoop::<CustomEvents>::with_user_event().build().unwrap();
 	let event_loop_proxy = event_loop.create_proxy();
