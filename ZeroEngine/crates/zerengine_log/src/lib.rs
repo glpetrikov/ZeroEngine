@@ -3,10 +3,11 @@ use tracing_subscriber::{EnvFilter, fmt};
 
 pub fn init() {
 	let filter = EnvFilter::builder()
-		.with_default_directive(tracing::Level::TRACE.into())
+		.with_default_directive(tracing::Level::INFO.into())
 		.from_env_lossy()
 		.add_directive("calloop=off".parse().unwrap())
-		.add_directive("winit=warn".parse().unwrap());
+		.add_directive("winit=warn".parse().unwrap())
+		.add_directive("sctk=warn".parse().unwrap());
 
 	let _ = fmt()
 		.with_env_filter(filter)
