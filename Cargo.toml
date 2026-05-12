@@ -6,6 +6,7 @@ members = [
     "ZeroEngine/crates/zerengine_input",
     "ZeroEngine/crates/zerengine_log",
     "ZeroEngine/crates/syspeek",
+    "ZeroEngine/cli/zerofetch",
 ]
 resolver = "3"
 

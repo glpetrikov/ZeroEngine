@@ -1,5 +1,6 @@
 use sysinfo::System;
 
+#[derive(Clone, Debug)]
 pub struct OsInfo {
 	name: String,
 	version: String,
