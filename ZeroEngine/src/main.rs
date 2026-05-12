@@ -26,6 +26,8 @@ fn main() {
 	event_loop.run_app(&mut app).unwrap();
 }
 
+use owo_colors::OwoColorize;
+
 fn render_banner() {
 	use syspeek::SystemInfo;
 	use terminal_size::{Width, terminal_size};
@@ -48,6 +50,7 @@ fn render_banner() {
 	if let Some((Width(w), _)) = terminal_size() {
 		if w < 100 {
 			println!(
+				"{}",
 				r#"
 # Terminal too narrow for full banner
 ▗▄▄▄▄▖▗▄▄▄▖▗▄▄▖  ▗▄▖ ▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖
@@ -55,6 +58,7 @@ fn render_banner() {
  ▗▞▘  ▐▛▀▀▘▐▛▀▚▖▐▌ ▐▌▐▛▀▀▘▐▌ ▝▜▌▐▌▝▜▌  █  ▐▌ ▝▜▌▐▛▀▀▘
 ▐▙▄▄▄▖▐▙▄▄▖▐▌ ▐▌▝▚▄▞▘▐▙▄▄▖▐▌  ▐▌▝▚▄▞▘▗▄█▄▖▐▌  ▐▌▐▙▄▄▖
 "#
+				.bright_black()
 			);
 			for line in &sys_lines {
 				println!("  {}", line);
@@ -72,9 +76,11 @@ fn render_banner() {
 
 			for (i, banner_line) in banner_lines.iter().enumerate() {
 				if let Some(sys_line) = sys_lines.get(i) {
-					println!("{}    {}", banner_line, sys_line);
+					let banner_text = format!("{banner_line:<86}");
+					let colored_banner = banner_text.bright_black();
+					println!("{colored_banner}    {sys_line}");
 				} else {
-					println!("{}", banner_line);
+					println!("{}", banner_line.bright_black());
 				}
 			}
 		}
