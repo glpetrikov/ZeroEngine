@@ -4,9 +4,9 @@ members = [
     "ZeroEngine/crates/zerengine_app",
     "ZeroEngine/crates/zerengine_core",
     "ZeroEngine/crates/zerengine_input",
-    "ZeroEngine/crates/zerengine_log"
+    "ZeroEngine/crates/zerengine_log",
+    "ZeroEngine/crates/syspeek",
 ]
-
 resolver = "3"
 
 [workspace.package]
@@ -14,19 +14,21 @@ edition = "2024"
 license = "Apache-2.0"
 authors = ["Gleb"]
 version = "0.1.0"
+repository = "https://github.com/glpetrikov/ZeroEngine"
+keywords = ["game-engine"]
+categories = ["game-engines"]
 
 [profile.dev]
-opt-level = 1          # faster compile than 0, avoids debug sluggishness
-
+opt-level = 1
 [profile.dev.package."*"]
-opt-level = 3          # dependencies always optimized, huge perf boost in dev
+opt-level = 3
 
 [profile.release]
 opt-level = 3
-lto = "thin"           # link-time optimization, smaller + faster binary
-codegen-units = 1      # slower compile, better optimization
-strip = "symbols"      # smaller binary
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
 
 [profile.dist]
 inherits = "release"
-lto = "fat"            # max optimization for actual shipping
+lto = "fat"

@@ -1,0 +1,21 @@
+[package]
+name = "syspeek"
+version = "1.0.0"
+description = "A fast and simple system information library for CPU, GPU, RAM and OS info"
+repository.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+keywords = ["system", "sysinfo", "cpu", "gpu", "hardware"]
+categories = ["os", "hardware-support"]
+
+[dependencies]
+gfxinfo = "0.1.2"
+sysinfo = "0.39.0"
+
+[features]
+default = ["gpu", "cpu", "ram", "os"]
+gpu = []
+cpu = []
+ram = []
+os = []

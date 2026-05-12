@@ -27,33 +27,56 @@ fn main() {
 }
 
 fn render_banner() {
+	use syspeek::SystemInfo;
 	use terminal_size::{Width, terminal_size};
+
+	// Collect system info
+	let info = SystemInfo::refresh();
+	let sys_lines = vec![
+		format!("OS:      {}", info.os.long_version()),
+		format!("Kernel:  {}", info.os.kernel_version()),
+		format!("CPU:     {} ({} cores)", info.cpu.name(), info.cpu.cores()),
+		match &info.gpu {
+			Some(gpu) => format!("GPU:     {}", gpu.name()),
+			None => "GPU:     Unknown".to_string(),
+		},
+		format!("RAM:     {:.1} / {:.1} GB", info.ram.used_gb(), info.ram.total_gb()),
+		format!("Uptime:  {}", info.os.uptime_formatted()),
+		format!("Version: v{}", env!("CARGO_PKG_VERSION")),
+	];
+
 	if let Some((Width(w), _)) = terminal_size() {
 		if w < 100 {
 			println!(
 				r#"
-# If possible, increase the width of your terminal so that the full-size banner is displayed
+# Terminal too narrow for full banner
 ▗▄▄▄▄▖▗▄▄▄▖▗▄▄▖  ▗▄▖ ▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖
    ▗▞▘▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌   ▐▛▚▖▐▌▐▌     █  ▐▛▚▖▐▌▐▌
  ▗▞▘  ▐▛▀▀▘▐▛▀▚▖▐▌ ▐▌▐▛▀▀▘▐▌ ▝▜▌▐▌▝▜▌  █  ▐▌ ▝▜▌▐▛▀▀▘
 ▐▙▄▄▄▖▐▙▄▄▖▐▌ ▐▌▝▚▄▞▘▐▙▄▄▖▐▌  ▐▌▝▚▄▞▘▗▄█▄▖▐▌  ▐▌▐▙▄▄▖
-ZeroEngine v{}
-"#,
-				env!("CARGO_PKG_VERSION")
-			)
-		} else {
-			println!(
-				r#"
-███████╗███████╗██████╗  ██████╗ ███████╗███╗   ██╗ ██████╗ ██╗███╗   ██╗███████╗
-╚══███╔╝██╔════╝██╔══██╗██╔═══██╗██╔════╝████╗  ██║██╔════╝ ██║████╗  ██║██╔════╝
-  ███╔╝ █████╗  ██████╔╝██║   ██║█████╗  ██╔██╗ ██║██║  ███╗██║██╔██╗ ██║█████╗
- ███╔╝  ██╔══╝  ██╔══██╗██║   ██║██╔══╝  ██║╚██╗██║██║   ██║██║██║╚██╗██║██╔══╝
-███████╗███████╗██║  ██║╚██████╔╝███████╗██║ ╚████║╚██████╔╝██║██║ ╚████║███████╗
-╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝
-ZeroEngine v{}
-"#,
-				env!("CARGO_PKG_VERSION")
+"#
 			);
+			for line in &sys_lines {
+				println!("  {}", line);
+			}
+		} else {
+			let banner_lines: Vec<&str> = vec![
+				"███████╗███████╗██████╗  ██████╗ ███████╗███╗   ██╗ ██████╗ ██╗███╗   ██╗███████╗",
+				"╚══███╔╝██╔════╝██╔══██╗██╔═══██╗██╔════╝████╗  ██║██╔════╝ ██║████╗  ██║██╔════╝",
+				"  ███╔╝ █████╗  ██████╔╝██║   ██║█████╗  ██╔██╗ ██║██║  ███╗██║██╔██╗ ██║█████╗  ",
+				" ███╔╝  ██╔══╝  ██╔══██╗██║   ██║██╔══╝  ██║╚██╗██║██║   ██║██║██║╚██╗██║██╔══╝  ",
+				"███████╗███████╗██║  ██║╚██████╔╝███████╗██║ ╚████║╚██████╔╝██║██║ ╚████║███████╗",
+				"╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝",
+				"                                                                                 ",
+			];
+
+			for (i, banner_line) in banner_lines.iter().enumerate() {
+				if let Some(sys_line) = sys_lines.get(i) {
+					println!("{}    {}", banner_line, sys_line);
+				} else {
+					println!("{}", banner_line);
+				}
+			}
 		}
 	} else {
 		println!("ZeroEngine v{}", env!("CARGO_PKG_VERSION"));

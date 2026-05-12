@@ -1,12 +1,16 @@
 [package]
 name = "ZeroEngine"
-version = "0.1.0"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
+version.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
 
 [dependencies]
 ctrlc = "3.5.2"
+syspeek = "1.0.0"
 terminal_size = "0.4.4"
 winit = "0.30.13"
 zerengine_app = { path = "crates/zerengine_app" }
