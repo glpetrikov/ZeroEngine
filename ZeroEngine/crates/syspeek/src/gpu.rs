@@ -1,5 +1,6 @@
 use gfxinfo::active_gpu;
 
+#[derive(Debug, Clone)]
 pub struct GpuInfo {
 	name: String,
 	vendor: String,
@@ -16,78 +17,37 @@ impl GpuInfo {
 		let gpu = active_gpu().ok()?;
 		let info = gpu.info();
 
-		let vram_total = {
-			let v = info.total_vram();
-			if v == 0 { None } else { Some(v) }
-		};
-
-		let vram_used = {
-			let v = info.used_vram();
-			if v == 0 { None } else { Some(v) }
-		};
-
-		let load: Option<f32> = {
-			let v = info.load_pct() as f32;
-			if v == 0.0 { None } else { Some(v) }
-		};
-
-		let temperature = {
-			let v = info.temperature();
-			if v == 0 { None } else { Some(v as f32 / 1000.0) }
-		};
+		let vram_total_bytes = non_zero(info.total_vram());
+		let vram_used_bytes = non_zero(info.used_vram());
+		let load = Some(info.load_pct() as f32);
+		let temperature = non_zero(info.temperature() as u64).map(|temperature| temperature as f32 / 1000.0);
 
 		Some(Self {
 			name: gpu.model().to_string(),
 			vendor: gpu.vendor().to_string(),
 			family: gpu.family().to_string(),
 			device_id: *gpu.device_id(),
-			vram_total_bytes: vram_total,
-			vram_used_bytes: vram_used,
+			vram_total_bytes,
+			vram_used_bytes,
 			load,
 			temperature,
 		})
 	}
 
-	/// Returns the GPU model name
 	pub fn name(&self) -> &str { &self.name }
-
-	/// Returns the GPU vendor (NVIDIA, AMD, Intel, etc.)
 	pub fn vendor(&self) -> &str { &self.vendor }
-
-	/// Returns the GPU family
 	pub fn family(&self) -> &str { &self.family }
-
-	/// Returns the GPU device ID
 	pub fn device_id(&self) -> u32 { self.device_id }
 
-	// ── VRAM Total ───────────────────────────────────────────────────────────
-
-	/// Returns total VRAM in bytes
 	pub fn vram_total_bytes(&self) -> Option<u64> { self.vram_total_bytes }
+	pub fn vram_total_kb(&self) -> Option<u64> { self.vram_total_bytes.map(|bytes| bytes / 1024) }
+	pub fn vram_total_mb(&self) -> Option<u64> { self.vram_total_bytes.map(|bytes| bytes / 1024 / 1024) }
+	pub fn vram_total_gb(&self) -> Option<f32> { self.vram_total_bytes.map(bytes_to_gib) }
 
-	/// Returns total VRAM in KB
-	pub fn vram_total_kb(&self) -> Option<u64> { self.vram_total_bytes.map(|v| v / 1024) }
-
-	/// Returns total VRAM in MB
-	pub fn vram_total_mb(&self) -> Option<u64> { self.vram_total_bytes.map(|v| v / 1024 / 1024) }
-
-	/// Returns total VRAM in GB
-	pub fn vram_total_gb(&self) -> Option<f32> { self.vram_total_bytes.map(|v| v as f32 / 1024.0 / 1024.0 / 1024.0) }
-
-	// ── VRAM Used ────────────────────────────────────────────────────────────
-
-	/// Returns used VRAM in bytes
 	pub fn vram_used_bytes(&self) -> Option<u64> { self.vram_used_bytes }
+	pub fn vram_used_mb(&self) -> Option<u64> { self.vram_used_bytes.map(|bytes| bytes / 1024 / 1024) }
+	pub fn vram_used_gb(&self) -> Option<f32> { self.vram_used_bytes.map(bytes_to_gib) }
 
-	/// Returns used VRAM in MB
-	pub fn vram_used_mb(&self) -> Option<u64> { self.vram_used_bytes.map(|v| v / 1024 / 1024) }
-
-	/// Returns used VRAM in GB
-	pub fn vram_used_gb(&self) -> Option<f32> { self.vram_used_bytes.map(|v| v as f32 / 1024.0 / 1024.0 / 1024.0) }
-
-	// ── VRAM Available ───────────────────────────────────────────────────────
-
-	/// Returns available VRAM in bytes
 	pub fn vram_available_bytes(&self) -> Option<u64> {
 		match (self.vram_total_bytes, self.vram_used_bytes) {
 			(Some(total), Some(used)) => Some(total.saturating_sub(used)),
@@ -95,12 +55,10 @@ impl GpuInfo {
 		}
 	}
 
-	/// Returns available VRAM in MB
-	pub fn vram_available_mb(&self) -> Option<u64> { self.vram_available_bytes().map(|v| v / 1024 / 1024) }
+	pub fn vram_available_mb(&self) -> Option<u64> { self.vram_available_bytes().map(|bytes| bytes / 1024 / 1024) }
 
-	// ── VRAM Usage % ─────────────────────────────────────────────────────────
+	pub fn vram_available_gb(&self) -> Option<f32> { self.vram_available_bytes().map(bytes_to_gib) }
 
-	/// Returns VRAM usage as percentage (0.0 - 100.0)
 	pub fn vram_usage_pct(&self) -> Option<f32> {
 		match (self.vram_total_bytes, self.vram_used_bytes) {
 			(Some(total), Some(used)) if total > 0 => Some(used as f32 / total as f32 * 100.0),
@@ -108,11 +66,10 @@ impl GpuInfo {
 		}
 	}
 
-	// ── Load & Temp ──────────────────────────────────────────────────────────
-
-	/// Returns GPU load percentage (0.0 - 100.0) if available
 	pub fn load(&self) -> Option<f32> { self.load }
-
-	/// Returns GPU temperature in Celsius if available
 	pub fn temperature(&self) -> Option<f32> { self.temperature }
 }
+
+fn non_zero(value: u64) -> Option<u64> { if value == 0 { None } else { Some(value) } }
+
+fn bytes_to_gib(bytes: u64) -> f32 { bytes as f32 / 1024.0 / 1024.0 / 1024.0 }

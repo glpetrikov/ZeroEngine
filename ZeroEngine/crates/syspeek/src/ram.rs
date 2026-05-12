@@ -1,5 +1,6 @@
 use sysinfo::{MemoryRefreshKind, RefreshKind, System};
 
+#[derive(Debug, Clone)]
 pub struct RamInfo {
 	total_bytes: u64,
 	used_bytes: u64,
@@ -24,94 +25,68 @@ impl RamInfo {
 		}
 	}
 
-	// ── Total ────────────────────────────────────────────────────────────────
-
-	/// Returns total RAM in bytes
 	pub fn total_bytes(&self) -> u64 { self.total_bytes }
+	pub fn total_kb(&self) -> u64 { bytes_to_kib(self.total_bytes) }
+	pub fn total_mb(&self) -> u64 { bytes_to_mib(self.total_bytes) }
+	pub fn total_gb(&self) -> f64 { bytes_to_gib(self.total_bytes) }
 
-	/// Returns total RAM in KB
-	pub fn total_kb(&self) -> u64 { self.total_bytes / 1024 }
-
-	/// Returns total RAM in MB
-	pub fn total_mb(&self) -> u64 { self.total_bytes / 1024 / 1024 }
-
-	/// Returns total RAM in GB
-	pub fn total_gb(&self) -> f64 { self.total_bytes as f64 / 1024.0 / 1024.0 / 1024.0 }
-
-	// ── Used ─────────────────────────────────────────────────────────────────
-
-	/// Returns used RAM in bytes
 	pub fn used_bytes(&self) -> u64 { self.used_bytes }
+	pub fn used_kb(&self) -> u64 { bytes_to_kib(self.used_bytes) }
+	pub fn used_mb(&self) -> u64 { bytes_to_mib(self.used_bytes) }
+	pub fn used_gb(&self) -> f64 { bytes_to_gib(self.used_bytes) }
 
-	/// Returns used RAM in KB
-	pub fn used_kb(&self) -> u64 { self.used_bytes / 1024 }
-
-	/// Returns used RAM in MB
-	pub fn used_mb(&self) -> u64 { self.used_bytes / 1024 / 1024 }
-
-	/// Returns used RAM in GB
-	pub fn used_gb(&self) -> f64 { self.used_bytes as f64 / 1024.0 / 1024.0 / 1024.0 }
-
-	// ── Available ─────────────────────────────────────────────────────────────
-
-	/// Returns available RAM in bytes
 	pub fn available_bytes(&self) -> u64 { self.available_bytes }
+	pub fn available_kb(&self) -> u64 { bytes_to_kib(self.available_bytes) }
+	pub fn available_mb(&self) -> u64 { bytes_to_mib(self.available_bytes) }
+	pub fn available_gb(&self) -> f64 { bytes_to_gib(self.available_bytes) }
 
-	/// Returns available RAM in KB
-	pub fn available_kb(&self) -> u64 { self.available_bytes / 1024 }
-
-	/// Returns available RAM in MB
-	pub fn available_mb(&self) -> u64 { self.available_bytes / 1024 / 1024 }
-
-	/// Returns available RAM in GB
-	pub fn available_gb(&self) -> f64 { self.available_bytes as f64 / 1024.0 / 1024.0 / 1024.0 }
-
-	// ── Free ──────────────────────────────────────────────────────────────────
-
-	/// Returns free RAM in bytes
 	pub fn free_bytes(&self) -> u64 { self.free_bytes }
+	pub fn free_kb(&self) -> u64 { bytes_to_kib(self.free_bytes) }
+	pub fn free_mb(&self) -> u64 { bytes_to_mib(self.free_bytes) }
+	pub fn free_gb(&self) -> f64 { bytes_to_gib(self.free_bytes) }
 
-	/// Returns free RAM in MB
-	pub fn free_mb(&self) -> u64 { self.free_bytes / 1024 / 1024 }
+	pub fn remaining_bytes(&self) -> u64 { self.available_bytes }
+	pub fn remaining_kb(&self) -> u64 { self.available_kb() }
+	pub fn remaining_mb(&self) -> u64 { self.available_mb() }
+	pub fn remaining_gb(&self) -> f64 { self.available_gb() }
 
-	/// Returns free RAM in GB
-	pub fn free_gb(&self) -> f64 { self.free_bytes as f64 / 1024.0 / 1024.0 / 1024.0 }
-
-	// ── Swap ──────────────────────────────────────────────────────────────────
-
-	/// Returns total swap in bytes
 	pub fn swap_total_bytes(&self) -> u64 { self.swap_total_bytes }
+	pub fn swap_total_kb(&self) -> u64 { bytes_to_kib(self.swap_total_bytes) }
+	pub fn swap_total_mb(&self) -> u64 { bytes_to_mib(self.swap_total_bytes) }
+	pub fn swap_total_gb(&self) -> f64 { bytes_to_gib(self.swap_total_bytes) }
 
-	/// Returns total swap in MB
-	pub fn swap_total_mb(&self) -> u64 { self.swap_total_bytes / 1024 / 1024 }
-
-	/// Returns total swap in GB
-	pub fn swap_total_gb(&self) -> f64 { self.swap_total_bytes as f64 / 1024.0 / 1024.0 / 1024.0 }
-
-	/// Returns used swap in bytes
 	pub fn swap_used_bytes(&self) -> u64 { self.swap_used_bytes }
+	pub fn swap_used_kb(&self) -> u64 { bytes_to_kib(self.swap_used_bytes) }
+	pub fn swap_used_mb(&self) -> u64 { bytes_to_mib(self.swap_used_bytes) }
+	pub fn swap_used_gb(&self) -> f64 { bytes_to_gib(self.swap_used_bytes) }
 
-	/// Returns used swap in MB
-	pub fn swap_used_mb(&self) -> u64 { self.swap_used_bytes / 1024 / 1024 }
+	pub fn swap_available_bytes(&self) -> u64 { self.swap_total_bytes.saturating_sub(self.swap_used_bytes) }
+	pub fn swap_available_kb(&self) -> u64 { bytes_to_kib(self.swap_available_bytes()) }
+	pub fn swap_available_mb(&self) -> u64 { bytes_to_mib(self.swap_available_bytes()) }
+	pub fn swap_available_gb(&self) -> f64 { bytes_to_gib(self.swap_available_bytes()) }
 
-	/// Returns used swap in GB
-	pub fn swap_used_gb(&self) -> f64 { self.swap_used_bytes as f64 / 1024.0 / 1024.0 / 1024.0 }
+	pub fn usage_pct(&self) -> f32 { usage_pct(self.used_bytes, self.total_bytes) }
+	pub fn used_pct(&self) -> f32 { self.usage_pct() }
+	pub fn available_pct(&self) -> f32 { usage_pct(self.available_bytes, self.total_bytes) }
+	pub fn free_pct(&self) -> f32 { usage_pct(self.free_bytes, self.total_bytes) }
+	pub fn remaining_pct(&self) -> f32 { self.available_pct() }
 
-	// ── Usage % ───────────────────────────────────────────────────────────────
+	pub fn swap_usage_pct(&self) -> f32 { usage_pct(self.swap_used_bytes, self.swap_total_bytes) }
+	pub fn swap_used_pct(&self) -> f32 { self.swap_usage_pct() }
+	pub fn swap_available_pct(&self) -> f32 { usage_pct(self.swap_available_bytes(), self.swap_total_bytes) }
 
-	/// Returns RAM usage as percentage (0.0 - 100.0)
-	pub fn usage_pct(&self) -> f32 {
-		if self.total_bytes == 0 {
-			return 0.0;
-		}
-		self.used_bytes as f32 / self.total_bytes as f32 * 100.0
+	pub fn is_swap_enabled(&self) -> bool { self.swap_total_bytes > 0 }
+	pub fn is_empty(&self) -> bool { self.total_bytes == 0 }
+}
+
+fn bytes_to_kib(bytes: u64) -> u64 { bytes / 1024 }
+fn bytes_to_mib(bytes: u64) -> u64 { bytes / 1024 / 1024 }
+fn bytes_to_gib(bytes: u64) -> f64 { bytes as f64 / 1024.0 / 1024.0 / 1024.0 }
+
+fn usage_pct(used: u64, total: u64) -> f32 {
+	if total == 0 {
+		return 0.0;
 	}
 
-	/// Returns swap usage as percentage (0.0 - 100.0)
-	pub fn swap_usage_pct(&self) -> f32 {
-		if self.swap_total_bytes == 0 {
-			return 0.0;
-		}
-		self.swap_used_bytes as f32 / self.swap_total_bytes as f32 * 100.0
-	}
+	used as f32 / total as f32 * 100.0
 }
