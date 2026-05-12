@@ -14,7 +14,7 @@ pub enum CustomEvents {
 
 impl ApplicationHandler<CustomEvents> for App {
 	fn resumed(&mut self, event_loop: &ActiveEventLoop) {
-		zerengine_log::debug!("App resumed");
+		zerengine_log::trace!("App resumed");
 		let attrs = Window::default_attributes()
 			.with_title("ZeroEngine")
 			.with_inner_size(winit::dpi::LogicalSize::new(1280.0, 720.0));
@@ -23,7 +23,7 @@ impl ApplicationHandler<CustomEvents> for App {
 	}
 
 	fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
-		zerengine_log::debug!("App update");
+		zerengine_log::trace!("App update");
 
 		event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
 
@@ -57,7 +57,7 @@ impl ApplicationHandler<CustomEvents> for App {
 	// }
 
 	fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
-		zerengine_log::debug!("window event");
+		zerengine_log::trace!("window event");
 		match event {
 			WindowEvent::CloseRequested => {
 				zerengine_log::debug!("Exiting...");
@@ -84,7 +84,7 @@ impl ApplicationHandler<CustomEvents> for App {
 				});
 			}
 			WindowEvent::RedrawRequested => {
-				zerengine_log::debug!("RedrawRequested");
+				zerengine_log::trace!("RedrawRequested");
 
 				// wgpu render here
 			}

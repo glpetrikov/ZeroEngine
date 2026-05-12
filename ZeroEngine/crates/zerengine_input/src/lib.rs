@@ -263,3 +263,53 @@ impl From<winit::event::MouseButton> for ZMouseCode {
 		}
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	fn make_input() -> Input { Input::new() }
+
+	#[test]
+	fn test_key_just_pressed() {
+		let mut input = make_input();
+		input.set_key(ZKeyCode::Space, true);
+		assert!(input.is_key_just_pressed(ZKeyCode::Space));
+		assert!(input.is_key_pressed(ZKeyCode::Space));
+	}
+
+	#[test]
+	fn test_key_just_released() {
+		let mut input = make_input();
+		input.set_key(ZKeyCode::Space, true);
+		input.late_update();
+		input.set_key(ZKeyCode::Space, false);
+		assert!(input.is_key_just_released(ZKeyCode::Space));
+		assert!(!input.is_key_pressed(ZKeyCode::Space));
+	}
+
+	#[test]
+	fn test_key_held() {
+		let mut input = make_input();
+		input.set_key(ZKeyCode::W, true);
+		input.late_update();
+		// Held - pressed but not just pressed
+		assert!(input.is_key_pressed(ZKeyCode::W));
+		assert!(!input.is_key_just_pressed(ZKeyCode::W));
+	}
+
+	#[test]
+	fn test_mouse_just_pressed() {
+		let mut input = make_input();
+		input.set_mouse_button(ZMouseCode::Left, true);
+		assert!(input.is_button_just_pressed(ZMouseCode::Left));
+	}
+
+	#[test]
+	fn test_late_update_clears_just_pressed() {
+		let mut input = make_input();
+		input.set_key(ZKeyCode::Enter, true);
+		input.late_update();
+		assert!(!input.is_key_just_pressed(ZKeyCode::Enter));
+	}
+}
