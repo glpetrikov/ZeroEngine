@@ -1,5 +1,6 @@
 [package]
 name = "zerengine_app"
+readme = "Readme.md"
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
