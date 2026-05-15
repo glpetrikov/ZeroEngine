@@ -5,6 +5,7 @@ members = [
     "ZeroEngine/crates/zerengine_core",
     "ZeroEngine/crates/zerengine_input",
     "ZeroEngine/crates/zerengine_log",
+    "ZeroEngine/crates/zerengine_renderer",
     "ZeroEngine/crates/syspeek",
     "ZeroEngine/cli/zerofetch",
 ]
@@ -22,17 +23,21 @@ categories = ["game-engines"]
 [profile.dev]
 opt-level = 1
 [profile.dev.package."*"]
-opt-level = 3
+opt-level = 3 # 3, "s", "z"
 
 [profile.release]
 opt-level = 3
 lto = "thin"
 codegen-units = 1
 strip = "symbols"
+[profile.release.package."*"]
+opt-level = "s" # 3, "s", "z"
 
 [profile.dist]
 inherits = "release"
-opt-level = 3        # 3, "s", "z"
+opt-level = "s"      # 3, "s", "z"
 lto = "fat"
 codegen-units = 1
 strip = "symbols"
+[profile.dist.package."*"]
+opt-level = "z" # 3, "s", "z"

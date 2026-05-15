@@ -91,6 +91,14 @@ impl Input {
 		self.previous_mouse = self.current_mouse;
 	}
 
+	pub fn reset(&mut self) {
+		self.current_keys = [false; 512];
+		self.previous_keys = [false; 512];
+		self.current_mouse = [false; 8];
+		self.previous_mouse = [false; 8];
+		self.mouse_pos = (0.0, 0.0);
+	}
+
 	// --- Main Methods ---
 
 	// Keyboard

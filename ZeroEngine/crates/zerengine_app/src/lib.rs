@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use winit::{
 	application::ApplicationHandler,
 	event::WindowEvent,
@@ -12,6 +14,27 @@ pub enum CustomEvents {
 	Shutdown,
 }
 
+pub struct App {
+	runtime: tokio::runtime::Runtime,
+	pub window: Option<Arc<Window>>,
+	renderer: Option<zerengine_renderer::Renderer>,
+	focused: bool,
+	occluded: bool,
+	minimized: bool,
+}
+impl Default for App {
+	fn default() -> Self {
+		Self {
+			runtime: tokio::runtime::Runtime::new().unwrap(),
+			window: None,
+			renderer: None,
+			focused: true,
+			occluded: false,
+			minimized: false,
+		}
+	}
+}
+
 impl ApplicationHandler<CustomEvents> for App {
 	fn resumed(&mut self, event_loop: &ActiveEventLoop) {
 		zerengine_log::trace!("App resumed");
@@ -19,9 +42,19 @@ impl ApplicationHandler<CustomEvents> for App {
 			.with_title("ZeroEngine")
 			.with_inner_size(winit::dpi::LogicalSize::new(1280.0, 720.0));
 
-		self.window = Some(event_loop.create_window(attrs).unwrap());
-	}
+		let window = match event_loop.create_window(attrs) {
+			Ok(window) => Arc::new(window),
+			Err(error) => {
+				zerengine_log::error!("Failed to create window: {error}");
+				event_loop.exit();
+				return;
+			}
+		};
 
+		self.renderer = Some(self.runtime.block_on(zerengine_renderer::Renderer::new(window.clone())));
+
+		self.window = Some(window);
+	}
 	fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
 		zerengine_log::trace!("App update");
 
@@ -32,7 +65,10 @@ impl ApplicationHandler<CustomEvents> for App {
 			event_loop.exit(); // TODO: TEMP
 		}
 
-		if let Some(window) = &self.window {
+		if let Some(window) = &self.window
+			&& !self.occluded
+			&& !self.minimized
+		{
 			window.request_redraw();
 		}
 		Input::update_globally(|i| i.late_update());
@@ -46,23 +82,34 @@ impl ApplicationHandler<CustomEvents> for App {
 		}
 	}
 
-	// fn user_event(&mut self, _event_loop: &ActiveEventLoop, event: CustomEvent) {
-	// 	match event {
-	// 		CustomEvent::Timer => {
-	// 			if let Some(window) = &self.window {
-	// 				window.request_redraw();
-	// 			}
-	// 		}
-	// 	}
-	// }
-
 	fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
 		zerengine_log::trace!("window event");
 		match event {
+			// === WINDOW STATE =============
+			WindowEvent::Resized(size) => {
+				self.minimized = size.width == 0 || size.height == 0;
+
+				if !self.minimized {
+					if let Some(renderer) = &mut self.renderer {
+						renderer.resize(size);
+					}
+				}
+			}
+			WindowEvent::Focused(focused) => {
+				self.focused = focused;
+
+				if !focused {
+					Input::update_globally(|i| i.reset());
+				}
+			}
+			WindowEvent::Occluded(occluded) => {
+				self.occluded = occluded;
+			}
 			WindowEvent::CloseRequested => {
 				zerengine_log::debug!("Exiting...");
 				event_loop.exit();
 			}
+			// === INPUT ==============
 			WindowEvent::KeyboardInput { event, .. } if event.physical_key == PhysicalKey::Code(KeyCode::Escape) => {
 				event_loop.exit();
 			}
@@ -83,17 +130,15 @@ impl ApplicationHandler<CustomEvents> for App {
 					i.set_mouse_button(ZMouseCode::from(button), state.is_pressed());
 				});
 			}
+			// === RENDER ==============
 			WindowEvent::RedrawRequested => {
 				zerengine_log::trace!("RedrawRequested");
 
-				// wgpu render here
+				if let Some(renderer) = &mut self.renderer {
+					renderer.request_redraw();
+				}
 			}
 			_ => {}
 		}
 	}
-}
-
-#[derive(Default)]
-pub struct App {
-	pub window: Option<Window>,
 }

@@ -10,3 +10,5 @@ repository.workspace = true
 [dependencies]
 zerengine_input = { path = "../zerengine_input" }
 glam = { version = "0.32.1", features = ["bytemuck", "serde", "zerocopy", "mint", "encase", "fast-math"] }
+anyhow = "1.0.102"
+thiserror = "2.0.18"
