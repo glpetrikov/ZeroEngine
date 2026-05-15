@@ -1,13 +1,19 @@
+// Prevents additional console window on Windows in release, DO NOT REMOVE!!
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 use winit::event_loop::{ControlFlow, EventLoop};
 use zerengine_app::*;
 
 fn main() {
 	render_banner();
 
-	zerengine_log::init();
+	zerengine_log::init(); // TODO: add file logging
 
 	zerengine_log::debug!("Setting up panic hook");
 
+	// ===================================================
+	// Setup panic hook
+	// ===================================================
 	std::panic::set_hook(Box::new(|panic_info| {
 		let location = panic_info
 			.location()
@@ -24,6 +30,9 @@ fn main() {
 		zerengine_log::error!("ZEROENGINE FATAL ERROR at {}: {}", location, message);
 	}));
 
+	// ===================================================
+	// Creating Event Loop
+	// ===================================================
 	zerengine_log::debug!("Event Loop creating");
 	let event_loop = EventLoop::<CustomEvents>::with_user_event().build().unwrap();
 	let event_loop_proxy = event_loop.create_proxy();
@@ -31,12 +40,20 @@ fn main() {
 	zerengine_log::trace!("Event Loop setting control flow");
 	event_loop.set_control_flow(ControlFlow::Poll);
 
+	// ===================================================
+	// Setup Ctrl+C hook
+	// ===================================================
+	let ctrlc_proxy = event_loop_proxy.clone();
 	ctrlc::set_handler(move || {
 		println!("\nReceived Ctrl+C, shutting down...");
-		event_loop_proxy.send_event(CustomEvents::Shutdown).unwrap();
+
+		let _ = ctrlc_proxy.send_event(CustomEvents::Shutdown);
 	})
 	.unwrap();
 
+	// ===================================================
+	// Running App
+	// ===================================================
 	zerengine_log::debug!("Creating App");
 	let mut app = App::default();
 
@@ -44,6 +61,9 @@ fn main() {
 	event_loop.run_app(&mut app).unwrap();
 }
 
+// ===================================================
+// Banner render
+// ===================================================
 use owo_colors::OwoColorize;
 
 fn render_banner() {

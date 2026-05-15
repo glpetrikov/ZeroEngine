@@ -7,7 +7,8 @@ pub fn init() {
 		.from_env_lossy()
 		.add_directive("calloop=off".parse().unwrap())
 		.add_directive("winit=warn".parse().unwrap())
-		.add_directive("sctk=warn".parse().unwrap());
+		.add_directive("sctk=error".parse().unwrap())
+		.add_directive("sctk_adwaita=error".parse().unwrap());
 
 	let registry = fmt()
 		.with_env_filter(filter)
