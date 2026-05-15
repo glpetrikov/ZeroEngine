@@ -51,7 +51,11 @@ impl ApplicationHandler<CustomEvents> for App {
 			}
 		};
 
-		self.renderer = Some(self.runtime.block_on(zerengine_renderer::Renderer::new(window.clone())));
+		self.renderer = Some(
+			self.runtime
+				.block_on(zerengine_renderer::Renderer::new(window.clone()))
+				.unwrap(),
+		);
 
 		self.window = Some(window);
 	}

@@ -1,54 +1,62 @@
 use std::{fs, path::PathBuf};
 
+pub enum ShaderSource {
+    Path(PathBuf),
+    Source(String),
+}
+
+#[allow(dead_code)]
 pub struct Pipeline {
-	pub render_pipeline: wgpu::RenderPipeline,
-	#[allow(dead_code)] // TODO: remove
-	pub name: String,
+    pub render_pipeline: wgpu::RenderPipeline,
+    pub name: String,
 }
 
 pub struct PipelineBuilder {
-	// TODO: add from string option of shader source code
-	shader_filename: PathBuf,
-	vertex_entry: String,
-	fragment_entry: String,
-	// TODO: add Mesh Shaders
-	pixel_format: wgpu::TextureFormat,
-	name: String,
+    shader_source: Option<ShaderSource>,
+    vertex_entry: String,
+    fragment_entry: String,
+    pixel_format: wgpu::TextureFormat,
+    name: String,
 }
 
 #[allow(dead_code)]
 impl PipelineBuilder {
 	pub fn new() -> Self {
-		Self {
-			shader_filename: PathBuf::new(),
-			vertex_entry: "vs_main".to_string(),
-			fragment_entry: "fs_main".to_string(),
-			pixel_format: wgpu::TextureFormat::Bgra8UnormSrgb,
-			name: "Unnamed Pipeline".to_string(),
-		}
-	}
+        Self {
+            shader_source: None,
+            vertex_entry: "vs_main".to_string(),
+            fragment_entry: "fs_main".to_string(),
+            pixel_format: wgpu::TextureFormat::Bgra8UnormSrgb,
+            name: "Unnamed Pipeline".to_string(),
+        }
+    }
 
-	pub fn with_name(mut self, name: impl Into<String>) -> Self {
-		self.name = name.into();
-		self
-	}
+    pub fn with_name(mut self, name: impl Into<String>) -> Self {
+        self.name = name.into();
+        self
+    }
 
-	pub fn with_shader(
-		mut self,
-		shader_filename: impl Into<PathBuf>,
-		vertex_entry: impl Into<String>,
-		fragment_entry: impl Into<String>,
-	) -> Self {
-		self.shader_filename = shader_filename.into();
-		self.vertex_entry = vertex_entry.into();
-		self.fragment_entry = fragment_entry.into();
-		self
-	}
+    pub fn with_shader_path(mut self, path: impl Into<PathBuf>) -> Self {
+        self.shader_source = Some(ShaderSource::Path(path.into()));
+        self
+    }
 
-	pub fn with_shader_path(mut self, filename: impl Into<PathBuf>) -> Self {
-		self.shader_filename = filename.into();
-		self
-	}
+    pub fn with_shader_source(mut self, source: impl Into<String>) -> Self {
+        self.shader_source = Some(ShaderSource::Source(source.into()));
+        self
+    }
+
+    pub fn with_shader(
+        mut self,
+        path: impl Into<PathBuf>,
+        vertex_entry: impl Into<String>,
+        fragment_entry: impl Into<String>,
+    ) -> Self {
+        self.shader_source = Some(ShaderSource::Path(path.into()));
+        self.vertex_entry = vertex_entry.into();
+        self.fragment_entry = fragment_entry.into();
+        self
+    }
 
 	pub fn with_vertex_entry(mut self, entry: impl Into<String>) -> Self {
 		self.vertex_entry = entry.into();
@@ -66,18 +74,25 @@ impl PipelineBuilder {
 	}
 
 	pub fn build(self, device: &wgpu::Device) -> zerengine_core::Result<Pipeline> {
-		let filepath = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(&self.shader_filename);
+        let source_code = match self.shader_source {
+            Some(ShaderSource::Path(path)) => {
+                let filepath = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(path);
+                fs::read_to_string(&filepath)?
+            }
+            Some(ShaderSource::Source(source)) => source,
+            None => {
+                zerengine_core::bail!("Pipeline `{}` has no shader source", self.name);
+            }
+        };
 
-		let source_code = fs::read_to_string(&filepath)
-			.map_err(|e| zerengine_core::anyhow!("Failed to read shader {:?}: {}", filepath, e))?;
+        let shader_module_name = format!("{} Shader", self.name);
 
-		let shader_module_name = format!("{} Shader", self.name);
+        let shader_module_descriptor = wgpu::ShaderModuleDescriptor {
+            label: Some(&shader_module_name),
+            source: wgpu::ShaderSource::Wgsl(source_code.into()),
+        };
 
-		let shader_module_descriptor = wgpu::ShaderModuleDescriptor {
-			label: Some(shader_module_name.as_str()),
-			source: wgpu::ShaderSource::Wgsl(source_code.into()),
-		};
-		let shader_module = device.create_shader_module(shader_module_descriptor);
+        let shader_module = device.create_shader_module(shader_module_descriptor);
 
 		let pipeline_layout_name = format!("{} Pipeline Layout", self.name);
 
@@ -135,4 +150,8 @@ impl PipelineBuilder {
 			name: self.name,
 		})
 	}
+}
+
+impl Default for PipelineBuilder {
+    fn default() -> Self { Self::new() }
 }

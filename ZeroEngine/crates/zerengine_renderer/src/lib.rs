@@ -14,7 +14,7 @@ pub struct Renderer {
 }
 
 impl Renderer {
-	pub async fn new(window: Arc<winit::window::Window>) -> Self {
+	pub async fn new(window: Arc<winit::window::Window>) -> zerengine_core::Result<Self> {
 		let instance = wgpu::Instance::default();
 
 		let surface = instance.create_surface(window.clone()).unwrap();
@@ -66,20 +66,20 @@ impl Renderer {
 
 		surface.configure(&device, &config);
 
-		let pipeline_builder = PipelineBuilder::new()
-			.with_shader("assets/shaders/triangle.wgsl", "vs_main", "fs_main")
-			.with_pixel_format(surface_format)
-			.with_name("Triangle Pipeline");
-		let triangle_pipeline = pipeline_builder.build(&device).unwrap();
+		let triangle_pipeline = PipelineBuilder::new()
+            .with_name("Triangle")
+            .with_shader_source(include_str!("../assets/shaders/triangle.wgsl"))
+            .with_pixel_format(surface_format)
+            .build(&device)?;
 
-		Self {
+		Ok(Self {
 			surface,
 			device,
 			queue,
 			config,
 			size,
 			triangle_pipeline,
-		}
+		})
 	}
 
 	pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
