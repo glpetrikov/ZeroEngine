@@ -3,6 +3,7 @@ mod backend;
 use std::sync::Arc;
 
 use crate::backend::pipeline::*;
+use crate::backend::mesh::*;
 
 pub struct Renderer {
 	surface: wgpu::Surface<'static>,
@@ -11,6 +12,7 @@ pub struct Renderer {
 	config: wgpu::SurfaceConfiguration,
 	size: winit::dpi::PhysicalSize<u32>,
 	triangle_pipeline: Pipeline,
+	triangle_mesh: Mesh,
 }
 
 impl Renderer {
@@ -66,10 +68,13 @@ impl Renderer {
 
 		surface.configure(&device, &config);
 
+		let triangle_mesh = Vertex::make_triangle(&device);
+
 		let triangle_pipeline = PipelineBuilder::new()
             .with_name("Triangle")
-            .with_shader_source(include_str!("../assets/shaders/triangle.wgsl"))
+            .with_shader_source(wesl::include_wesl!("triangle"))
             .with_pixel_format(surface_format)
+			.with_buffer_layout(Vertex::get_layout())
             .build(&device)?;
 
 		Ok(Self {
@@ -79,6 +84,7 @@ impl Renderer {
 			config,
 			size,
 			triangle_pipeline,
+			triangle_mesh,
 		})
 	}
 
@@ -146,6 +152,7 @@ impl Renderer {
 
 		let mut render_pass = command_encoder.begin_render_pass(&render_pass_descriptor);
 		render_pass.set_pipeline(&self.triangle_pipeline.render_pipeline);
+		render_pass.set_vertex_buffer(0, self.triangle_mesh.buffer.slice(..));
 		render_pass.draw(0..3, 0..1);
 		drop(render_pass);
 		self.queue.submit(std::iter::once(command_encoder.finish()));

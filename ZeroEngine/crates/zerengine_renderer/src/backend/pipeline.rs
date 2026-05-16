@@ -16,6 +16,7 @@ pub struct PipelineBuilder {
     vertex_entry: String,
     fragment_entry: String,
     pixel_format: wgpu::TextureFormat,
+	vertex_buffer_layouts: Vec<wgpu::VertexBufferLayout<'static>>,
     name: String,
 }
 
@@ -27,6 +28,7 @@ impl PipelineBuilder {
             vertex_entry: "vs_main".to_string(),
             fragment_entry: "fs_main".to_string(),
             pixel_format: wgpu::TextureFormat::Bgra8UnormSrgb,
+			vertex_buffer_layouts: vec![],
             name: "Unnamed Pipeline".to_string(),
         }
     }
@@ -73,6 +75,11 @@ impl PipelineBuilder {
 		self
 	}
 
+	pub fn with_buffer_layout(mut self, layout: wgpu::VertexBufferLayout<'static>) -> Self {
+        self.vertex_buffer_layouts.push(layout);
+        self
+    }
+
 	pub fn build(self, device: &wgpu::Device) -> zerengine_core::Result<Pipeline> {
         let source_code = match self.shader_source {
             Some(ShaderSource::Path(path)) => {
@@ -117,7 +124,7 @@ impl PipelineBuilder {
 			vertex: wgpu::VertexState {
 				module: &shader_module,
 				entry_point: Some(&self.vertex_entry),
-				buffers: &[],
+				buffers: &self.vertex_buffer_layouts,
 				compilation_options: wgpu::PipelineCompilationOptions::default(),
 			},
 			fragment: Some(wgpu::FragmentState {
