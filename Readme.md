@@ -5,8 +5,8 @@ ZeroEngine is a modern game engine written in Rust.
 
 ## info
 
-[![made with rust](https://img.shields.io/badge/made%20with-Rust-red)](https://www.rust-lang.org)
-![Status](https://img.shields.io/badge/status-alpha-orange.svg)
+[![made with rust](https://img.shields.io/badge/made%20with-Rust-orange)](https://www.rust-lang.org)
+![Status](https://img.shields.io/badge/status-alpha-red.svg)
 
 [![License](https://img.shields.io/badge/License-Apache2.0-blue.svg)](LICENSE)
 
