@@ -26,14 +26,11 @@ pub(crate) fn panic_hook() {
 			.unwrap_or("unknown panic");
 
 		const RED_BOLD: &str = "\x1b[1;31m";
-        const RESET: &str = "\x1b[0m";
+		const RESET: &str = "\x1b[0m";
 
-        println!(
-            "{}ZEROENGINE FATAL ERROR{} at {}: {}",
-            RED_BOLD,
-            RESET,
-            location,
-            message
-        );
+		println!(
+			"{}ZEROENGINE FATAL ERROR{} at {}: {}",
+			RED_BOLD, RESET, location, message
+		);
 	}));
 }

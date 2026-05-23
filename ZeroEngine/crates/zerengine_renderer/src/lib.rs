@@ -10,8 +10,9 @@ pub struct Renderer {
 	queue: wgpu::Queue,
 	config: wgpu::SurfaceConfiguration,
 	size: winit::dpi::PhysicalSize<u32>,
-	triangle_pipeline: Pipeline,
+	pipeline: Pipeline,
 	triangle_mesh: Mesh,
+	quad_mesh: Mesh,
 }
 
 impl Renderer {
@@ -68,10 +69,11 @@ impl Renderer {
 		surface.configure(&device, &config);
 
 		let triangle_mesh = Vertex::make_triangle(&device);
+		let quad_mesh = Vertex::make_quad(&device);
 
-		let triangle_pipeline = PipelineBuilder::new()
-			.with_name("Triangle")
-			.with_shader_source(wesl::include_wesl!("triangle"))
+		let pipeline = PipelineBuilder::new()
+			.with_name("Pipeline")
+			.with_shader_source(wesl::include_wesl!("shader"))
 			.with_pixel_format(surface_format)
 			.with_buffer_layout(Vertex::get_layout())
 			.build(&device)?;
@@ -82,8 +84,9 @@ impl Renderer {
 			queue,
 			config,
 			size,
-			triangle_pipeline,
+			pipeline,
 			triangle_mesh,
+			quad_mesh,
 		})
 	}
 
@@ -150,9 +153,16 @@ impl Renderer {
 		};
 
 		let mut render_pass = command_encoder.begin_render_pass(&render_pass_descriptor);
-		render_pass.set_pipeline(&self.triangle_pipeline.render_pipeline);
-		render_pass.set_vertex_buffer(0, self.triangle_mesh.buffer.slice(..));
-		render_pass.draw(0..3, 0..1);
+		render_pass.set_pipeline(&self.pipeline.render_pipeline);
+
+		render_pass.set_vertex_buffer(0, self.quad_mesh.vertex_buffer.slice(..));
+		render_pass.set_index_buffer(self.quad_mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+		render_pass.draw_indexed(0..6, 0, 0..1);
+
+		render_pass.set_vertex_buffer(0, self.triangle_mesh.vertex_buffer.slice(..));
+		render_pass.set_index_buffer(self.triangle_mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+		render_pass.draw_indexed(0..3, 0, 0..1);
+
 		drop(render_pass);
 		self.queue.submit(std::iter::once(command_encoder.finish()));
 
