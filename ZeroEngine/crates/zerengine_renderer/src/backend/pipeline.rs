@@ -125,7 +125,7 @@ impl<'a> Builder<'a> {
 
 		let render_targets = [Some(wgpu::ColorTargetState {
 			format: self.pixel_format,
-			blend: Some(wgpu::BlendState::REPLACE), // TODO: add enum BlendMode
+			blend: Some(wgpu::BlendState::ALPHA_BLENDING), // TODO: add enum BlendMode
 			write_mask: wgpu::ColorWrites::ALL,
 		})];
 
@@ -150,7 +150,7 @@ impl<'a> Builder<'a> {
 				topology: wgpu::PrimitiveTopology::TriangleList,
 				strip_index_format: None,
 				front_face: wgpu::FrontFace::Ccw,
-				cull_mode: None,
+				cull_mode: Some(wgpu::Face::Back),
 				polygon_mode: wgpu::PolygonMode::Fill,
 				unclipped_depth: false,
 				conservative: false,

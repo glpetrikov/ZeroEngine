@@ -40,10 +40,10 @@ impl Renderer {
 		zerengine_log::info!("Renderer: {} ({:?})", info.name, info.backend);
 
 		let device_descriptor = wgpu::DeviceDescriptor {
-			required_features: wgpu::Features::empty(),
+			required_features: wgpu::Features::POLYGON_MODE_LINE,
 			required_limits: wgpu::Limits::default(),
 			label: Some("Device"),
-			memory_hints: wgpu::MemoryHints::default(),
+			memory_hints: wgpu::MemoryHints::Performance,
 			trace: wgpu::Trace::Off,
 			experimental_features: wgpu::ExperimentalFeatures::disabled(),
 		};
@@ -178,13 +178,13 @@ impl Renderer {
 		render_pass.set_pipeline(&self.pipeline.render_pipeline);
 
 		render_pass.set_bind_group(0, &self.quad_material.bind_group, &[]);
-		render_pass.set_vertex_buffer(0, self.quad_mesh.vertex_buffer.slice(..));
-		render_pass.set_index_buffer(self.quad_mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+		render_pass.set_vertex_buffer(0, self.quad_mesh.buffer.slice(..self.quad_mesh.offset));
+		render_pass.set_index_buffer(self.quad_mesh.buffer.slice(self.quad_mesh.offset..), wgpu::IndexFormat::Uint16);
 		render_pass.draw_indexed(0..6, 0, 0..1);
 
 		render_pass.set_bind_group(0, &self.triangle_material.bind_group, &[]);
-		render_pass.set_vertex_buffer(0, self.triangle_mesh.vertex_buffer.slice(..));
-		render_pass.set_index_buffer(self.triangle_mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+		render_pass.set_vertex_buffer(0, self.triangle_mesh.buffer.slice(..self.triangle_mesh.offset));
+		render_pass.set_index_buffer(self.triangle_mesh.buffer.slice(self.triangle_mesh.offset..), wgpu::IndexFormat::Uint16);
 		render_pass.draw_indexed(0..3, 0, 0..1);
 
 		drop(render_pass);

@@ -3,8 +3,8 @@ use glam::*;
 use wgpu::util::DeviceExt;
 
 pub struct Mesh {
-	pub vertex_buffer: wgpu::Buffer,
-	pub index_buffer: wgpu::Buffer,
+	pub buffer: wgpu::Buffer,
+    pub offset: u64,
 }
 
 #[repr(C)]
@@ -40,33 +40,22 @@ impl Vertex {
 				color: Vec4::new(0.0, 0.0, 1.0, 1.0).to_array(),
 			},
 		];
-
-		let bytes: &[u8] = bytemuck::cast_slice(&vertices);
-
-		let buffer_descriptor = wgpu::util::BufferInitDescriptor {
-			label: Some("Triangle vertex buffer"),
-			contents: bytes,
-			usage: wgpu::BufferUsages::VERTEX,
-		};
-
-		let vertex_buffer = device.create_buffer_init(&buffer_descriptor);
-
 		let indices: [u16; 3] = [0, 1, 2];
 
-		let bytes = bytemuck::cast_slice(&indices);
+		let bytes_1: &[u8] = bytemuck::cast_slice(&vertices);
+		let bytes_2: &[u8] = bytemuck::cast_slice(&indices);
+		let bytes_merged: &[u8] = &[bytes_1, bytes_2].concat();
 
 		let buffer_descriptor = wgpu::util::BufferInitDescriptor {
-			label: Some("Triangle index buffer"),
-			contents: bytes,
-			usage: wgpu::BufferUsages::INDEX,
+			label: Some("Triangle vertex & index buffer"),
+			contents: bytes_merged,
+			usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::INDEX,
 		};
 
-		let index_buffer = device.create_buffer_init(&buffer_descriptor);
+		let buffer = device.create_buffer_init(&buffer_descriptor);
+		let offset: u64 = bytes_1.len().try_into().unwrap();
 
-		Mesh {
-			vertex_buffer,
-			index_buffer,
-		}
+		Mesh { buffer, offset }
 	}
 
 	pub fn make_quad(device: &wgpu::Device) -> Mesh {
@@ -88,32 +77,21 @@ impl Vertex {
 				color: Vec4::new(0.0, 1.0, 0.0, 1.0).to_array(),
 			},
 		];
-
-		let bytes: &[u8] = bytemuck::cast_slice(&vertices);
-
-		let buffer_descriptor = wgpu::util::BufferInitDescriptor {
-			label: Some("Quad vertex buffer"),
-			contents: bytes,
-			usage: wgpu::BufferUsages::VERTEX,
-		};
-
-		let vertex_buffer = device.create_buffer_init(&buffer_descriptor);
-
 		let indices: [u16; 6] = [0, 1, 2, 0, 2, 3];
 
-		let bytes = bytemuck::cast_slice(&indices);
+		let bytes_1: &[u8] = bytemuck::cast_slice(&vertices);
+		let bytes_2: &[u8] = bytemuck::cast_slice(&indices);
+		let bytes_merged: &[u8] = &[bytes_1, bytes_2].concat();
 
 		let buffer_descriptor = wgpu::util::BufferInitDescriptor {
-			label: Some("Quad index buffer"),
-			contents: bytes,
-			usage: wgpu::BufferUsages::INDEX,
+			label: Some("Quad vertex & index buffer"),
+			contents: bytes_merged,
+			usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::INDEX,
 		};
 
-		let index_buffer = device.create_buffer_init(&buffer_descriptor);
+		let buffer = device.create_buffer_init(&buffer_descriptor);
+		let offset: u64 = bytes_1.len().try_into().unwrap();
 
-		Mesh {
-			vertex_buffer,
-			index_buffer,
-		}
+		Mesh { buffer, offset }
 	}
 }
