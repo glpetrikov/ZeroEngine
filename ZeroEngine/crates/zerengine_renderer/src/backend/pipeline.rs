@@ -11,18 +11,22 @@ pub struct Pipeline {
 	pub name: String,
 }
 
-pub struct PipelineBuilder {
+pub struct Builder<'a> {
 	shader_source: Option<ShaderSource>,
 	vertex_entry: String,
 	fragment_entry: String,
 	pixel_format: wgpu::TextureFormat,
 	vertex_buffer_layouts: Vec<wgpu::VertexBufferLayout<'static>>,
 	name: String,
+	bind_group_layouts: Vec<Option<&'a wgpu::BindGroupLayout>>,
+	device: &'a wgpu::Device,
 }
 
 #[allow(dead_code)]
-impl PipelineBuilder {
-	pub fn new() -> Self {
+impl<'a> Builder<'a> {
+	// TODO: add shader_from_filepath(path, fs_main, vs_main) and
+	// shader_from_source(source, fs_main, vs_main)
+	pub fn new(device: &'a wgpu::Device) -> Self {
 		Self {
 			shader_source: None,
 			vertex_entry: "vs_main".to_string(),
@@ -30,6 +34,8 @@ impl PipelineBuilder {
 			pixel_format: wgpu::TextureFormat::Bgra8UnormSrgb,
 			vertex_buffer_layouts: vec![],
 			name: "Unnamed Pipeline".to_string(),
+			bind_group_layouts: vec![],
+			device,
 		}
 	}
 
@@ -75,20 +81,27 @@ impl PipelineBuilder {
 		self
 	}
 
-	pub fn with_buffer_layout(mut self, layout: wgpu::VertexBufferLayout<'static>) -> Self {
+	pub fn with_vertex_buffer_layout(mut self, layout: wgpu::VertexBufferLayout<'static>) -> Self {
 		self.vertex_buffer_layouts.push(layout);
 		self
 	}
 
-	pub fn build(self, device: &wgpu::Device) -> zerengine_core::Result<Pipeline> {
+	pub fn with_bind_group_layout(mut self, layout: &'a wgpu::BindGroupLayout) -> Self {
+		self.bind_group_layouts.push(Some(layout));
+		self
+	}
+
+	pub fn build(self) -> zerengine_core::Result<Pipeline> {
 		let source_code = match self.shader_source {
 			Some(ShaderSource::Path(path)) => {
 				let filepath = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(path);
-				fs::read_to_string(&filepath)?
+
+				fs::read_to_string(&filepath)
+					.unwrap_or_else(|e| panic!("Failed to read shader `{}`: {e}", filepath.display()))
 			}
 			Some(ShaderSource::Source(source)) => source,
 			None => {
-				zerengine_core::bail!("Pipeline `{}` has no shader source", self.name);
+				zerengine_core::bail!("Pipeline `{}` has no shader source", self.name.clone());
 			}
 		};
 
@@ -99,16 +112,16 @@ impl PipelineBuilder {
 			source: wgpu::ShaderSource::Wgsl(source_code.into()),
 		};
 
-		let shader_module = device.create_shader_module(shader_module_descriptor);
+		let shader_module = self.device.create_shader_module(shader_module_descriptor);
 
 		let pipeline_layout_name = format!("{} Pipeline Layout", self.name);
 
 		let pipeline_layout_descriptor = wgpu::PipelineLayoutDescriptor {
 			label: Some(pipeline_layout_name.as_str()),
-			bind_group_layouts: &[],
+			bind_group_layouts: &self.bind_group_layouts,
 			immediate_size: 0,
 		};
-		let pipeline_layout = device.create_pipeline_layout(&pipeline_layout_descriptor);
+		let pipeline_layout = self.device.create_pipeline_layout(&pipeline_layout_descriptor);
 
 		let render_targets = [Some(wgpu::ColorTargetState {
 			format: self.pixel_format,
@@ -152,13 +165,13 @@ impl PipelineBuilder {
 			cache: None,
 		};
 
-		Ok(Pipeline {
-			render_pipeline: device.create_render_pipeline(&render_pipeline_descriptor),
-			name: self.name,
-		})
-	}
-}
+		let render_pipeline = self.device.create_render_pipeline(&render_pipeline_descriptor);
 
-impl Default for PipelineBuilder {
-	fn default() -> Self { Self::new() }
+		let pipeline = Pipeline {
+			render_pipeline,
+			name: self.name.clone(),
+		};
+
+		Ok(pipeline)
+	}
 }

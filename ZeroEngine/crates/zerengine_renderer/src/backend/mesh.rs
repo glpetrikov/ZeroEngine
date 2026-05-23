@@ -41,9 +41,9 @@ impl Vertex {
 			},
 		];
 
-		let mut bytes: &[u8] = bytemuck::cast_slice(&vertices);
+		let bytes: &[u8] = bytemuck::cast_slice(&vertices);
 
-		let mut buffer_descriptor = wgpu::util::BufferInitDescriptor {
+		let buffer_descriptor = wgpu::util::BufferInitDescriptor {
 			label: Some("Triangle vertex buffer"),
 			contents: bytes,
 			usage: wgpu::BufferUsages::VERTEX,
@@ -53,9 +53,9 @@ impl Vertex {
 
 		let indices: [u16; 3] = [0, 1, 2];
 
-		bytes = bytemuck::cast_slice(&indices);
+		let bytes = bytemuck::cast_slice(&indices);
 
-		buffer_descriptor = wgpu::util::BufferInitDescriptor {
+		let buffer_descriptor = wgpu::util::BufferInitDescriptor {
 			label: Some("Triangle index buffer"),
 			contents: bytes,
 			usage: wgpu::BufferUsages::INDEX,
@@ -89,9 +89,9 @@ impl Vertex {
 			},
 		];
 
-		let mut bytes: &[u8] = bytemuck::cast_slice(&vertices);
+		let bytes: &[u8] = bytemuck::cast_slice(&vertices);
 
-		let mut buffer_descriptor = wgpu::util::BufferInitDescriptor {
+		let buffer_descriptor = wgpu::util::BufferInitDescriptor {
 			label: Some("Quad vertex buffer"),
 			contents: bytes,
 			usage: wgpu::BufferUsages::VERTEX,
@@ -101,9 +101,9 @@ impl Vertex {
 
 		let indices: [u16; 6] = [0, 1, 2, 0, 2, 3];
 
-		bytes = bytemuck::cast_slice(&indices);
+		let bytes = bytemuck::cast_slice(&indices);
 
-		buffer_descriptor = wgpu::util::BufferInitDescriptor {
+		let buffer_descriptor = wgpu::util::BufferInitDescriptor {
 			label: Some("Quad index buffer"),
 			contents: bytes,
 			usage: wgpu::BufferUsages::INDEX,

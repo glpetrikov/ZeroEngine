@@ -2,7 +2,11 @@ mod backend;
 
 use std::sync::Arc;
 
-use crate::backend::{mesh::*, pipeline::*};
+use crate::backend::{
+	mesh::*,
+	pipeline::{self, *},
+	texture::Texture,
+};
 
 pub struct Renderer {
 	surface: wgpu::Surface<'static>,
@@ -13,6 +17,8 @@ pub struct Renderer {
 	pipeline: Pipeline,
 	triangle_mesh: Mesh,
 	quad_mesh: Mesh,
+	triangle_material: Texture,
+	quad_material: Texture,
 }
 
 impl Renderer {
@@ -71,12 +77,26 @@ impl Renderer {
 		let triangle_mesh = Vertex::make_triangle(&device);
 		let quad_mesh = Vertex::make_quad(&device);
 
-		let pipeline = PipelineBuilder::new()
-			.with_name("Pipeline")
-			.with_shader_source(wesl::include_wesl!("shader"))
-			.with_pixel_format(surface_format)
-			.with_buffer_layout(Vertex::get_layout())
-			.build(&device)?;
+		let material_bind_group_layout: wgpu::BindGroupLayout;
+		{
+			let mut builder = backend::bind_group_layout::Builder::new(&device);
+			builder.add_material();
+			material_bind_group_layout = builder.build("Material Bind Group Layout");
+		}
+
+		let render_pipeline: Pipeline;
+		{
+			let pipeline_builder = pipeline::Builder::new(&device)
+				.with_shader_source(wesl::include_wesl!("shader"))
+				.with_pixel_format(surface_format)
+				.with_vertex_buffer_layout(Vertex::get_layout())
+				.with_bind_group_layout(&material_bind_group_layout);
+
+			render_pipeline = pipeline_builder.build()?;
+		}
+
+		let triangle_material = Texture::new("CheckerBoard.png", &device, &queue, &material_bind_group_layout);
+		let quad_material = Texture::new("CheckerBoard.png", &device, &queue, &material_bind_group_layout);
 
 		Ok(Self {
 			surface,
@@ -84,9 +104,11 @@ impl Renderer {
 			queue,
 			config,
 			size,
-			pipeline,
+			pipeline: render_pipeline,
 			triangle_mesh,
+			triangle_material,
 			quad_mesh,
+			quad_material,
 		})
 	}
 
@@ -155,10 +177,12 @@ impl Renderer {
 		let mut render_pass = command_encoder.begin_render_pass(&render_pass_descriptor);
 		render_pass.set_pipeline(&self.pipeline.render_pipeline);
 
+		render_pass.set_bind_group(0, &self.quad_material.bind_group, &[]);
 		render_pass.set_vertex_buffer(0, self.quad_mesh.vertex_buffer.slice(..));
 		render_pass.set_index_buffer(self.quad_mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
 		render_pass.draw_indexed(0..6, 0, 0..1);
 
+		render_pass.set_bind_group(0, &self.triangle_material.bind_group, &[]);
 		render_pass.set_vertex_buffer(0, self.triangle_mesh.vertex_buffer.slice(..));
 		render_pass.set_index_buffer(self.triangle_mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
 		render_pass.draw_indexed(0..3, 0, 0..1);

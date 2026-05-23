@@ -51,11 +51,18 @@ impl ApplicationHandler<CustomEvents> for App {
 			}
 		};
 
-		self.renderer = Some(
-			self.runtime
-				.block_on(zerengine_renderer::Renderer::new(window.clone()))
-				.unwrap(),
-		);
+		let renderer = self.runtime.block_on(zerengine_renderer::Renderer::new(window.clone()));
+
+		match renderer {
+			Ok(renderer) => {
+				self.renderer = Some(renderer);
+			}
+			Err(error) => {
+				zerengine_log::error!("Failed to create renderer: {error:?}");
+				event_loop.exit();
+				return;
+			}
+		}
 
 		self.window = Some(window);
 	}
