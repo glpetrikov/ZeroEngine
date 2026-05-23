@@ -6,14 +6,7 @@ version = 4
 name = "ZeroEngine"
 version = "0.1.0"
 dependencies = [
- "ctrlc",
- "owo-colors",
- "syspeek 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "terminal_size",
- "winit",
- "zerengine_app",
- "zerengine_core",
- "zerengine_log",
+ "zeroengine",
 ]
 
 [[package]]
@@ -4037,6 +4030,20 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "zeroengine"
+version = "0.1.0"
+dependencies = [
+ "ctrlc",
+ "owo-colors",
+ "syspeek 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "terminal_size",
+ "winit",
+ "zerengine_app",
+ "zerengine_input",
+ "zerengine_log",
 ]
 
 [[package]]

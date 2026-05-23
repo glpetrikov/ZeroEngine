@@ -1,64 +1,64 @@
 use std::{fs, path::PathBuf};
 
 pub enum ShaderSource {
-    Path(PathBuf),
-    Source(String),
+	Path(PathBuf),
+	Source(String),
 }
 
 #[allow(dead_code)]
 pub struct Pipeline {
-    pub render_pipeline: wgpu::RenderPipeline,
-    pub name: String,
+	pub render_pipeline: wgpu::RenderPipeline,
+	pub name: String,
 }
 
 pub struct PipelineBuilder {
-    shader_source: Option<ShaderSource>,
-    vertex_entry: String,
-    fragment_entry: String,
-    pixel_format: wgpu::TextureFormat,
+	shader_source: Option<ShaderSource>,
+	vertex_entry: String,
+	fragment_entry: String,
+	pixel_format: wgpu::TextureFormat,
 	vertex_buffer_layouts: Vec<wgpu::VertexBufferLayout<'static>>,
-    name: String,
+	name: String,
 }
 
 #[allow(dead_code)]
 impl PipelineBuilder {
 	pub fn new() -> Self {
-        Self {
-            shader_source: None,
-            vertex_entry: "vs_main".to_string(),
-            fragment_entry: "fs_main".to_string(),
-            pixel_format: wgpu::TextureFormat::Bgra8UnormSrgb,
+		Self {
+			shader_source: None,
+			vertex_entry: "vs_main".to_string(),
+			fragment_entry: "fs_main".to_string(),
+			pixel_format: wgpu::TextureFormat::Bgra8UnormSrgb,
 			vertex_buffer_layouts: vec![],
-            name: "Unnamed Pipeline".to_string(),
-        }
-    }
+			name: "Unnamed Pipeline".to_string(),
+		}
+	}
 
-    pub fn with_name(mut self, name: impl Into<String>) -> Self {
-        self.name = name.into();
-        self
-    }
+	pub fn with_name(mut self, name: impl Into<String>) -> Self {
+		self.name = name.into();
+		self
+	}
 
-    pub fn with_shader_path(mut self, path: impl Into<PathBuf>) -> Self {
-        self.shader_source = Some(ShaderSource::Path(path.into()));
-        self
-    }
+	pub fn with_shader_path(mut self, path: impl Into<PathBuf>) -> Self {
+		self.shader_source = Some(ShaderSource::Path(path.into()));
+		self
+	}
 
-    pub fn with_shader_source(mut self, source: impl Into<String>) -> Self {
-        self.shader_source = Some(ShaderSource::Source(source.into()));
-        self
-    }
+	pub fn with_shader_source(mut self, source: impl Into<String>) -> Self {
+		self.shader_source = Some(ShaderSource::Source(source.into()));
+		self
+	}
 
-    pub fn with_shader(
-        mut self,
-        path: impl Into<PathBuf>,
-        vertex_entry: impl Into<String>,
-        fragment_entry: impl Into<String>,
-    ) -> Self {
-        self.shader_source = Some(ShaderSource::Path(path.into()));
-        self.vertex_entry = vertex_entry.into();
-        self.fragment_entry = fragment_entry.into();
-        self
-    }
+	pub fn with_shader(
+		mut self,
+		path: impl Into<PathBuf>,
+		vertex_entry: impl Into<String>,
+		fragment_entry: impl Into<String>,
+	) -> Self {
+		self.shader_source = Some(ShaderSource::Path(path.into()));
+		self.vertex_entry = vertex_entry.into();
+		self.fragment_entry = fragment_entry.into();
+		self
+	}
 
 	pub fn with_vertex_entry(mut self, entry: impl Into<String>) -> Self {
 		self.vertex_entry = entry.into();
@@ -76,30 +76,30 @@ impl PipelineBuilder {
 	}
 
 	pub fn with_buffer_layout(mut self, layout: wgpu::VertexBufferLayout<'static>) -> Self {
-        self.vertex_buffer_layouts.push(layout);
-        self
-    }
+		self.vertex_buffer_layouts.push(layout);
+		self
+	}
 
 	pub fn build(self, device: &wgpu::Device) -> zerengine_core::Result<Pipeline> {
-        let source_code = match self.shader_source {
-            Some(ShaderSource::Path(path)) => {
-                let filepath = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(path);
-                fs::read_to_string(&filepath)?
-            }
-            Some(ShaderSource::Source(source)) => source,
-            None => {
-                zerengine_core::bail!("Pipeline `{}` has no shader source", self.name);
-            }
-        };
+		let source_code = match self.shader_source {
+			Some(ShaderSource::Path(path)) => {
+				let filepath = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(path);
+				fs::read_to_string(&filepath)?
+			}
+			Some(ShaderSource::Source(source)) => source,
+			None => {
+				zerengine_core::bail!("Pipeline `{}` has no shader source", self.name);
+			}
+		};
 
-        let shader_module_name = format!("{} Shader", self.name);
+		let shader_module_name = format!("{} Shader", self.name);
 
-        let shader_module_descriptor = wgpu::ShaderModuleDescriptor {
-            label: Some(&shader_module_name),
-            source: wgpu::ShaderSource::Wgsl(source_code.into()),
-        };
+		let shader_module_descriptor = wgpu::ShaderModuleDescriptor {
+			label: Some(&shader_module_name),
+			source: wgpu::ShaderSource::Wgsl(source_code.into()),
+		};
 
-        let shader_module = device.create_shader_module(shader_module_descriptor);
+		let shader_module = device.create_shader_module(shader_module_descriptor);
 
 		let pipeline_layout_name = format!("{} Pipeline Layout", self.name);
 
@@ -160,5 +160,5 @@ impl PipelineBuilder {
 }
 
 impl Default for PipelineBuilder {
-    fn default() -> Self { Self::new() }
+	fn default() -> Self { Self::new() }
 }

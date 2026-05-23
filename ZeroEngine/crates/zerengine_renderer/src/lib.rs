@@ -2,8 +2,7 @@ mod backend;
 
 use std::sync::Arc;
 
-use crate::backend::pipeline::*;
-use crate::backend::mesh::*;
+use crate::backend::{mesh::*, pipeline::*};
 
 pub struct Renderer {
 	surface: wgpu::Surface<'static>,
@@ -71,11 +70,11 @@ impl Renderer {
 		let triangle_mesh = Vertex::make_triangle(&device);
 
 		let triangle_pipeline = PipelineBuilder::new()
-            .with_name("Triangle")
-            .with_shader_source(wesl::include_wesl!("triangle"))
-            .with_pixel_format(surface_format)
+			.with_name("Triangle")
+			.with_shader_source(wesl::include_wesl!("triangle"))
+			.with_pixel_format(surface_format)
 			.with_buffer_layout(Vertex::get_layout())
-            .build(&device)?;
+			.build(&device)?;
 
 		Ok(Self {
 			surface,
