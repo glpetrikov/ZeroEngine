@@ -8,6 +8,7 @@
         "pkief.material-icon-theme",
         "christian-kohler.path-intellisense",
         "rust-lang.rust-analyzer",
-        "wgsl-analyzer.wgsl-analyzer"
+        "wgsl-analyzer.wgsl-analyzer",
+        "vadimcn.vscode-lldb",
     ]
 }
