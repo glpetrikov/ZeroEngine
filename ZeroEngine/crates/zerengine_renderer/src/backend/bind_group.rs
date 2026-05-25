@@ -33,15 +33,15 @@ impl<'a> Builder<'a> {
 	}
 
 	pub fn add_buffer(&mut self, buffer: &'a wgpu::Buffer, offset: u64, size: NonZeroU64) {
-        self.entries.push(wgpu::BindGroupEntry {
-            binding: self.entries.len() as u32,
-            resource: wgpu::BindingResource::Buffer(wgpu::BufferBinding {
-                buffer,
-                offset,
-                size: Some(size),
-            }),
-        });
-    }
+		self.entries.push(wgpu::BindGroupEntry {
+			binding: self.entries.len() as u32,
+			resource: wgpu::BindingResource::Buffer(wgpu::BufferBinding {
+				buffer,
+				offset,
+				size: Some(size),
+			}),
+		});
+	}
 
 	pub fn build(&mut self, label: &str) -> wgpu::BindGroup {
 		let descriptor = wgpu::BindGroupDescriptor {

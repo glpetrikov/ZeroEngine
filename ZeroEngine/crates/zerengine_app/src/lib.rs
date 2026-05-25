@@ -69,17 +69,17 @@ impl ApplicationHandler<CustomEvents> for App {
 		}
 		self.window = Some(window);
 
-        self.world.as_mut().unwrap().quads.push(game_object::Object {
-            position: Vec3::new(0.5, 0.0, 0.0),
-            angle: 0.0,
-            scale: Vec3::new(1.0, 1.0, 1.0),
-        });
-        self.world.as_mut().unwrap().triangles.push(game_object::Object {
-            position: Vec3::ZERO,
-            angle: 0.0,
-            scale: Vec3::new(1.0, 1.0, 1.0),
-        });
-        self.renderer.as_mut().unwrap().build_ubos_for_objects(2);
+		self.world.as_mut().unwrap().quads.push(game_object::Object {
+			position: Vec3::new(0.5, 0.0, -1.5),
+			angle: 0.0,
+			scale: Vec3::new(1.0, 1.0, 1.0),
+		});
+		self.world.as_mut().unwrap().triangles.push(game_object::Object {
+			position: Vec3::new(0.0, 0.0, -1.0),
+			angle: 0.0,
+			scale: Vec3::new(1.0, 1.0, 1.0),
+		});
+		self.renderer.as_mut().unwrap().build_ubos_for_objects(2);
 	}
 	fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
 		zerengine_log::trace!("App update");
@@ -116,7 +116,9 @@ impl ApplicationHandler<CustomEvents> for App {
 			WindowEvent::Resized(size) => {
 				self.minimized = size.width == 0 || size.height == 0;
 
-				if let Some(renderer) = &mut self.renderer && !self.minimized {
+				if let Some(renderer) = &mut self.renderer
+					&& !self.minimized
+				{
 					renderer.resize(size);
 				}
 			}

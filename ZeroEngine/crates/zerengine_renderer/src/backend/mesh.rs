@@ -4,7 +4,7 @@ use wgpu::util::DeviceExt;
 
 pub struct Mesh {
 	pub buffer: wgpu::Buffer,
-    pub offset: u64,
+	pub offset: u64,
 }
 
 #[repr(C)]

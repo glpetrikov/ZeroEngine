@@ -1,7 +1,7 @@
 use glam::Vec3;
 
 pub struct Object {
-    pub position: Vec3,
-    pub angle: f32,
-    pub scale: Vec3,
+	pub position: Vec3,
+	pub angle: f32,
+	pub scale: Vec3,
 }
