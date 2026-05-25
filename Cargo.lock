@@ -4098,7 +4098,6 @@ dependencies = [
  "anyhow",
  "glam",
  "thiserror 2.0.18",
- "zerengine_input",
 ]
 
 [[package]]
@@ -4106,6 +4105,7 @@ name = "zerengine_input"
 version = "0.1.0"
 dependencies = [
  "winit",
+ "zerengine_core",
 ]
 
 [[package]]
@@ -4127,6 +4127,7 @@ dependencies = [
  "wgpu",
  "winit",
  "zerengine_core",
+ "zerengine_input",
  "zerengine_log",
 ]
 

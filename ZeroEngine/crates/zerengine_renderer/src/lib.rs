@@ -12,7 +12,7 @@ use crate::{
 		texture::Texture,
 		ubo::*,
 	},
-	model::game_object::{self, Object},
+	model::game_object::{self, Camera, Object},
 };
 
 // TODO: Temp!
@@ -20,6 +20,7 @@ use crate::{
 pub struct World {
 	pub quads: Vec<game_object::Object>,
 	pub triangles: Vec<game_object::Object>,
+	pub camera: Camera,
 }
 
 impl World {
@@ -27,17 +28,48 @@ impl World {
 		Self {
 			quads: Vec::new(),
 			triangles: Vec::new(),
+			camera: Camera::new(),
 		}
 	}
 
 	pub fn update(&mut self, dt: f32) {
 		for triangle in &mut self.triangles {
-			triangle.angle += 0.003 * dt;
+			triangle.angle += 0.5 * dt;
 
 			if triangle.angle > std::f32::consts::TAU {
 				triangle.angle -= std::f32::consts::TAU;
 			}
 		}
+
+		let mut d_right = 0.0;
+		let mut d_forwards = 0.0;
+
+		if zerengine_input::Input::is_key_pressed(zerengine_input::ZKeyCode::W) {
+			d_forwards += 1.0;
+		}
+		if zerengine_input::Input::is_key_pressed(zerengine_input::ZKeyCode::S) {
+			d_forwards -= 1.0;
+		}
+		if zerengine_input::Input::is_key_pressed(zerengine_input::ZKeyCode::D) {
+			d_right += 1.0;
+		}
+		if zerengine_input::Input::is_key_pressed(zerengine_input::ZKeyCode::A) {
+			d_right -= 1.0;
+		}
+
+		let speed = if zerengine_input::Input::is_key_pressed(zerengine_input::ZKeyCode::LShift) {
+			10.0
+		} else {
+			5.0
+		};
+
+		self.camera.movec(d_right * speed * dt, d_forwards * speed * dt);
+
+		let mouse_delta = zerengine_input::Input::get_mouse_delta();
+		let sensitivity = 0.1;
+
+		self.camera
+			.spin(-mouse_delta.x * sensitivity, -mouse_delta.y * sensitivity);
 	}
 }
 
@@ -180,9 +212,9 @@ impl Renderer {
 		}
 	}
 
-	pub fn request_redraw(&mut self, world: &World) {
+	pub fn request_redraw(&mut self, world: &World, camera: &Camera) {
 		// TODO: add Result return type and handle Surface errors
-		match self.render(&world.quads, &world.triangles) {
+		match self.render(&world.quads, &world.triangles, camera) {
 			Ok(_) => {}
 			Err(wgpu::SurfaceStatus::Lost) => {
 				let size = self.size;
@@ -192,13 +224,16 @@ impl Renderer {
 		}
 	}
 
-	fn update_projection(&mut self) {
-		let fov_y = 90.0_f32.to_radians();
+	fn update_projection(&mut self, camera: &Camera) {
+		let view = Mat4::look_to_rh(camera.position, camera.forwards, camera.up);
+
+		let fov_y = 65.0_f32.to_radians();
 		let aspect = self.size.width as f32 / self.size.height as f32;
-		let z_near = 0.1;
-		let z_far = 10.0;
+		let z_near = 0.05;
+		let z_far = 1000.0;
 		let projection = Mat4::perspective_rh(fov_y, aspect, z_near, z_far);
-		self.projection_ubo.as_mut().unwrap().upload(&projection, &self.queue);
+		let view_proj = projection * view;
+		self.projection_ubo.as_mut().unwrap().upload(&view_proj, &self.queue);
 	}
 
 	fn update_transforms(&mut self, quads: &Vec<Object>, triangles: &Vec<Object>) {
@@ -238,8 +273,13 @@ impl Renderer {
 		}
 	}
 
-	fn render(&mut self, quads: &Vec<Object>, triangles: &Vec<Object>) -> Result<(), wgpu::SurfaceStatus> {
-		self.update_projection();
+	fn render(
+		&mut self,
+		quads: &Vec<Object>,
+		triangles: &Vec<Object>,
+		camera: &Camera,
+	) -> Result<(), wgpu::SurfaceStatus> {
+		self.update_projection(&camera);
 		self.update_transforms(quads, triangles);
 
 		// let event = self.queue.submit([]);

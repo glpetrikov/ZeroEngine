@@ -2,7 +2,7 @@
 @group(0) @binding(1) var texture_sampler: sampler;
 
 @group(1) @binding(0) var<uniform> transform: mat4x4<f32>;
-@group(2) @binding(0) var<uniform> projection: mat4x4<f32>;
+@group(2) @binding(0) var<uniform> view_projection: mat4x4<f32>;
 
 struct Vertex {
     @location(0) position: vec3<f32>,
@@ -18,7 +18,7 @@ struct VertexOutput {
 @vertex
 fn vs_main(vertex: Vertex) -> VertexOutput {
     var out: VertexOutput;
-    out.position = projection * transform * vec4<f32>(vertex.position, 1.0);
+    out.position = view_projection * transform * vec4<f32>(vertex.position, 1.0);
     out.color = vertex.color;
     out.tex_coord = vec2<f32>(0.5 * (vertex.position.x + 1), 0.5 * (-vertex.position.y + 1));
     return out;

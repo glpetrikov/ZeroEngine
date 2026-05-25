@@ -42,9 +42,12 @@ impl Default for App {
 impl ApplicationHandler<CustomEvents> for App {
 	fn resumed(&mut self, event_loop: &ActiveEventLoop) {
 		zerengine_log::trace!("App resumed");
+
 		let attrs = Window::default_attributes()
 			.with_title("ZeroEngine")
 			.with_inner_size(winit::dpi::LogicalSize::new(1280.0, 720.0));
+
+		// TODO: add asset manager and icon
 
 		let window = match event_loop.create_window(attrs) {
 			Ok(window) => Arc::new(window),
@@ -54,6 +57,12 @@ impl ApplicationHandler<CustomEvents> for App {
 				return;
 			}
 		};
+
+		let _ = window
+			.set_cursor_grab(winit::window::CursorGrabMode::Locked)
+			.or_else(|_| window.set_cursor_grab(winit::window::CursorGrabMode::Confined));
+
+		window.set_cursor_visible(false);
 
 		let renderer = self.runtime.block_on(zerengine_renderer::Renderer::new(window.clone()));
 
@@ -67,6 +76,7 @@ impl ApplicationHandler<CustomEvents> for App {
 				return;
 			}
 		}
+
 		self.window = Some(window);
 
 		self.world.as_mut().unwrap().quads.push(game_object::Object {
@@ -74,11 +84,13 @@ impl ApplicationHandler<CustomEvents> for App {
 			angle: 0.0,
 			scale: Vec3::new(1.0, 1.0, 1.0),
 		});
+
 		self.world.as_mut().unwrap().triangles.push(game_object::Object {
 			position: Vec3::new(0.0, 0.0, -1.0),
 			angle: 0.0,
 			scale: Vec3::new(1.0, 1.0, 1.0),
 		});
+
 		self.renderer.as_mut().unwrap().build_ubos_for_objects(2);
 	}
 	fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
@@ -95,7 +107,7 @@ impl ApplicationHandler<CustomEvents> for App {
 			&& !self.occluded
 			&& !self.minimized
 		{
-			self.world.as_mut().unwrap().update(17.0);
+			self.world.as_mut().unwrap().update(0.017);
 			window.request_redraw();
 		}
 		Input::update_globally(|i| i.late_update());
@@ -147,11 +159,6 @@ impl ApplicationHandler<CustomEvents> for App {
 					});
 				}
 			}
-			WindowEvent::CursorMoved { position, .. } => {
-				Input::update_globally(|i| {
-					i.mouse_pos = (position.x as f32, position.y as f32);
-				});
-			}
 			WindowEvent::MouseInput { state, button, .. } => {
 				Input::update_globally(|i| {
 					i.set_mouse_button(ZMouseCode::from(button), state.is_pressed());
@@ -162,10 +169,23 @@ impl ApplicationHandler<CustomEvents> for App {
 				zerengine_log::trace!("RedrawRequested");
 
 				if let Some(renderer) = &mut self.renderer {
-					renderer.request_redraw(self.world.as_ref().unwrap());
+					renderer.request_redraw(self.world.as_ref().unwrap(), &self.world.as_ref().unwrap().camera);
 				}
 			}
 			_ => {}
+		}
+	}
+
+	fn device_event(
+		&mut self,
+		_event_loop: &ActiveEventLoop,
+		_device_id: winit::event::DeviceId,
+		event: winit::event::DeviceEvent,
+	) {
+		if let winit::event::DeviceEvent::MouseMotion { delta } = event {
+			Input::update_globally(|input| {
+				input.add_mouse_delta(delta.0 as f32, delta.1 as f32);
+			});
 		}
 	}
 }

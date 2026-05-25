@@ -30,7 +30,8 @@ pub enum ZKeyCode {
 	N,
 	M,
 	Enter,
-	Ctrl,
+	LCtrl,
+	LShift,
 	K1,
 	K2,
 	K3,
@@ -74,7 +75,8 @@ pub struct Input {
 	current_mouse: [bool; 8],
 	previous_mouse: [bool; 8],
 
-	pub mouse_pos: (f32, f32),
+	pub mouse_pos: Vec2,
+	pub mouse_delta: Vec2,
 }
 
 impl Input {
@@ -86,9 +88,17 @@ impl Input {
 
 	pub fn set_mouse_button(&mut self, button: ZMouseCode, state: bool) { self.current_mouse[button as usize] = state; }
 
+	pub fn set_mouse_pos(&mut self, x: f32, y: f32) { self.mouse_pos = Vec2::new(x, y); }
+
+	pub fn add_mouse_delta(&mut self, dx: f32, dy: f32) {
+		self.mouse_delta.x += dx;
+		self.mouse_delta.y += dy;
+	}
+
 	pub fn late_update(&mut self) {
 		self.previous_keys = self.current_keys;
 		self.previous_mouse = self.current_mouse;
+		self.mouse_delta = Vec2::new(0.0, 0.0);
 	}
 
 	pub fn reset(&mut self) {
@@ -144,7 +154,9 @@ impl Input {
 
 	// Mouse
 
-	pub fn get_mouse_pos() -> (f32, f32) { Self::global().lock().unwrap().mouse_pos }
+	pub fn get_mouse_pos() -> Vec2 { Self::global().lock().unwrap().mouse_pos }
+
+	pub fn get_mouse_delta() -> Vec2 { Self::global().lock().unwrap().mouse_delta }
 
 	pub fn is_mouse_button_pressed(button: ZMouseCode) -> bool {
 		Self::global().lock().unwrap().is_button_pressed(button)
@@ -170,12 +182,15 @@ impl Default for Input {
 			previous_keys: [false; 512],
 			current_mouse: [false; 8],
 			previous_mouse: [false; 8],
-			mouse_pos: (0.0, 0.0),
+			mouse_pos: Vec2::ZERO,
+			mouse_delta: Vec2::ZERO,
 		}
 	}
 }
 
 use std::sync::{Mutex, OnceLock};
+
+use zerengine_core::Vec2;
 
 static INPUT_INSTANCE: OnceLock<Mutex<Input>> = OnceLock::new();
 
@@ -236,7 +251,8 @@ impl_from_winit_keycode! {
 	KeyN => N,
 	KeyM => M,
 	Enter => Enter,
-	ControlLeft => Ctrl,
+	ControlLeft => LCtrl,
+	ShiftLeft => LShift,
 	Digit1 => K1,
 	Digit2 => K2,
 	Digit3 => K3,

@@ -16,6 +16,7 @@ zerengine_core = { version = "0.1.0", path = "../zerengine_core" }
 zerengine_log = { version = "0.1.0", path = "../zerengine_log" }
 glam = "0.32.1"
 bytemuck = "1.25.0"
+zerengine_input = { version = "0.1.0", path = "../zerengine_input" }
 
 [build-dependencies]
 wesl = "0.3.2"
