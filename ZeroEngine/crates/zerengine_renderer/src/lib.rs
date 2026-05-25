@@ -84,8 +84,8 @@ pub struct Renderer {
 	quad_mesh: Mesh,
 	triangle_material: Texture,
 	quad_material: Texture,
-	ubo: Option<UBOGroup>,
-	projection_ubo: Option<UBO>,
+	ubo: Option<UboGroup>,
+	projection_ubo: Option<Ubo>,
 }
 
 impl Renderer {
@@ -124,8 +124,7 @@ impl Renderer {
 			.formats
 			.iter()
 			.copied()
-			.filter(|f| f.is_srgb())
-			.next()
+			.find(|f| f.is_srgb())
 			.unwrap_or(surface_capabilities.formats[0]);
 
 		let config = wgpu::SurfaceConfiguration {
@@ -174,7 +173,7 @@ impl Renderer {
 		let triangle_material = Texture::new("CheckerBoard.png", &device, &queue, &material_bind_group_layout);
 		let quad_material = Texture::new("CheckerBoard.png", &device, &queue, &material_bind_group_layout);
 
-		let projection_ubo = Some(UBO::new(&device, &ubo_bind_group_layout));
+		let projection_ubo = Some(Ubo::new(&device, &ubo_bind_group_layout));
 
 		Ok(Self {
 			surface,
@@ -200,7 +199,7 @@ impl Renderer {
 			ubo_bind_group_layout = builder.build("UBO Bind Group Layout");
 		}
 
-		self.ubo = Some(UBOGroup::new(&self.device, objects_count, &ubo_bind_group_layout))
+		self.ubo = Some(UboGroup::new(&self.device, objects_count, &ubo_bind_group_layout))
 	}
 
 	pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
@@ -236,36 +235,25 @@ impl Renderer {
 		self.projection_ubo.as_mut().unwrap().upload(&view_proj, &self.queue);
 	}
 
-	fn update_transforms(&mut self, quads: &Vec<Object>, triangles: &Vec<Object>) {
+	fn update_transforms(&mut self, quads: &[Object], triangles: &[Object]) {
 		let mut offset: u64 = 0;
-		for i in 0..quads.len() {
-			let matrix = Mat4::from_scale_rotation_translation(
-				quads[i].scale,
-				Quat::from_rotation_z(quads[i].angle),
-				quads[i].position,
-			);
+		for (i, quad) in quads.iter().enumerate() {
+			let matrix =
+				Mat4::from_scale_rotation_translation(quad.scale, Quat::from_rotation_z(quad.angle), quad.position);
 
-			self.ubo
-				.as_mut()
-				.unwrap()
-				.upload(offset + i as u64, &matrix, &self.queue);
 			self.ubo
 				.as_mut()
 				.unwrap()
 				.upload(offset + i as u64, &matrix, &self.queue);
 		}
 		offset += quads.len() as u64;
-		for i in 0..triangles.len() {
+		for (i, triangle) in triangles.iter().enumerate() {
 			let matrix = Mat4::from_scale_rotation_translation(
-				triangles[i].scale,
-				Quat::from_rotation_z(triangles[i].angle),
-				triangles[i].position,
+				triangle.scale,
+				Quat::from_rotation_z(triangle.angle),
+				triangle.position,
 			);
 
-			self.ubo
-				.as_mut()
-				.unwrap()
-				.upload(offset + i as u64, &matrix, &self.queue);
 			self.ubo
 				.as_mut()
 				.unwrap()
@@ -273,13 +261,8 @@ impl Renderer {
 		}
 	}
 
-	fn render(
-		&mut self,
-		quads: &Vec<Object>,
-		triangles: &Vec<Object>,
-		camera: &Camera,
-	) -> Result<(), wgpu::SurfaceStatus> {
-		self.update_projection(&camera);
+	fn render(&mut self, quads: &[Object], triangles: &[Object], camera: &Camera) -> Result<(), wgpu::SurfaceStatus> {
+		self.update_projection(camera);
 		self.update_transforms(quads, triangles);
 
 		// let event = self.queue.submit([]);
@@ -291,12 +274,9 @@ impl Renderer {
 		// self.device.poll(maintain).unwrap();
 
 		let mut offset: u64 = 0;
-		for i in 0..quads.len() {
-			let matrix = Mat4::from_scale_rotation_translation(
-				quads[i].scale,
-				Quat::from_rotation_z(quads[i].angle),
-				quads[i].position,
-			);
+		for (i, quad) in quads.iter().enumerate() {
+			let matrix =
+				Mat4::from_scale_rotation_translation(quad.scale, Quat::from_rotation_z(quad.angle), quad.position);
 
 			self.ubo
 				.as_mut()
@@ -304,11 +284,11 @@ impl Renderer {
 				.upload(offset + i as u64, &matrix, &self.queue);
 		}
 		offset += quads.len() as u64;
-		for i in 0..triangles.len() {
+		for (i, triangle) in triangles.iter().enumerate() {
 			let matrix = Mat4::from_scale_rotation_translation(
-				triangles[i].scale,
-				Quat::from_rotation_z(triangles[i].angle),
-				triangles[i].position,
+				triangle.scale,
+				Quat::from_rotation_z(triangle.angle),
+				triangle.position,
 			);
 
 			self.ubo

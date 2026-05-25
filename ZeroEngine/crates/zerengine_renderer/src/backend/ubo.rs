@@ -2,15 +2,15 @@ use std::num::NonZeroU64;
 
 use crate::backend::bind_group;
 
-pub struct UBOGroup {
+pub struct UboGroup {
 	pub buffer: wgpu::Buffer,
 	pub bind_groups: Vec<wgpu::BindGroup>,
 	allignment: u64,
 }
 
-impl UBOGroup {
+impl UboGroup {
 	pub fn new(device: &wgpu::Device, object_count: usize, layout: &wgpu::BindGroupLayout) -> Self {
-		fn align_to(value: u64, alignment: u64) -> u64 { ((value + alignment - 1) / alignment) * alignment }
+		fn align_to(value: u64, alignment: u64) -> u64 { value.div_ceil(alignment) * alignment }
 		let stride = align_to(
 			std::mem::size_of::<glam::Mat4>() as u64,
 			device.limits().min_uniform_buffer_offset_alignment as u64,
@@ -51,12 +51,12 @@ impl UBOGroup {
 	}
 }
 
-pub struct UBO {
+pub struct Ubo {
 	pub buffer: wgpu::Buffer,
 	pub bind_group: wgpu::BindGroup,
 }
 
-impl UBO {
+impl Ubo {
 	pub fn new(device: &wgpu::Device, layout: &wgpu::BindGroupLayout) -> Self {
 		let buffer_descriptor = wgpu::BufferDescriptor {
 			label: Some("UBO"),

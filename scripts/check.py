@@ -16,5 +16,5 @@ def run(label, cmd):
 
 run("fmt",     ["cargo", "+nightly", "fmt", "--all", "--", "--check"])
 run("check",   ["cargo", "check", "--workspace", "--all-targets"])
-run("clippy",  ["cargo", "clippy", "--workspace", "--all-targets"])
+run("clippy", ["cargo", "clippy", "--workspace", "--all-targets", "--", "-D", "warnings"])
 run("test",    ["cargo", "test", "--workspace"])
