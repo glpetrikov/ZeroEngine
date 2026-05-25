@@ -30,7 +30,8 @@ pub enum ZKeyCode {
 	N,
 	M,
 	Enter,
-	Ctrl,
+	LCtrl,
+	LShift,
 	K1,
 	K2,
 	K3,
@@ -74,7 +75,8 @@ pub struct Input {
 	current_mouse: [bool; 8],
 	previous_mouse: [bool; 8],
 
-	pub mouse_pos: (f32, f32),
+	pub mouse_pos: Vec2,
+	pub mouse_delta: Vec2,
 }
 
 impl Input {
@@ -86,25 +88,40 @@ impl Input {
 
 	pub fn set_mouse_button(&mut self, button: ZMouseCode, state: bool) { self.current_mouse[button as usize] = state; }
 
+	pub fn set_mouse_pos(&mut self, x: f32, y: f32) { self.mouse_pos = Vec2::new(x, y); }
+
+	pub fn add_mouse_delta(&mut self, dx: f32, dy: f32) {
+		self.mouse_delta.x += dx;
+		self.mouse_delta.y += dy;
+	}
+
 	pub fn late_update(&mut self) {
 		self.previous_keys = self.current_keys;
 		self.previous_mouse = self.current_mouse;
+		self.mouse_delta = Vec2::new(0.0, 0.0);
+	}
+
+	pub fn reset(&mut self) {
+		self.current_keys = [false; 512];
+		self.previous_keys = [false; 512];
+		self.current_mouse = [false; 8];
+		self.previous_mouse = [false; 8];
 	}
 
 	// --- Main Methods ---
 
 	// Keyboard
 
-	fn is_key_pressed(&self, code: ZKeyCode) -> bool { self.current_keys[code as usize] }
+	fn key_pressed(&self, code: ZKeyCode) -> bool { self.current_keys[code as usize] }
 
-	fn is_key_just_pressed(&self, code: ZKeyCode) -> bool {
+	fn key_just_pressed(&self, code: ZKeyCode) -> bool {
 		self.current_keys[code as usize] && !self.previous_keys[code as usize]
 	}
 
-	fn is_key_released(&self, key_code: ZKeyCode) -> bool { !self.current_keys[key_code as usize] }
+	fn key_released(&self, key_code: ZKeyCode) -> bool { !self.current_keys[key_code as usize] }
 
-	fn is_key_just_released(&self, key_code: ZKeyCode) -> bool {
-		!self.is_key_pressed(key_code) && self.previous_keys[key_code as usize]
+	fn key_just_released(&self, key_code: ZKeyCode) -> bool {
+		!self.key_pressed(key_code) && self.previous_keys[key_code as usize]
 	}
 
 	// Mouse
@@ -127,27 +144,33 @@ impl Input {
 impl Input {
 	// Keyboard
 
-	pub fn key_pressed(key: ZKeyCode) -> bool { Self::global().lock().unwrap().is_key_pressed(key) }
+	pub fn is_key_pressed(key: ZKeyCode) -> bool { Self::global().lock().unwrap().key_pressed(key) }
 
-	pub fn key_just_pressed(key: ZKeyCode) -> bool { Self::global().lock().unwrap().is_key_just_pressed(key) }
+	pub fn is_key_just_pressed(key: ZKeyCode) -> bool { Self::global().lock().unwrap().key_just_pressed(key) }
 
-	pub fn key_released(key: ZKeyCode) -> bool { Self::global().lock().unwrap().is_key_released(key) }
+	pub fn is_key_released(key: ZKeyCode) -> bool { Self::global().lock().unwrap().key_released(key) }
 
-	pub fn key_just_released(key: ZKeyCode) -> bool { Self::global().lock().unwrap().is_key_just_released(key) }
+	pub fn is_key_just_released(key: ZKeyCode) -> bool { Self::global().lock().unwrap().key_just_released(key) }
 
 	// Mouse
 
-	pub fn get_mouse_pos() -> (f32, f32) { Self::global().lock().unwrap().mouse_pos }
+	pub fn get_mouse_pos() -> Vec2 { Self::global().lock().unwrap().mouse_pos }
 
-	pub fn mouse_pressed(button: ZMouseCode) -> bool { Self::global().lock().unwrap().is_button_pressed(button) }
+	pub fn get_mouse_delta() -> Vec2 { Self::global().lock().unwrap().mouse_delta }
 
-	pub fn mouse_just_pressed(button: ZMouseCode) -> bool {
+	pub fn is_mouse_button_pressed(button: ZMouseCode) -> bool {
+		Self::global().lock().unwrap().is_button_pressed(button)
+	}
+
+	pub fn is_mouse_button_just_pressed(button: ZMouseCode) -> bool {
 		Self::global().lock().unwrap().is_button_just_pressed(button)
 	}
 
-	pub fn mouse_released(button: ZMouseCode) -> bool { Self::global().lock().unwrap().is_button_released(button) }
+	pub fn is_mouse_button_released(button: ZMouseCode) -> bool {
+		Self::global().lock().unwrap().is_button_released(button)
+	}
 
-	pub fn mouse_just_released(button: ZMouseCode) -> bool {
+	pub fn is_mouse_button_just_released(button: ZMouseCode) -> bool {
 		Self::global().lock().unwrap().is_button_just_released(button)
 	}
 }
@@ -159,12 +182,15 @@ impl Default for Input {
 			previous_keys: [false; 512],
 			current_mouse: [false; 8],
 			previous_mouse: [false; 8],
-			mouse_pos: (0.0, 0.0),
+			mouse_pos: Vec2::ZERO,
+			mouse_delta: Vec2::ZERO,
 		}
 	}
 }
 
 use std::sync::{Mutex, OnceLock};
+
+use zerengine_core::Vec2;
 
 static INPUT_INSTANCE: OnceLock<Mutex<Input>> = OnceLock::new();
 
@@ -225,7 +251,8 @@ impl_from_winit_keycode! {
 	KeyN => N,
 	KeyM => M,
 	Enter => Enter,
-	ControlLeft => Ctrl,
+	ControlLeft => LCtrl,
+	ShiftLeft => LShift,
 	Digit1 => K1,
 	Digit2 => K2,
 	Digit3 => K3,
@@ -274,8 +301,8 @@ mod tests {
 	fn test_key_just_pressed() {
 		let mut input = make_input();
 		input.set_key(ZKeyCode::Space, true);
-		assert!(input.is_key_just_pressed(ZKeyCode::Space));
-		assert!(input.is_key_pressed(ZKeyCode::Space));
+		assert!(input.key_just_pressed(ZKeyCode::Space));
+		assert!(input.key_pressed(ZKeyCode::Space));
 	}
 
 	#[test]
@@ -284,8 +311,8 @@ mod tests {
 		input.set_key(ZKeyCode::Space, true);
 		input.late_update();
 		input.set_key(ZKeyCode::Space, false);
-		assert!(input.is_key_just_released(ZKeyCode::Space));
-		assert!(!input.is_key_pressed(ZKeyCode::Space));
+		assert!(input.key_just_released(ZKeyCode::Space));
+		assert!(!input.key_pressed(ZKeyCode::Space));
 	}
 
 	#[test]
@@ -294,8 +321,8 @@ mod tests {
 		input.set_key(ZKeyCode::W, true);
 		input.late_update();
 		// Held - pressed but not just pressed
-		assert!(input.is_key_pressed(ZKeyCode::W));
-		assert!(!input.is_key_just_pressed(ZKeyCode::W));
+		assert!(input.key_pressed(ZKeyCode::W));
+		assert!(!input.key_just_pressed(ZKeyCode::W));
 	}
 
 	#[test]
@@ -310,6 +337,6 @@ mod tests {
 		let mut input = make_input();
 		input.set_key(ZKeyCode::Enter, true);
 		input.late_update();
-		assert!(!input.is_key_just_pressed(ZKeyCode::Enter));
+		assert!(!input.key_just_pressed(ZKeyCode::Enter));
 	}
 }

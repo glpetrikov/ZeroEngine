@@ -5,6 +5,8 @@ members = [
     "ZeroEngine/crates/zerengine_core",
     "ZeroEngine/crates/zerengine_input",
     "ZeroEngine/crates/zerengine_log",
+    "ZeroEngine/crates/zerengine_renderer",
+    "ZeroEngine/crates/zeroengine",
     "ZeroEngine/crates/syspeek",
     "ZeroEngine/cli/zerofetch",
 ]
@@ -13,7 +15,7 @@ resolver = "3"
 [workspace.package]
 edition = "2024"
 license = "Apache-2.0"
-authors = ["Gleb"]
+authors = ["Gleb Petrikov"]
 version = "0.1.0"
 repository = "https://github.com/glpetrikov/ZeroEngine"
 keywords = ["game-engine"]
@@ -22,14 +24,21 @@ categories = ["game-engines"]
 [profile.dev]
 opt-level = 1
 [profile.dev.package."*"]
-opt-level = 3
+opt-level = 3 # 3, "s", "z"
 
 [profile.release]
 opt-level = 3
 lto = "thin"
 codegen-units = 1
 strip = "symbols"
+[profile.release.package."*"]
+opt-level = "s" # 3, "s", "z"
 
 [profile.dist]
 inherits = "release"
+opt-level = "s"      # 3, "s", "z"
 lto = "fat"
+codegen-units = 1
+strip = "symbols"
+[profile.dist.package."*"]
+opt-level = "z" # 3, "s", "z"

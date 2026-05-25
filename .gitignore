@@ -1,6 +1,5 @@
 # ZeroEngine gitignore
 
-.vscode
 .idea
 
 target
