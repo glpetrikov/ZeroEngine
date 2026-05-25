@@ -7,7 +7,9 @@ use winit::{
 	keyboard::{KeyCode, PhysicalKey},
 	window::{Window, WindowId},
 };
+use zerengine_core::Vec3;
 use zerengine_input::*;
+use zerengine_renderer::{World, model::game_object};
 
 #[derive(Debug)]
 pub enum CustomEvents {
@@ -21,6 +23,7 @@ pub struct App {
 	focused: bool,
 	occluded: bool,
 	minimized: bool,
+	world: Option<World>,
 }
 impl Default for App {
 	fn default() -> Self {
@@ -31,6 +34,7 @@ impl Default for App {
 			focused: true,
 			occluded: false,
 			minimized: false,
+			world: Some(World::new()),
 		}
 	}
 }
@@ -63,8 +67,19 @@ impl ApplicationHandler<CustomEvents> for App {
 				return;
 			}
 		}
-
 		self.window = Some(window);
+
+        self.world.as_mut().unwrap().quads.push(game_object::Object {
+            position: Vec3::new(0.5, 0.0, 0.0),
+            angle: 0.0,
+            scale: Vec3::new(1.0, 1.0, 1.0),
+        });
+        self.world.as_mut().unwrap().triangles.push(game_object::Object {
+            position: Vec3::ZERO,
+            angle: 0.0,
+            scale: Vec3::new(1.0, 1.0, 1.0),
+        });
+        self.renderer.as_mut().unwrap().build_ubos_for_objects(2);
 	}
 	fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
 		zerengine_log::trace!("App update");
@@ -80,6 +95,7 @@ impl ApplicationHandler<CustomEvents> for App {
 			&& !self.occluded
 			&& !self.minimized
 		{
+			self.world.as_mut().unwrap().update(17.0);
 			window.request_redraw();
 		}
 		Input::update_globally(|i| i.late_update());
@@ -100,10 +116,8 @@ impl ApplicationHandler<CustomEvents> for App {
 			WindowEvent::Resized(size) => {
 				self.minimized = size.width == 0 || size.height == 0;
 
-				if !self.minimized {
-					if let Some(renderer) = &mut self.renderer {
-						renderer.resize(size);
-					}
+				if let Some(renderer) = &mut self.renderer && !self.minimized {
+					renderer.resize(size);
 				}
 			}
 			WindowEvent::Focused(focused) => {
@@ -146,7 +160,7 @@ impl ApplicationHandler<CustomEvents> for App {
 				zerengine_log::trace!("RedrawRequested");
 
 				if let Some(renderer) = &mut self.renderer {
-					renderer.request_redraw();
+					renderer.request_redraw(self.world.as_ref().unwrap());
 				}
 			}
 			_ => {}

@@ -1,12 +1,41 @@
 mod backend;
+pub mod model;
 
 use std::sync::Arc;
 
-use crate::backend::{
+use glam::{Mat4, Quat};
+
+use crate::{backend::{
 	mesh::*,
 	pipeline::{self, *},
-	texture::Texture,
-};
+	texture::Texture, ubo::UBO,
+}, model::game_object::{self, Object}};
+
+// TODO: Temp!
+#[derive(Default)]
+pub struct World {
+    pub quads: Vec<game_object::Object>,
+    pub triangles: Vec<game_object::Object>,
+}
+
+impl World {
+    pub fn new() -> Self {
+        Self {
+            quads: Vec::new(),
+            triangles: Vec::new(),
+        }
+    }
+
+    pub fn update(&mut self, dt: f32) {
+        for triangle in &mut self.triangles {
+            triangle.angle += 0.003 * dt;
+
+            if triangle.angle > std::f32::consts::TAU {
+                triangle.angle -= std::f32::consts::TAU;
+            }
+        }
+    }
+}
 
 pub struct Renderer {
 	surface: wgpu::Surface<'static>,
@@ -19,6 +48,7 @@ pub struct Renderer {
 	quad_mesh: Mesh,
 	triangle_material: Texture,
 	quad_material: Texture,
+	ubo: Option<UBO>,
 }
 
 impl Renderer {
@@ -84,13 +114,21 @@ impl Renderer {
 			material_bind_group_layout = builder.build("Material Bind Group Layout");
 		}
 
+		let ubo_bind_group_layout: wgpu::BindGroupLayout;
+        {
+            let mut builder = backend::bind_group_layout::Builder::new(&device);
+            builder.add_ubo();
+            ubo_bind_group_layout = builder.build("UBO Bind Group Layout");
+        }
+
 		let render_pipeline: Pipeline;
 		{
 			let pipeline_builder = pipeline::Builder::new(&device)
 				.with_shader_source(wesl::include_wesl!("shader"))
 				.with_pixel_format(surface_format)
 				.with_vertex_buffer_layout(Vertex::get_layout())
-				.with_bind_group_layout(&material_bind_group_layout);
+				.with_bind_group_layout(&material_bind_group_layout)
+                .with_bind_group_layout(&ubo_bind_group_layout);
 
 			render_pipeline = pipeline_builder.build()?;
 		}
@@ -109,8 +147,24 @@ impl Renderer {
 			triangle_material,
 			quad_mesh,
 			quad_material,
+			ubo: None,
 		})
 	}
+
+	pub fn build_ubos_for_objects(&mut self, objects_count: usize) {
+        let ubo_bind_group_layout: wgpu::BindGroupLayout;
+        {
+            let mut builder = backend::bind_group_layout::Builder::new(&self.device);
+            builder.add_ubo();
+            ubo_bind_group_layout = builder.build("UBO Bind Group Layout");
+        }
+
+        self.ubo = Some(UBO::new(
+            &self.device,
+            objects_count,
+            &ubo_bind_group_layout,
+        ))
+    }
 
 	pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
 		if new_size.width > 0 && new_size.height > 0 {
@@ -121,9 +175,12 @@ impl Renderer {
 		}
 	}
 
-	pub fn request_redraw(&mut self) {
+	pub fn request_redraw(&mut self, world: &World) {
 		// TODO: add Result return type and handle Surface errors
-		match self.render() {
+		match self.render(
+                        &world.quads,
+                        &world.triangles,
+                    ) {
 			Ok(_) => {}
 			Err(wgpu::SurfaceStatus::Lost) => {
 				let size = self.size;
@@ -133,7 +190,45 @@ impl Renderer {
 		}
 	}
 
-	fn render(&mut self) -> Result<(), wgpu::SurfaceStatus> {
+	fn render(
+        &mut self,
+        quads: &Vec<Object>,
+        triangles: &Vec<Object>,
+    ) -> Result<(), wgpu::SurfaceStatus> {
+        let mut offset: u64 = 0;
+        for i in 0..quads.len() {
+            let matrix = Mat4::from_scale_rotation_translation(
+                quads[i].scale,
+                Quat::from_rotation_z(quads[i].angle),
+                quads[i].position,
+            );
+
+            self.ubo
+                .as_mut()
+                .unwrap()
+                .upload(offset + i as u64, matrix, &self.queue);
+        }
+        offset += quads.len() as u64;
+        for i in 0..triangles.len() {
+            let matrix = Mat4::from_scale_rotation_translation(
+                triangles[i].scale,
+                Quat::from_rotation_z(triangles[i].angle),
+                triangles[i].position,
+            );
+
+            self.ubo
+                .as_mut()
+                .unwrap()
+                .upload(offset + i as u64, matrix, &self.queue);
+        }
+
+        // let event = self.queue.submit([]);
+        // let maintain = wgpu::PollType::Wait {
+        //     submission_index: Some(event),
+        //     timeout: None,
+        // };
+
+        // self.device.poll(maintain).unwrap();
 		let drawable = self.surface.get_current_texture();
 		let drawable = match drawable {
 			wgpu::CurrentSurfaceTexture::Timeout => return Ok(()),
@@ -180,12 +275,21 @@ impl Renderer {
 		render_pass.set_bind_group(0, &self.quad_material.bind_group, &[]);
 		render_pass.set_vertex_buffer(0, self.quad_mesh.buffer.slice(..self.quad_mesh.offset));
 		render_pass.set_index_buffer(self.quad_mesh.buffer.slice(self.quad_mesh.offset..), wgpu::IndexFormat::Uint16);
-		render_pass.draw_indexed(0..6, 0, 0..1);
+
+		let mut offset: usize = 0;
+        for i in 0..quads.len() {
+            render_pass.set_bind_group(1, &self.ubo.as_ref().unwrap().bind_groups[offset + i], &[]);
+            render_pass.draw_indexed(0..6, 0, 0..1);
+        }
 
 		render_pass.set_bind_group(0, &self.triangle_material.bind_group, &[]);
 		render_pass.set_vertex_buffer(0, self.triangle_mesh.buffer.slice(..self.triangle_mesh.offset));
 		render_pass.set_index_buffer(self.triangle_mesh.buffer.slice(self.triangle_mesh.offset..), wgpu::IndexFormat::Uint16);
-		render_pass.draw_indexed(0..3, 0, 0..1);
+		offset += quads.len();
+        for i in 0..triangles.len() {
+            render_pass.set_bind_group(1, &self.ubo.as_ref().unwrap().bind_groups[offset + i], &[]);
+            render_pass.draw_indexed(0..3, 0, 0..1);
+        }
 
 		drop(render_pass);
 		self.queue.submit(std::iter::once(command_encoder.finish()));
