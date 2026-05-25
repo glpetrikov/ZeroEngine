@@ -86,7 +86,7 @@ impl ApplicationHandler<CustomEvents> for App {
 
 		event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
 
-		if Input::key_just_pressed(ZKeyCode::Escape) {
+		if Input::is_key_just_pressed(ZKeyCode::Escape) {
 			zerengine_log::info!("Exiting...");
 			event_loop.exit(); // TODO: TEMP
 		}

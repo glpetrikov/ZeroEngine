@@ -96,23 +96,22 @@ impl Input {
 		self.previous_keys = [false; 512];
 		self.current_mouse = [false; 8];
 		self.previous_mouse = [false; 8];
-		self.mouse_pos = (0.0, 0.0);
 	}
 
 	// --- Main Methods ---
 
 	// Keyboard
 
-	fn is_key_pressed(&self, code: ZKeyCode) -> bool { self.current_keys[code as usize] }
+	fn key_pressed(&self, code: ZKeyCode) -> bool { self.current_keys[code as usize] }
 
-	fn is_key_just_pressed(&self, code: ZKeyCode) -> bool {
+	fn key_just_pressed(&self, code: ZKeyCode) -> bool {
 		self.current_keys[code as usize] && !self.previous_keys[code as usize]
 	}
 
-	fn is_key_released(&self, key_code: ZKeyCode) -> bool { !self.current_keys[key_code as usize] }
+	fn key_released(&self, key_code: ZKeyCode) -> bool { !self.current_keys[key_code as usize] }
 
-	fn is_key_just_released(&self, key_code: ZKeyCode) -> bool {
-		!self.is_key_pressed(key_code) && self.previous_keys[key_code as usize]
+	fn key_just_released(&self, key_code: ZKeyCode) -> bool {
+		!self.key_pressed(key_code) && self.previous_keys[key_code as usize]
 	}
 
 	// Mouse
@@ -135,27 +134,31 @@ impl Input {
 impl Input {
 	// Keyboard
 
-	pub fn key_pressed(key: ZKeyCode) -> bool { Self::global().lock().unwrap().is_key_pressed(key) }
+	pub fn is_key_pressed(key: ZKeyCode) -> bool { Self::global().lock().unwrap().key_pressed(key) }
 
-	pub fn key_just_pressed(key: ZKeyCode) -> bool { Self::global().lock().unwrap().is_key_just_pressed(key) }
+	pub fn is_key_just_pressed(key: ZKeyCode) -> bool { Self::global().lock().unwrap().key_just_pressed(key) }
 
-	pub fn key_released(key: ZKeyCode) -> bool { Self::global().lock().unwrap().is_key_released(key) }
+	pub fn is_key_released(key: ZKeyCode) -> bool { Self::global().lock().unwrap().key_released(key) }
 
-	pub fn key_just_released(key: ZKeyCode) -> bool { Self::global().lock().unwrap().is_key_just_released(key) }
+	pub fn is_key_just_released(key: ZKeyCode) -> bool { Self::global().lock().unwrap().key_just_released(key) }
 
 	// Mouse
 
 	pub fn get_mouse_pos() -> (f32, f32) { Self::global().lock().unwrap().mouse_pos }
 
-	pub fn mouse_pressed(button: ZMouseCode) -> bool { Self::global().lock().unwrap().is_button_pressed(button) }
+	pub fn is_mouse_button_pressed(button: ZMouseCode) -> bool {
+		Self::global().lock().unwrap().is_button_pressed(button)
+	}
 
-	pub fn mouse_just_pressed(button: ZMouseCode) -> bool {
+	pub fn is_mouse_button_just_pressed(button: ZMouseCode) -> bool {
 		Self::global().lock().unwrap().is_button_just_pressed(button)
 	}
 
-	pub fn mouse_released(button: ZMouseCode) -> bool { Self::global().lock().unwrap().is_button_released(button) }
+	pub fn is_mouse_button_released(button: ZMouseCode) -> bool {
+		Self::global().lock().unwrap().is_button_released(button)
+	}
 
-	pub fn mouse_just_released(button: ZMouseCode) -> bool {
+	pub fn is_mouse_button_just_released(button: ZMouseCode) -> bool {
 		Self::global().lock().unwrap().is_button_just_released(button)
 	}
 }
@@ -282,8 +285,8 @@ mod tests {
 	fn test_key_just_pressed() {
 		let mut input = make_input();
 		input.set_key(ZKeyCode::Space, true);
-		assert!(input.is_key_just_pressed(ZKeyCode::Space));
-		assert!(input.is_key_pressed(ZKeyCode::Space));
+		assert!(input.key_just_pressed(ZKeyCode::Space));
+		assert!(input.key_pressed(ZKeyCode::Space));
 	}
 
 	#[test]
@@ -292,8 +295,8 @@ mod tests {
 		input.set_key(ZKeyCode::Space, true);
 		input.late_update();
 		input.set_key(ZKeyCode::Space, false);
-		assert!(input.is_key_just_released(ZKeyCode::Space));
-		assert!(!input.is_key_pressed(ZKeyCode::Space));
+		assert!(input.key_just_released(ZKeyCode::Space));
+		assert!(!input.key_pressed(ZKeyCode::Space));
 	}
 
 	#[test]
@@ -302,8 +305,8 @@ mod tests {
 		input.set_key(ZKeyCode::W, true);
 		input.late_update();
 		// Held - pressed but not just pressed
-		assert!(input.is_key_pressed(ZKeyCode::W));
-		assert!(!input.is_key_just_pressed(ZKeyCode::W));
+		assert!(input.key_pressed(ZKeyCode::W));
+		assert!(!input.key_just_pressed(ZKeyCode::W));
 	}
 
 	#[test]
@@ -318,6 +321,6 @@ mod tests {
 		let mut input = make_input();
 		input.set_key(ZKeyCode::Enter, true);
 		input.late_update();
-		assert!(!input.is_key_just_pressed(ZKeyCode::Enter));
+		assert!(!input.key_just_pressed(ZKeyCode::Enter));
 	}
 }
