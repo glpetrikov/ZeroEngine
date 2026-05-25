@@ -63,7 +63,7 @@ impl World {
 			5.0
 		};
 
-		self.camera.movec(d_right * speed * dt, d_forwards * speed * dt);
+		self.camera.move_relative(d_right * speed * dt, d_forwards * speed * dt);
 
 		let mouse_delta = zerengine_input::Input::get_mouse_delta();
 		let sensitivity = 0.1;

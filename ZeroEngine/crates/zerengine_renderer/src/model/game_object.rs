@@ -61,7 +61,7 @@ impl Camera {
 		self.up = self.right.cross(self.forwards).normalize();
 	}
 
-	pub fn movec(&mut self, d_right: f32, d_forwards: f32) {
+	pub fn move_relative(&mut self, d_right: f32, d_forwards: f32) {
 		self.position += self.right * d_right;
 		self.position += self.forwards * d_forwards;
 	}
