@@ -5,7 +5,6 @@ pub struct Object {
 	pub angle: f32,
 	pub scale: Vec3,
 }
-
 #[derive(Default)]
 pub struct Camera {
 	pub position: Vec3,
@@ -18,46 +17,40 @@ pub struct Camera {
 
 impl Camera {
 	pub fn new() -> Self {
-		let position = Vec3::new(-5.0, 0.0, 2.0);
+		let mut camera = Self {
+			position: Vec3::new(-5.0, 0.0, 0.5),
+			yaw: 0.0,
+			pitch: 0.0,
+			forwards: Vec3::ZERO,
+			right: Vec3::ZERO,
+			up: Vec3::ZERO,
+		};
 
-		let yaw = 0.0;
-		let pitch = 0.0;
-
-		let forwards = Vec3::NEG_Y;
-		let right = Vec3::X;
-		let up = Vec3::Z;
-
-		Self {
-			position,
-			yaw,
-			pitch,
-			forwards,
-			right,
-			up,
-		}
+		camera.update_vectors();
+		camera
 	}
 
 	pub fn spin(&mut self, d_yaw: f32, d_pitch: f32) {
 		self.yaw = (self.yaw + d_yaw).rem_euclid(360.0);
+		self.pitch = (self.pitch + d_pitch).clamp(-89.0, 89.0);
 
-		self.pitch += d_pitch;
-		self.pitch = self.pitch.clamp(-89.0, 89.0);
+		self.update_vectors();
+	}
 
+	fn update_vectors(&mut self) {
 		let yaw = self.yaw.to_radians();
 		let pitch = self.pitch.to_radians();
 
 		let c_yaw = yaw.cos();
 		let s_yaw = yaw.sin();
-
 		let c_pitch = pitch.cos();
 		let s_pitch = pitch.sin();
 
-		self.forwards = Vec3::new(c_yaw * c_pitch, s_yaw * c_pitch, s_pitch);
+		self.forwards = Vec3::new(c_yaw * c_pitch, s_yaw * c_pitch, s_pitch).normalize();
 
-		self.up = Vec3::Z;
+		let world_up = Vec3::Z;
 
-		self.right = self.forwards.cross(self.up).normalize();
-
+		self.right = self.forwards.cross(world_up).normalize();
 		self.up = self.right.cross(self.forwards).normalize();
 	}
 

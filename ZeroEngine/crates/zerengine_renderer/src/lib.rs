@@ -86,6 +86,8 @@ pub struct Renderer {
 	quad_material: Texture,
 	ubo: Option<UboGroup>,
 	projection_ubo: Option<Ubo>,
+	depth_texture: wgpu::Texture,
+	depth_view: wgpu::TextureView,
 }
 
 impl Renderer {
@@ -140,6 +142,8 @@ impl Renderer {
 
 		surface.configure(&device, &config);
 
+		let (depth_texture, depth_view) = Self::create_depth_texture(&device, config.width, config.height);
+
 		let triangle_mesh = Vertex::make_triangle(&device);
 		let quad_mesh = Vertex::make_quad(&device);
 
@@ -188,6 +192,8 @@ impl Renderer {
 			quad_material,
 			ubo: None,
 			projection_ubo,
+			depth_texture,
+			depth_view,
 		})
 	}
 
@@ -207,8 +213,36 @@ impl Renderer {
 			self.size = new_size;
 			self.config.width = new_size.width;
 			self.config.height = new_size.height;
+
 			self.surface.configure(&self.device, &self.config);
+
+			let (depth_texture, depth_view) =
+				Self::create_depth_texture(&self.device, self.config.width, self.config.height);
+
+			self.depth_texture = depth_texture;
+			self.depth_view = depth_view;
 		}
+	}
+
+	fn create_depth_texture(device: &wgpu::Device, width: u32, height: u32) -> (wgpu::Texture, wgpu::TextureView) {
+		let depth_texture = device.create_texture(&wgpu::TextureDescriptor {
+			label: Some("Depth Texture"),
+			size: wgpu::Extent3d {
+				width: width.max(1),
+				height: height.max(1),
+				depth_or_array_layers: 1,
+			},
+			mip_level_count: 1,
+			sample_count: 1,
+			dimension: wgpu::TextureDimension::D2,
+			format: wgpu::TextureFormat::Depth32Float,
+			usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+			view_formats: &[],
+		});
+
+		let depth_view = depth_texture.create_view(&wgpu::TextureViewDescriptor::default());
+
+		(depth_texture, depth_view)
 	}
 
 	pub fn request_redraw(&mut self, world: &World, camera: &Camera) {
@@ -332,7 +366,14 @@ impl Renderer {
 		let render_pass_descriptor = wgpu::RenderPassDescriptor {
 			label: Some("Render Pass"),
 			color_attachments: &[Some(color_attachment)],
-			depth_stencil_attachment: None,
+			depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+				view: &self.depth_view,
+				depth_ops: Some(wgpu::Operations {
+					load: wgpu::LoadOp::Clear(1.0),
+					store: wgpu::StoreOp::Store,
+				}),
+				stencil_ops: None,
+			}),
 			occlusion_query_set: None,
 			timestamp_writes: None,
 			multiview_mask: None,
