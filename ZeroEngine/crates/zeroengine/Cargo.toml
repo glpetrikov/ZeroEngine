@@ -11,4 +11,4 @@ terminal_size = "0.4.4"
 winit = "0.30.13"
 zerengine_app = { path = "../zerengine_app" }
 zerengine_log = { path = "../zerengine_log" }
-zerengine_input = { version = "0.1.0", path = "../zerengine_input" }
+zerengine_ecs = { version = "0.1.0", path = "../zerengine_ecs" }

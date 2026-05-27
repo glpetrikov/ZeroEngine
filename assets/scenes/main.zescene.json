@@ -1,0 +1,80 @@
+{
+  "$schema": "../schemas/zescene.schema.json",
+  "version": "0.1.0",
+  "entities": [
+    {
+      "id": {
+        "index": 0,
+        "gen": 0
+      },
+      "components": [
+        {
+          "component_type": "ze.inactive",
+          "value": null
+        },
+        {
+          "component_type": "ze.name",
+          "value": {
+            "name": "Entity1"
+          }
+        },
+        {
+          "component_type": "ze.transform",
+          "value": {
+            "position": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "rotation": [
+              0.0,
+              0.0,
+              0.7071067690849304,
+              0.7071067690849304
+            ],
+            "scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "index": 1,
+        "gen": 0
+      },
+      "components": [
+        {
+          "component_type": "ze.name",
+          "value": {
+            "name": "Entity2"
+          }
+        },
+        {
+          "component_type": "ze.transform",
+          "value": {
+            "position": [
+              -1.0,
+              -1.0,
+              1.0
+            ],
+            "rotation": [
+              0.0,
+              0.0,
+              -0.7071067690849304,
+              0.7071067690849304
+            ],
+            "scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -6,6 +6,7 @@ members = [
     "ZeroEngine/crates/zerengine_input",
     "ZeroEngine/crates/zerengine_log",
     "ZeroEngine/crates/zerengine_renderer",
+    "ZeroEngine/crates/zerengine_ecs",
     "ZeroEngine/crates/zeroengine",
     "ZeroEngine/crates/syspeek",
     "ZeroEngine/cli/zerofetch",
