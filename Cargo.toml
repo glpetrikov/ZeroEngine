@@ -8,8 +8,6 @@ members = [
     "ZeroEngine/crates/ze_renderer",
     "ZeroEngine/crates/ze_ecs",
     "ZeroEngine/crates/zeroengine",
-    "ZeroEngine/crates/syspeek",
-    "ZeroEngine/cli/zerofetch",
 ]
 resolver = "3"
 

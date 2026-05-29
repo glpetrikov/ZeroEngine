@@ -13,6 +13,10 @@ pub fn init() {
 			eprintln!("Invalid log directive: {e}");
 			std::process::exit(1);
 		}))
+		.add_directive("wgpu_hal=warn".parse().unwrap_or_else(|e| {
+			eprintln!("Invalid log directive: {e}");
+			std::process::exit(1);
+		}))
 		.add_directive("sctk=error".parse().unwrap_or_else(|e| {
 			eprintln!("Invalid log directive: {e}");
 			std::process::exit(1);
