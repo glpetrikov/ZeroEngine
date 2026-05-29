@@ -1,15 +1,18 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use winit::{
 	application::ApplicationHandler,
-	event::WindowEvent,
+	event::{MouseScrollDelta, WindowEvent},
 	event_loop::ActiveEventLoop,
 	keyboard::{KeyCode, PhysicalKey},
 	window::{Window, WindowId},
 };
-use zerengine_core::Vec3;
+use zerengine_core::{ResourceManager, Result, bail};
+use zerengine_ecs::{Scene, System, registry};
 use zerengine_input::*;
-use zerengine_renderer::{World, model::game_object};
+use zerengine_renderer::{EditorCameraSystem, RenderSystem, register_renderer_components};
+
+const DEFAULT_SCENE_NAME: &str = "main";
 
 #[derive(Debug)]
 pub enum CustomEvents {
@@ -23,20 +26,112 @@ pub struct App {
 	focused: bool,
 	occluded: bool,
 	minimized: bool,
-	world: Option<World>,
+	scenes: HashMap<String, Scene>,
+	active_scene: String,
+	resources: ResourceManager,
 }
 impl Default for App {
-	fn default() -> Self {
-		Self {
-			runtime: tokio::runtime::Runtime::new().unwrap(),
+	fn default() -> Self { Self::new().expect("failed to initialize app") }
+}
+
+impl App {
+	pub fn new() -> Result<Self> {
+		let resources = ResourceManager::for_runtime("assets");
+		let scene = load_main_scene(&resources)?;
+
+		if let Err(error) = resources.compile_game_shaders() {
+			zerengine_log::error!("Failed to compile game shaders: {error:?}");
+		}
+
+		let active_scene = scene.name.clone();
+		let mut scenes = HashMap::new();
+		scenes.insert(scene.name.clone(), scene);
+
+		let runtime = match tokio::runtime::Runtime::new() {
+			Ok(r) => r,
+			Err(e) => {
+				zerengine_log::error!("Cannon create tokio runtime! error: {}", e);
+				std::process::exit(1);
+			}
+		};
+
+		Ok(Self {
+			runtime,
 			window: None,
 			renderer: None,
 			focused: true,
 			occluded: false,
 			minimized: false,
-			world: Some(World::new()),
-		}
+			scenes,
+			active_scene,
+			resources,
+		})
 	}
+
+	pub fn add_scene(&mut self, scene: Scene) -> Result<()> {
+		let name = scene.name.clone();
+		if self.scenes.contains_key(&name) {
+			bail!("scene `{name}` already exists");
+		}
+
+		self.scenes.insert(name, scene);
+		Ok(())
+	}
+
+	pub fn set_active_scene(&mut self, name: impl Into<String>) -> Result<()> {
+		let name = name.into();
+		if !self.scenes.contains_key(&name) {
+			bail!("scene `{name}` does not exist");
+		}
+
+		self.active_scene = name;
+		Ok(())
+	}
+
+	pub fn active_scene(&self) -> Option<&Scene> { self.scenes.get(&self.active_scene) }
+
+	pub fn active_scene_mut(&mut self) -> Option<&mut Scene> { self.scenes.get_mut(&self.active_scene) }
+
+	pub fn add_system<S>(&mut self, system: S)
+	where
+		S: System + 'static,
+	{
+		let Some(scene) = self.active_scene_mut() else {
+			return;
+		};
+
+		scene.add_system(system);
+	}
+
+	pub fn update_active_scene_systems(&mut self, dt: f32) -> Result<()> {
+		let Some(scene) = self.active_scene_mut() else {
+			return Ok(());
+		};
+
+		scene.update_systems(dt)
+	}
+}
+
+pub fn load_main_scene(resources: &ResourceManager) -> Result<Scene> {
+	let mut registry = registry::ComponentRegistry::new();
+
+	Scene::register_defaults(&mut registry);
+	register_renderer_components(&mut registry);
+
+	let mut scene = Scene::from_path_with_registry(
+		resources
+			.game_assets_root()
+			.join(format!("scenes/{DEFAULT_SCENE_NAME}.zescene.json")),
+		registry,
+	)
+	.map_err(|error| {
+		zerengine_core::anyhow!(
+			"failed to load main scene `{DEFAULT_SCENE_NAME}` from assets/scenes/{DEFAULT_SCENE_NAME}.zescene.json: {error:?}"
+		)
+	})?;
+	scene.add_system(EditorCameraSystem::new());
+	scene.add_system(RenderSystem::new());
+	Ok(scene)
 }
 
 impl ApplicationHandler<CustomEvents> for App {
@@ -79,19 +174,12 @@ impl ApplicationHandler<CustomEvents> for App {
 
 		self.window = Some(window);
 
-		self.world.as_mut().unwrap().quads.push(game_object::Object {
-			position: Vec3::new(0.5, 0.0, -1.5),
-			angle: 0.0,
-			scale: Vec3::new(1.0, 1.0, 1.0),
+		let renderer = self.renderer.as_mut().unwrap_or_else(|| {
+			zerengine_log::error!("Renderer is not initialized!");
+			std::process::exit(1);
 		});
 
-		self.world.as_mut().unwrap().triangles.push(game_object::Object {
-			position: Vec3::new(0.0, 0.0, -1.0),
-			angle: 0.0,
-			scale: Vec3::new(1.0, 1.0, 1.0),
-		});
-
-		self.renderer.as_mut().unwrap().build_ubos_for_objects(2);
+		renderer.build_ubos_for_objects(2);
 	}
 	fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
 		zerengine_log::trace!("App update");
@@ -103,11 +191,14 @@ impl ApplicationHandler<CustomEvents> for App {
 			event_loop.exit(); // TODO: TEMP
 		}
 
-		if let Some(window) = &self.window
+		let window = self.window.clone();
+		if let Some(window) = window
 			&& !self.occluded
 			&& !self.minimized
 		{
-			self.world.as_mut().unwrap().update(0.017);
+			if let Err(error) = self.update_active_scene_systems(0.017) {
+				zerengine_log::error!("System update failed: {error:?}");
+			}
 			window.request_redraw();
 		}
 		Input::update_globally(|i| i.late_update());
@@ -164,12 +255,36 @@ impl ApplicationHandler<CustomEvents> for App {
 					i.set_mouse_button(ZMouseCode::from(button), state.is_pressed());
 				});
 			}
+			WindowEvent::MouseWheel { delta, .. } => {
+				let wheel_delta = match delta {
+					MouseScrollDelta::LineDelta(_, y) => y,
+					MouseScrollDelta::PixelDelta(position) => position.y as f32 / 120.0,
+				};
+				Input::update_globally(|i| {
+					i.add_mouse_wheel_delta(wheel_delta);
+				});
+			}
 			// === RENDER ==============
 			WindowEvent::RedrawRequested => {
 				zerengine_log::trace!("RedrawRequested");
 
 				if let Some(renderer) = &mut self.renderer {
-					renderer.request_redraw(self.world.as_ref().unwrap(), &self.world.as_ref().unwrap().camera);
+					let Some(scene) = self.scenes.get_mut(&self.active_scene) else {
+						return;
+					};
+
+					let render_result = scene.with_system_mut::<RenderSystem, _>(|render_system, scene| {
+						render_system.render(scene, renderer, &self.resources)
+					});
+
+					let Some(render_result) = render_result else {
+						zerengine_log::warn!("No RenderSystem found in scene `{}`", scene.name);
+						return;
+					};
+
+					if let Err(error) = render_result {
+						zerengine_log::error!("Render system error: {error:?}");
+					}
 				}
 			}
 			_ => {}

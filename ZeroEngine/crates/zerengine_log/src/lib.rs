@@ -5,10 +5,22 @@ pub fn init() {
 	let filter = EnvFilter::builder()
 		.with_default_directive(tracing::Level::INFO.into())
 		.from_env_lossy()
-		.add_directive("calloop=off".parse().unwrap())
-		.add_directive("winit=warn".parse().unwrap())
-		.add_directive("sctk=error".parse().unwrap())
-		.add_directive("sctk_adwaita=error".parse().unwrap());
+		.add_directive("calloop=off".parse().unwrap_or_else(|e| {
+			eprintln!("Invalid log directive: {e}");
+			std::process::exit(1);
+		}))
+		.add_directive("winit=warn".parse().unwrap_or_else(|e| {
+			eprintln!("Invalid log directive: {e}");
+			std::process::exit(1);
+		}))
+		.add_directive("sctk=error".parse().unwrap_or_else(|e| {
+			eprintln!("Invalid log directive: {e}");
+			std::process::exit(1);
+		}))
+		.add_directive("sctk_adwaita=error".parse().unwrap_or_else(|e| {
+			eprintln!("Invalid log directive: {e}");
+			std::process::exit(1);
+		}));
 
 	let registry = fmt()
 		.with_env_filter(filter)

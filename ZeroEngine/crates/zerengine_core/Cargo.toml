@@ -18,3 +18,9 @@ glam = { version = "0.33.0", features = [
 ] }
 anyhow = "1.0.102"
 thiserror = "2.0.18"
+serde = { version = "1", features = ["derive"] }
+schemars = { version = "1", features = ["derive"] }
+wesl = "0.4.0"
+
+[build-dependencies]
+wesl = "0.4.0"

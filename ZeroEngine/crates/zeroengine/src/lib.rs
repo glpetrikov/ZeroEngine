@@ -29,7 +29,13 @@ pub fn run() {
 	// Running App
 	// ===================================================
 	zerengine_log::debug!("Creating App");
-	let mut app = App::default();
+	let mut app = match App::new() {
+		Ok(app) => app,
+		Err(error) => {
+			zerengine_log::error!("Failed to create app: {error:?}");
+			std::process::exit(1);
+		}
+	};
 
 	zerengine_log::debug!("Running App");
 	event_loop.run_app(&mut app).unwrap();

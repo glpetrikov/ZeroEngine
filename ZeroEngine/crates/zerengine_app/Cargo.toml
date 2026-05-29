@@ -11,6 +11,7 @@ repository.workspace = true
 zerengine_core = { path = "../zerengine_core" }
 zerengine_input = { path = "../zerengine_input" }
 zerengine_log = { path = "../zerengine_log" }
+zerengine_ecs = { path = "../zerengine_ecs" }
 winit = "0.30.13"
 zerengine_renderer = { version = "0.1.0", path = "../zerengine_renderer" }
 tokio = { version = "1.52.3", features = ["full"] }

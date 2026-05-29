@@ -1,77 +1,21 @@
 mod backend;
-pub mod model;
+pub mod components;
+pub mod editor_camera_system;
+pub mod render_system;
 
 use std::sync::Arc;
 
-use glam::{Mat4, Quat};
+pub use components::*;
+pub use editor_camera_system::*;
+pub use render_system::*;
+use zerengine_core::{Mat4, ResourceManager, Vec3};
 
-use crate::{
-	backend::{
-		mesh::*,
-		pipeline::{self, *},
-		texture::Texture,
-		ubo::*,
-	},
-	model::game_object::{self, Camera, Object},
+use crate::backend::{
+	mesh::*,
+	pipeline::{self, *},
+	texture::{SpriteMaterial, SpriteMaterialUniform, TextureCache},
+	ubo::*,
 };
-
-// TODO: Temp!
-#[derive(Default)]
-pub struct World {
-	pub quads: Vec<game_object::Object>,
-	pub triangles: Vec<game_object::Object>,
-	pub camera: Camera,
-}
-
-impl World {
-	pub fn new() -> Self {
-		Self {
-			quads: Vec::new(),
-			triangles: Vec::new(),
-			camera: Camera::new(),
-		}
-	}
-
-	pub fn update(&mut self, dt: f32) {
-		for triangle in &mut self.triangles {
-			triangle.angle += 0.5 * dt;
-
-			if triangle.angle > std::f32::consts::TAU {
-				triangle.angle -= std::f32::consts::TAU;
-			}
-		}
-
-		let mut d_right = 0.0;
-		let mut d_forwards = 0.0;
-
-		if zerengine_input::Input::is_key_pressed(zerengine_input::ZKeyCode::W) {
-			d_forwards += 1.0;
-		}
-		if zerengine_input::Input::is_key_pressed(zerengine_input::ZKeyCode::S) {
-			d_forwards -= 1.0;
-		}
-		if zerengine_input::Input::is_key_pressed(zerengine_input::ZKeyCode::D) {
-			d_right += 1.0;
-		}
-		if zerengine_input::Input::is_key_pressed(zerengine_input::ZKeyCode::A) {
-			d_right -= 1.0;
-		}
-
-		let speed = if zerengine_input::Input::is_key_pressed(zerengine_input::ZKeyCode::LShift) {
-			10.0
-		} else {
-			5.0
-		};
-
-		self.camera.move_relative(d_right * speed * dt, d_forwards * speed * dt);
-
-		let mouse_delta = zerengine_input::Input::get_mouse_delta();
-		let sensitivity = 0.1;
-
-		self.camera
-			.spin(-mouse_delta.x * sensitivity, -mouse_delta.y * sensitivity);
-	}
-}
 
 pub struct Renderer {
 	surface: wgpu::Surface<'static>,
@@ -80,12 +24,16 @@ pub struct Renderer {
 	config: wgpu::SurfaceConfiguration,
 	size: winit::dpi::PhysicalSize<u32>,
 	pipeline: Pipeline,
-	triangle_mesh: Mesh,
 	quad_mesh: Mesh,
-	triangle_material: Texture,
-	quad_material: Texture,
+	texture_cache: TextureCache,
+	materials: Vec<SpriteMaterial>,
+	material_bind_group_layout: wgpu::BindGroupLayout,
+	ubo_bind_group_layout: wgpu::BindGroupLayout,
 	ubo: Option<UboGroup>,
+	ubo_object_count: usize,
 	projection_ubo: Option<Ubo>,
+	depth_texture: wgpu::Texture,
+	depth_view: wgpu::TextureView,
 }
 
 impl Renderer {
@@ -140,7 +88,8 @@ impl Renderer {
 
 		surface.configure(&device, &config);
 
-		let triangle_mesh = Vertex::make_triangle(&device);
+		let (depth_texture, depth_view) = Self::create_depth_texture(&device, config.width, config.height);
+
 		let quad_mesh = Vertex::make_quad(&device);
 
 		let material_bind_group_layout: wgpu::BindGroupLayout;
@@ -159,8 +108,9 @@ impl Renderer {
 
 		let render_pipeline: Pipeline;
 		{
+			let resources = ResourceManager::new("assets");
 			let pipeline_builder = pipeline::Builder::new(&device)
-				.with_shader_source(wesl::include_wesl!("shader"))
+				.with_shader_source(resources.engine_string("shaders/engine/sprite.wgsl")?)
 				.with_pixel_format(surface_format)
 				.with_vertex_buffer_layout(Vertex::get_layout())
 				.with_bind_group_layout(&material_bind_group_layout)
@@ -170,10 +120,9 @@ impl Renderer {
 			render_pipeline = pipeline_builder.build()?;
 		}
 
-		let triangle_material = Texture::new("CheckerBoard.png", &device, &queue, &material_bind_group_layout);
-		let quad_material = Texture::new("CheckerBoard.png", &device, &queue, &material_bind_group_layout);
-
 		let projection_ubo = Some(Ubo::new(&device, &ubo_bind_group_layout));
+		let texture_cache = TextureCache::new(&device, &queue);
+		let materials = Vec::new();
 
 		Ok(Self {
 			surface,
@@ -182,24 +131,30 @@ impl Renderer {
 			config,
 			size,
 			pipeline: render_pipeline,
-			triangle_mesh,
-			triangle_material,
 			quad_mesh,
-			quad_material,
+			texture_cache,
+			materials,
+			material_bind_group_layout,
+			ubo_bind_group_layout,
 			ubo: None,
+			ubo_object_count: 0,
 			projection_ubo,
+			depth_texture,
+			depth_view,
 		})
 	}
 
 	pub fn build_ubos_for_objects(&mut self, objects_count: usize) {
-		let ubo_bind_group_layout: wgpu::BindGroupLayout;
-		{
-			let mut builder = backend::bind_group_layout::Builder::new(&self.device);
-			builder.add_ubo();
-			ubo_bind_group_layout = builder.build("UBO Bind Group Layout");
-		}
+		let objects_count = objects_count.max(1);
+		self.ubo = Some(UboGroup::new(&self.device, objects_count, &self.ubo_bind_group_layout));
+		self.ubo_object_count = objects_count;
+	}
 
-		self.ubo = Some(UboGroup::new(&self.device, objects_count, &ubo_bind_group_layout))
+	fn ensure_ubos_for_objects(&mut self, objects_count: usize) {
+		let objects_count = objects_count.max(1);
+		if self.ubo.is_none() || self.ubo_object_count != objects_count {
+			self.build_ubos_for_objects(objects_count);
+		}
 	}
 
 	pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
@@ -207,13 +162,47 @@ impl Renderer {
 			self.size = new_size;
 			self.config.width = new_size.width;
 			self.config.height = new_size.height;
+
 			self.surface.configure(&self.device, &self.config);
+
+			let (depth_texture, depth_view) =
+				Self::create_depth_texture(&self.device, self.config.width, self.config.height);
+
+			self.depth_texture = depth_texture;
+			self.depth_view = depth_view;
 		}
 	}
 
-	pub fn request_redraw(&mut self, world: &World, camera: &Camera) {
-		// TODO: add Result return type and handle Surface errors
-		match self.render(&world.quads, &world.triangles, camera) {
+	fn create_depth_texture(device: &wgpu::Device, width: u32, height: u32) -> (wgpu::Texture, wgpu::TextureView) {
+		let depth_texture = device.create_texture(&wgpu::TextureDescriptor {
+			label: Some("Depth Texture"),
+			size: wgpu::Extent3d {
+				width: width.max(1),
+				height: height.max(1),
+				depth_or_array_layers: 1,
+			},
+			mip_level_count: 1,
+			sample_count: 1,
+			dimension: wgpu::TextureDimension::D2,
+			format: wgpu::TextureFormat::Depth32Float,
+			usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+			view_formats: &[],
+		});
+
+		let depth_view = depth_texture.create_view(&wgpu::TextureViewDescriptor::default());
+
+		(depth_texture, depth_view)
+	}
+
+	pub fn aspect_ratio(&self) -> f32 { self.size.width as f32 / self.size.height.max(1) as f32 }
+
+	pub fn request_sprite_redraw(
+		&mut self,
+		items: &[render_system::SpriteRenderItem],
+		camera: &render_system::CameraRenderData,
+		resources: &ResourceManager,
+	) {
+		match self.render_sprite_items(items, camera, resources) {
 			Ok(_) => {}
 			Err(wgpu::SurfaceStatus::Lost) => {
 				let size = self.size;
@@ -223,87 +212,61 @@ impl Renderer {
 		}
 	}
 
-	fn update_projection(&mut self, camera: &Camera) {
-		let view = Mat4::look_to_rh(camera.position, camera.forwards, camera.up);
-
-		let fov_y = 65.0_f32.to_radians();
-		let aspect = self.size.width as f32 / self.size.height as f32;
-		let z_near = 0.05;
-		let z_far = 1000.0;
-		let projection = Mat4::perspective_rh(fov_y, aspect, z_near, z_far);
-		let view_proj = projection * view;
-		self.projection_ubo.as_mut().unwrap().upload(&view_proj, &self.queue);
+	fn update_projection(&mut self, camera: &render_system::CameraRenderData) {
+		self.projection_ubo
+			.as_mut()
+			.unwrap()
+			.upload(&camera.view_projection, &self.queue);
 	}
 
-	fn update_transforms(&mut self, quads: &[Object], triangles: &[Object]) {
-		let mut offset: u64 = 0;
-		for (i, quad) in quads.iter().enumerate() {
-			let matrix =
-				Mat4::from_scale_rotation_translation(quad.scale, Quat::from_rotation_z(quad.angle), quad.position);
-
-			self.ubo
-				.as_mut()
-				.unwrap()
-				.upload(offset + i as u64, &matrix, &self.queue);
-		}
-		offset += quads.len() as u64;
-		for (i, triangle) in triangles.iter().enumerate() {
-			let matrix = Mat4::from_scale_rotation_translation(
-				triangle.scale,
-				Quat::from_rotation_z(triangle.angle),
-				triangle.position,
-			);
-
-			self.ubo
-				.as_mut()
-				.unwrap()
-				.upload(offset + i as u64, &matrix, &self.queue);
-		}
-	}
-
-	fn render(&mut self, quads: &[Object], triangles: &[Object], camera: &Camera) -> Result<(), wgpu::SurfaceStatus> {
+	fn render_sprite_items(
+		&mut self,
+		items: &[render_system::SpriteRenderItem],
+		camera: &render_system::CameraRenderData,
+		resources: &ResourceManager,
+	) -> Result<(), wgpu::SurfaceStatus> {
+		self.ensure_ubos_for_objects(items.len());
 		self.update_projection(camera);
-		self.update_transforms(quads, triangles);
 
-		// let event = self.queue.submit([]);
-		// let maintain = wgpu::PollType::Wait {
-		//     submission_index: Some(event),
-		//     timeout: None,
-		// };
+		self.materials.clear();
+		self.materials
+			.reserve(items.len().saturating_sub(self.materials.capacity()));
 
-		// self.device.poll(maintain).unwrap();
+		for (i, item) in items.iter().enumerate() {
+			let texture = self
+				.texture_cache
+				.get_or_load(&item.texture, resources, &self.device, &self.queue);
+			let sprite_size = sprite_size_to_world_scale(&item.size, texture.dimensions());
+			let transform = item.transform * Mat4::from_scale(Vec3::new(sprite_size[0], sprite_size[1], 1.0));
 
-		let mut offset: u64 = 0;
-		for (i, quad) in quads.iter().enumerate() {
-			let matrix =
-				Mat4::from_scale_rotation_translation(quad.scale, Quat::from_rotation_z(quad.angle), quad.position);
+			self.ubo.as_mut().unwrap().upload(i as u64, &transform, &self.queue);
 
-			self.ubo
-				.as_mut()
-				.unwrap()
-				.upload(offset + i as u64, &matrix, &self.queue);
+			let tint = item.color.tint.unwrap_or([1.0, 1.0, 1.0, 1.0]);
+			let mode = match item.color.mode {
+				components::SpriteColorMode::None => 0.0,
+				components::SpriteColorMode::Multiply => 1.0,
+				components::SpriteColorMode::GrayscaleTint => 2.0,
+			};
+			let uniform = SpriteMaterialUniform {
+				tint,
+				params: [mode, item.color.strength, item.color.saturation_threshold, 1.0],
+			};
+
+			self.materials.push(SpriteMaterial::new(
+				"Sprite Material",
+				texture,
+				uniform,
+				&self.device,
+				&self.material_bind_group_layout,
+			));
 		}
-		offset += quads.len() as u64;
-		for (i, triangle) in triangles.iter().enumerate() {
-			let matrix = Mat4::from_scale_rotation_translation(
-				triangle.scale,
-				Quat::from_rotation_z(triangle.angle),
-				triangle.position,
-			);
 
-			self.ubo
-				.as_mut()
-				.unwrap()
-				.upload(offset + i as u64, &matrix, &self.queue);
-		}
-
-		// self.device.poll(maintain).unwrap();
 		let drawable = self.surface.get_current_texture();
 		let drawable = match drawable {
 			wgpu::CurrentSurfaceTexture::Timeout => return Ok(()),
 			wgpu::CurrentSurfaceTexture::Lost => return Ok(()),
 			wgpu::CurrentSurfaceTexture::Success(t) => t,
-			_ => todo!(),
+			_ => return Ok(()),
 		};
 
 		let image_view_descriptor = wgpu::TextureViewDescriptor::default();
@@ -320,10 +283,10 @@ impl Renderer {
 			depth_slice: None,
 			ops: wgpu::Operations {
 				load: wgpu::LoadOp::Clear(wgpu::Color {
-					r: 0.12,
-					g: 0.12,
-					b: 0.13,
-					a: 1.0,
+					r: camera.clear_color[0] as f64,
+					g: camera.clear_color[1] as f64,
+					b: camera.clear_color[2] as f64,
+					a: camera.clear_color[3] as f64,
 				}),
 				store: wgpu::StoreOp::Store,
 			},
@@ -332,7 +295,14 @@ impl Renderer {
 		let render_pass_descriptor = wgpu::RenderPassDescriptor {
 			label: Some("Render Pass"),
 			color_attachments: &[Some(color_attachment)],
-			depth_stencil_attachment: None,
+			depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+				view: &self.depth_view,
+				depth_ops: Some(wgpu::Operations {
+					load: wgpu::LoadOp::Clear(1.0),
+					store: wgpu::StoreOp::Store,
+				}),
+				stencil_ops: None,
+			}),
 			occlusion_query_set: None,
 			timestamp_writes: None,
 			multiview_mask: None,
@@ -340,31 +310,18 @@ impl Renderer {
 
 		let mut render_pass = command_encoder.begin_render_pass(&render_pass_descriptor);
 		render_pass.set_pipeline(&self.pipeline.render_pipeline);
-
-		render_pass.set_bind_group(0, &self.quad_material.bind_group, &[]);
 		render_pass.set_bind_group(2, &self.projection_ubo.as_ref().unwrap().bind_group, &[]);
-		render_pass.set_vertex_buffer(0, self.quad_mesh.buffer.slice(..self.quad_mesh.offset));
-		render_pass.set_index_buffer(
-			self.quad_mesh.buffer.slice(self.quad_mesh.offset..),
-			wgpu::IndexFormat::Uint16,
-		);
 
-		let mut offset: usize = 0;
-		for i in 0..quads.len() {
-			render_pass.set_bind_group(1, &self.ubo.as_ref().unwrap().bind_groups[offset + i], &[]);
+		for (i, material) in self.materials.iter().enumerate() {
+			render_pass.set_bind_group(0, &material.bind_group, &[]);
+			render_pass.set_bind_group(1, &self.ubo.as_ref().unwrap().bind_groups[i], &[]);
+
+			render_pass.set_vertex_buffer(0, self.quad_mesh.buffer.slice(..self.quad_mesh.offset));
+			render_pass.set_index_buffer(
+				self.quad_mesh.buffer.slice(self.quad_mesh.offset..),
+				wgpu::IndexFormat::Uint16,
+			);
 			render_pass.draw_indexed(0..6, 0, 0..1);
-		}
-
-		render_pass.set_bind_group(0, &self.triangle_material.bind_group, &[]);
-		render_pass.set_vertex_buffer(0, self.triangle_mesh.buffer.slice(..self.triangle_mesh.offset));
-		render_pass.set_index_buffer(
-			self.triangle_mesh.buffer.slice(self.triangle_mesh.offset..),
-			wgpu::IndexFormat::Uint16,
-		);
-		offset += quads.len();
-		for i in 0..triangles.len() {
-			render_pass.set_bind_group(1, &self.ubo.as_ref().unwrap().bind_groups[offset + i], &[]);
-			render_pass.draw_indexed(0..3, 0, 0..1);
 		}
 
 		drop(render_pass);
@@ -374,15 +331,23 @@ impl Renderer {
 
 		Ok(())
 	}
+}
 
-	#[allow(dead_code)]
-	pub fn render_sprite(/* &zerengine_ecs::Sprite, &zerengine_ecs::Transform */) {
-		// TODO
-		todo!()
+fn sprite_size_to_world_scale(size: &components::SpriteSize, dimensions: (u32, u32)) -> [f32; 2] {
+	match size {
+		components::SpriteSize::Auto => auto_sprite_size(dimensions.0, dimensions.1),
+		components::SpriteSize::Custom { width, height } => [*width, *height],
 	}
-	#[allow(dead_code)]
-	fn render_mesh(/* &zerengine_ecs::Mesh, &zerengine_ecs::Transform */) {
-		// TODO
-		todo!()
+}
+
+fn auto_sprite_size(width: u32, height: u32) -> [f32; 2] {
+	if width == 0 || height == 0 {
+		return [1.0, 1.0];
+	}
+
+	if width >= height {
+		[width as f32 / height as f32, 1.0]
+	} else {
+		[1.0, height as f32 / width as f32]
 	}
 }

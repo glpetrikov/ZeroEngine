@@ -1,0 +1,113 @@
+use std::collections::BTreeMap;
+
+use schemars::{JsonSchema, schema_for};
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use shipyard::{Component, EntityId, World};
+
+use crate::{SavedComponent, SavedEntity};
+
+type SaveComponentFn = Box<dyn Fn(EntityId, &World) -> Option<Value>>;
+type LoadComponentFn = Box<dyn Fn(EntityId, &mut World, Value) -> Result<(), Box<dyn std::error::Error>>>;
+
+pub struct ComponentRegistry {
+	components: BTreeMap<String, ComponentRegistration>,
+}
+
+struct ComponentRegistration {
+	component_type: String,
+	schema: Value,
+	save: SaveComponentFn,
+	load: LoadComponentFn,
+}
+
+impl ComponentRegistry {
+	pub fn new() -> Self {
+		Self {
+			components: BTreeMap::new(),
+		}
+	}
+
+	pub fn register<T>(&mut self, component_type: impl Into<String>)
+	where
+		T: Component + Clone + Serialize + for<'de> Deserialize<'de> + JsonSchema + 'static,
+	{
+		let component_type = component_type.into();
+
+		let schema = serde_json::to_value(schema_for!(T)).expect("component schema serialization failed");
+
+		let save = Box::new(|entity: EntityId, world: &World| {
+			world
+				.get::<&T>(entity)
+				.ok()
+				.and_then(|component| serde_json::to_value(*component).ok())
+		});
+
+		let load = Box::new(
+			|entity: EntityId, world: &mut World, value: Value| -> Result<(), Box<dyn std::error::Error>> {
+				let component: T = serde_json::from_value(value)?;
+				world.add_component(entity, (component,));
+				Ok(())
+			},
+		);
+
+		let registration = ComponentRegistration {
+			component_type: component_type.clone(),
+			schema,
+			save,
+			load,
+		};
+
+		self.components.insert(component_type, registration);
+	}
+
+	pub fn save_entity(&self, entity: EntityId, world: &World) -> SavedEntity {
+		let mut components = Vec::new();
+
+		for registration in self.components.values() {
+			if let Some(value) = (registration.save)(entity, world) {
+				components.push(SavedComponent {
+					component_type: registration.component_type.clone(),
+					value,
+				});
+			}
+		}
+
+		SavedEntity {
+			id: entity.into(),
+			components,
+		}
+	}
+
+	pub fn load_component(
+		&self,
+		entity: EntityId,
+		world: &mut World,
+		component: SavedComponent,
+	) -> Result<(), Box<dyn std::error::Error>> {
+		let registration = self
+			.components
+			.get(&component.component_type)
+			.ok_or_else(|| format!("unknown component type: {}", component.component_type))?;
+
+		jsonschema::validate(&registration.schema, &component.value)
+			.map_err(|err| format!("invalid component {}: {}", component.component_type, err))?;
+
+		(registration.load)(entity, world, component.value)
+	}
+
+	pub fn component_schema(&self, type_id: &str) -> Option<&Value> {
+		self.components.get(type_id).map(|component| &component.schema)
+	}
+
+	pub fn component_schemas(&self) -> BTreeMap<String, Value> {
+		self.components
+			.iter()
+			.map(|(type_id, registration)| (type_id.clone(), registration.schema.clone()))
+			.collect()
+	}
+}
+
+impl Default for ComponentRegistry {
+	fn default() -> Self { Self::new() }
+}
