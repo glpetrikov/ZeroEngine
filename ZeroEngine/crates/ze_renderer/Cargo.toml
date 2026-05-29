@@ -1,0 +1,19 @@
+[package]
+name = "ze_renderer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+image = { version = "0.25.10", default-features = false, features = [
+    "webp",
+    "jpeg",
+    "png",
+] }
+wgpu = "29.0.3"
+winit = "0.30.13"
+ze_core = { version = "0.1.0", path = "../ze_core" }
+ze_log = { version = "0.1.0", path = "../ze_log" }
+glam = "0.33.0"
+bytemuck = "1.25.0"
+ze_input = { version = "0.1.0", path = "../ze_input" }
+ze_ecs = { version = "0.1.0", path = "../ze_ecs" }

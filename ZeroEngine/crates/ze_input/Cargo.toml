@@ -1,0 +1,16 @@
+[package]
+name = "ze_input"
+readme = "Readme.md"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+version.workspace = true
+repository.workspace = true
+
+[features]
+default = ["winit"]
+winit = ["dep:winit"]
+
+[dependencies]
+winit = { version = "0.30.13", optional = true }
+ze_core = { version = "0.1.0", path = "../ze_core" }

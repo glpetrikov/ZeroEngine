@@ -1,0 +1,12 @@
+[package]
+name = "ze_log"
+readme = "Readme.md"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+version.workspace = true
+repository.workspace = true
+
+[dependencies]
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "time"] }
+tracing = "0.1"

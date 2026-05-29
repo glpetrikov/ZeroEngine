@@ -1,21 +1,21 @@
 mod hooks;
 
 use winit::event_loop::{ControlFlow, EventLoop};
-use zerengine_app::*;
+use ze_app::*;
 
 pub fn run() {
-	zerengine_log::init(); // TODO: add file logging
+	ze_log::init(); // TODO: add file logging
 
-	zerengine_log::trace!("Setting up panic hook");
+	ze_log::trace!("Setting up panic hook");
 	hooks::panic_hook();
 	// ===================================================
 	// Creating Event Loop
 	// ===================================================
-	zerengine_log::debug!("Event Loop creating");
+	ze_log::debug!("Event Loop creating");
 	let event_loop = EventLoop::<CustomEvents>::with_user_event().build().unwrap();
 	let event_loop_proxy = event_loop.create_proxy();
 
-	zerengine_log::trace!("Event Loop setting control flow");
+	ze_log::trace!("Event Loop setting control flow");
 	event_loop.set_control_flow(ControlFlow::Poll);
 
 	render_banner();
@@ -28,16 +28,16 @@ pub fn run() {
 	// ===================================================
 	// Running App
 	// ===================================================
-	zerengine_log::debug!("Creating App");
+	ze_log::debug!("Creating App");
 	let mut app = match App::new() {
 		Ok(app) => app,
 		Err(error) => {
-			zerengine_log::error!("Failed to create app: {error:?}");
+			ze_log::error!("Failed to create app: {error:?}");
 			std::process::exit(1);
 		}
 	};
 
-	zerengine_log::debug!("Running App");
+	ze_log::debug!("Running App");
 	event_loop.run_app(&mut app).unwrap();
 }
 

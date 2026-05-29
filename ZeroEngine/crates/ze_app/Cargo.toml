@@ -1,0 +1,17 @@
+[package]
+name = "ze_app"
+readme = "Readme.md"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+version.workspace = true
+repository.workspace = true
+
+[dependencies]
+ze_core = { path = "../ze_core" }
+ze_input = { path = "../ze_input" }
+ze_log = { path = "../ze_log" }
+ze_ecs = { path = "../ze_ecs" }
+winit = "0.30.13"
+ze_renderer = { version = "0.1.0", path = "../ze_renderer" }
+tokio = { version = "1.52.3", features = ["full"] }

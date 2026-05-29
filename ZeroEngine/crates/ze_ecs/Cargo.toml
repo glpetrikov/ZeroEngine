@@ -1,0 +1,12 @@
+[package]
+name = "ze_ecs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+shipyard = { version = "0.11.3", features = ["serde1"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+schemars = { version = "1", features = ["derive"] }
+jsonschema = "0.33"
+ze_core = { version = "0.1.0", path = "../ze_core" }

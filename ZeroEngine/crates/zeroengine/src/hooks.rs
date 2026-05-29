@@ -1,4 +1,4 @@
-use zerengine_app::CustomEvents;
+use ze_app::CustomEvents;
 
 pub(crate) fn ctrlc_hook(event_loop_proxy: &winit::event_loop::EventLoopProxy<CustomEvents>) {
 	let ctrlc_proxy = event_loop_proxy.clone();
