@@ -4839,6 +4839,7 @@ dependencies = [
  "tokio",
  "winit",
  "zerengine_core",
+ "zerengine_ecs",
  "zerengine_input",
  "zerengine_log",
  "zerengine_renderer",
@@ -4850,7 +4851,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "glam",
+ "schemars",
+ "serde",
  "thiserror 2.0.18",
+ "wesl",
 ]
 
 [[package]]
@@ -4888,10 +4892,10 @@ dependencies = [
  "bytemuck",
  "glam",
  "image",
- "wesl",
  "wgpu",
  "winit",
  "zerengine_core",
+ "zerengine_ecs",
  "zerengine_input",
  "zerengine_log",
 ]

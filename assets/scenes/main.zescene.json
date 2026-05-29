@@ -9,28 +9,49 @@
       },
       "components": [
         {
-          "component_type": "ze.inactive",
-          "value": null
-        },
-        {
           "component_type": "ze.name",
           "value": {
-            "name": "Entity1"
+            "name": "EditorCamera"
+          }
+        },
+        {
+          "component_type": "ze.renderer.camera",
+          "value": {
+            "clear_color": [
+              0.11999999731779099,
+              0.11999999731779099,
+              0.12999999523162842,
+              1.0
+            ],
+            "primary": true,
+            "projection": {
+              "Orthographic": {
+                "far": 100.0,
+                "near": -100.0,
+                "size": 4.0
+              }
+            }
+          }
+        },
+        {
+          "component_type": "ze.tag",
+          "value": {
+            "tag": "EditorCamera"
           }
         },
         {
           "component_type": "ze.transform",
           "value": {
             "position": [
-              1.0,
-              1.0,
-              1.0
+              0.0,
+              0.0,
+              5.0
             ],
             "rotation": [
               0.0,
               0.0,
-              0.7071067690849304,
-              0.7071067690849304
+              0.0,
+              1.0
             ],
             "scale": [
               1.0,
@@ -50,22 +71,113 @@
         {
           "component_type": "ze.name",
           "value": {
-            "name": "Entity2"
+            "name": "Square"
+          }
+        },
+        {
+          "component_type": "ze.renderer.sprite",
+          "value": {
+            "color": {
+              "mode": "None",
+              "saturation_threshold": 0.15000000596046448,
+              "strength": 1.0,
+              "tint": null
+            },
+            "settings": {
+              "flip_x": false,
+              "flip_y": false,
+              "layer": 0,
+              "visible": true
+            },
+            "size": "Auto",
+            "texture": {
+              "path": "textures/square.png",
+              "source": "Game"
+            }
+          }
+        },
+        {
+          "component_type": "ze.tag",
+          "value": {
+            "tag": "Square"
           }
         },
         {
           "component_type": "ze.transform",
           "value": {
             "position": [
+              0.0,
               -1.0,
-              -1.0,
-              1.0
+              0.0
             ],
             "rotation": [
               0.0,
               0.0,
-              -0.7071067690849304,
-              0.7071067690849304
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "index": 2,
+        "gen": 0
+      },
+      "components": [
+        {
+          "component_type": "ze.name",
+          "value": {
+            "name": "Triangle"
+          }
+        },
+        {
+          "component_type": "ze.renderer.sprite",
+          "value": {
+            "color": {
+              "mode": "None",
+              "saturation_threshold": 0.15000000596046448,
+              "strength": 1.0,
+              "tint": null
+            },
+            "settings": {
+              "flip_x": false,
+              "flip_y": false,
+              "layer": 1,
+              "visible": true
+            },
+            "size": "Auto",
+            "texture": {
+              "path": "textures/triangle.png",
+              "source": "Game"
+            }
+          }
+        },
+        {
+          "component_type": "ze.tag",
+          "value": {
+            "tag": "Triangle"
+          }
+        },
+        {
+          "component_type": "ze.transform",
+          "value": {
+            "position": [
+              1.0,
+              0.0,
+              0.0
+            ],
+            "rotation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
             ],
             "scale": [
               1.0,

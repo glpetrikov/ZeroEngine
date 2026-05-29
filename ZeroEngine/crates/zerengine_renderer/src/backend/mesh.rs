@@ -25,56 +25,23 @@ impl Vertex {
 		}
 	}
 
-	pub fn make_triangle(device: &wgpu::Device) -> Mesh {
-		let vertices: [Vertex; 3] = [
-			Vertex {
-				position: Vec3::new(-0.75, -0.75, 0.0).to_array(),
-				color: Vec4::new(0.6, 0.6, 0.6, 1.0).to_array(),
-			},
-			Vertex {
-				position: Vec3::new(0.75, -0.75, 0.0).to_array(),
-				color: Vec4::new(0.0, 1.0, 0.0, 1.0).to_array(),
-			},
-			Vertex {
-				position: Vec3::new(0.0, 0.75, 0.0).to_array(),
-				color: Vec4::new(0.0, 0.0, 1.0, 1.0).to_array(),
-			},
-		];
-		let indices: [u16; 3] = [0, 1, 2];
-
-		let bytes_1: &[u8] = bytemuck::cast_slice(&vertices);
-		let bytes_2: &[u8] = bytemuck::cast_slice(&indices);
-		let bytes_merged: &[u8] = &[bytes_1, bytes_2].concat();
-
-		let buffer_descriptor = wgpu::util::BufferInitDescriptor {
-			label: Some("Triangle vertex & index buffer"),
-			contents: bytes_merged,
-			usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::INDEX,
-		};
-
-		let buffer = device.create_buffer_init(&buffer_descriptor);
-		let offset: u64 = bytes_1.len().try_into().unwrap();
-
-		Mesh { buffer, offset }
-	}
-
 	pub fn make_quad(device: &wgpu::Device) -> Mesh {
 		let vertices: [Vertex; 4] = [
 			Vertex {
-				position: Vec3::new(-0.75, -0.75, 0.0).to_array(),
-				color: Vec4::new(1.0, 0.0, 0.0, 1.0).to_array(),
+				position: Vec3::new(-0.5, -0.5, 0.0).to_array(),
+				color: Vec4::ONE.to_array(),
 			},
 			Vertex {
-				position: Vec3::new(0.75, -0.75, 0.0).to_array(),
-				color: Vec4::new(0.0, 0.0, 1.0, 1.0).to_array(),
+				position: Vec3::new(0.5, -0.5, 0.0).to_array(),
+				color: Vec4::ONE.to_array(),
 			},
 			Vertex {
-				position: Vec3::new(0.75, 0.75, 0.0).to_array(),
-				color: Vec4::new(0.0, 0.0, 1.0, 1.0).to_array(),
+				position: Vec3::new(0.5, 0.5, 0.0).to_array(),
+				color: Vec4::ONE.to_array(),
 			},
 			Vertex {
-				position: Vec3::new(-0.75, 0.75, 0.0).to_array(),
-				color: Vec4::new(0.0, 1.0, 0.0, 1.0).to_array(),
+				position: Vec3::new(-0.5, 0.5, 0.0).to_array(),
+				color: Vec4::ONE.to_array(),
 			},
 		];
 		let indices: [u16; 6] = [0, 1, 2, 0, 2, 3];

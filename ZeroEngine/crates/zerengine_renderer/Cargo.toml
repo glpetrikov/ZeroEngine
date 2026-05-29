@@ -11,12 +11,9 @@ image = { version = "0.25.10", default-features = false, features = [
 ] }
 wgpu = "29.0.3"
 winit = "0.30.13"
-wesl = "0.4.0"
 zerengine_core = { version = "0.1.0", path = "../zerengine_core" }
 zerengine_log = { version = "0.1.0", path = "../zerengine_log" }
 glam = "0.33.0"
 bytemuck = "1.25.0"
 zerengine_input = { version = "0.1.0", path = "../zerengine_input" }
-
-[build-dependencies]
-wesl = "0.4.0"
+zerengine_ecs = { version = "0.1.0", path = "../zerengine_ecs" }

@@ -13,6 +13,7 @@ use crate::{
 	definitions::SaveFile,
 	entity::Entity,
 	registry::ComponentRegistry,
+	system::System,
 };
 
 pub const SCENE_VERSION: &str = "0.1.0";
@@ -24,6 +25,7 @@ pub struct Scene {
 	pub name: String,
 	pub(crate) world: World,
 	pub(crate) registry: ComponentRegistry,
+	systems: Vec<Box<dyn System>>,
 }
 
 impl Scene {
@@ -35,6 +37,7 @@ impl Scene {
 			name: name.to_string(),
 			world: World::new(),
 			registry,
+			systems: Vec::new(),
 		}
 	}
 
@@ -43,6 +46,7 @@ impl Scene {
 			name: name.to_string(),
 			world: World::new(),
 			registry,
+			systems: Vec::new(),
 		}
 	}
 }
@@ -55,6 +59,51 @@ impl Scene {
 	pub fn registry(&self) -> &ComponentRegistry { &self.registry }
 
 	pub fn registry_mut(&mut self) -> &mut ComponentRegistry { &mut self.registry }
+}
+
+impl Scene {
+	pub fn add_system<T>(&mut self, system: T)
+	where
+		T: System + 'static,
+	{
+		self.systems.push(Box::new(system));
+	}
+
+	pub fn update_systems(&mut self, dt: f32) -> Result<()> {
+		let mut systems = std::mem::take(&mut self.systems);
+		let mut result = Ok(());
+
+		for system in &mut systems {
+			if let Err(error) = system.update(self, dt) {
+				result = Err(error);
+				break;
+			}
+		}
+
+		self.systems = systems;
+		result
+	}
+
+	pub fn with_system_mut<T, R>(&mut self, f: impl FnOnce(&mut T, &Self) -> R) -> Option<R>
+	where
+		T: System + 'static,
+	{
+		let mut systems = std::mem::take(&mut self.systems);
+		let mut f = Some(f);
+		let mut output = None;
+
+		for system in &mut systems {
+			let Some(system) = system.as_any_mut().downcast_mut::<T>() else {
+				continue;
+			};
+
+			output = Some(f.take().expect("system callback was already consumed")(system, self));
+			break;
+		}
+
+		self.systems = systems;
+		output
+	}
 }
 
 impl Scene {
@@ -98,13 +147,14 @@ impl Scene {
 	}
 
 	pub fn from_name_with_registry(directory: PathBuf, name: &str, registry: ComponentRegistry) -> Result<Self> {
+		let mut local_registry = registry; // ?
+		Self::register_defaults(&mut local_registry);
 		let path = scene_path(directory, name);
-		Self::from_path_with_registry(path, registry)
+		Self::from_path_with_registry(path, local_registry)
 	}
 
 	pub fn from_path(path: PathBuf) -> Result<Self> {
-		let mut registry = ComponentRegistry::new();
-		Self::register_defaults(&mut registry);
+		let registry = ComponentRegistry::new();
 		Self::from_path_with_registry(path, registry)
 	}
 
@@ -142,7 +192,12 @@ impl Scene {
 			}
 		}
 
-		Ok(Self { name, world, registry })
+		Ok(Self {
+			name,
+			world,
+			registry,
+			systems: Vec::new(),
+		})
 	}
 
 	pub fn save(&self, directory: PathBuf, file_name: &str) -> Result<()> {

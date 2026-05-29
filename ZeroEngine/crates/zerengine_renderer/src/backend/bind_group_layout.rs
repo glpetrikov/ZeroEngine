@@ -32,6 +32,17 @@ impl<'a> Builder<'a> {
 			ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
 			count: None,
 		});
+
+		self.entries.push(wgpu::BindGroupLayoutEntry {
+			binding: self.entries.len() as u32,
+			visibility: wgpu::ShaderStages::FRAGMENT,
+			ty: wgpu::BindingType::Buffer {
+				ty: wgpu::BufferBindingType::Uniform,
+				has_dynamic_offset: false,
+				min_binding_size: None,
+			},
+			count: None,
+		});
 	}
 
 	pub fn add_ubo(&mut self) {

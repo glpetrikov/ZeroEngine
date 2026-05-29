@@ -77,6 +77,7 @@ pub struct Input {
 
 	pub mouse_pos: Vec2,
 	pub mouse_delta: Vec2,
+	pub mouse_wheel_delta: f32,
 }
 
 impl Input {
@@ -95,10 +96,13 @@ impl Input {
 		self.mouse_delta.y += dy;
 	}
 
+	pub fn add_mouse_wheel_delta(&mut self, dy: f32) { self.mouse_wheel_delta += dy; }
+
 	pub fn late_update(&mut self) {
 		self.previous_keys = self.current_keys;
 		self.previous_mouse = self.current_mouse;
 		self.mouse_delta = Vec2::new(0.0, 0.0);
+		self.mouse_wheel_delta = 0.0;
 	}
 
 	pub fn reset(&mut self) {
@@ -106,6 +110,7 @@ impl Input {
 		self.previous_keys = [false; 512];
 		self.current_mouse = [false; 8];
 		self.previous_mouse = [false; 8];
+		self.mouse_wheel_delta = 0.0;
 	}
 
 	// --- Main Methods ---
@@ -141,6 +146,8 @@ impl Input {
 
 // --- Global Access ---
 
+// FIXME: change unwrap to handle
+
 impl Input {
 	// Keyboard
 
@@ -157,6 +164,8 @@ impl Input {
 	pub fn get_mouse_pos() -> Vec2 { Self::global().lock().unwrap().mouse_pos }
 
 	pub fn get_mouse_delta() -> Vec2 { Self::global().lock().unwrap().mouse_delta }
+
+	pub fn get_mouse_wheel_delta() -> f32 { Self::global().lock().unwrap().mouse_wheel_delta }
 
 	pub fn is_mouse_button_pressed(button: ZMouseCode) -> bool {
 		Self::global().lock().unwrap().is_button_pressed(button)
@@ -184,6 +193,7 @@ impl Default for Input {
 			previous_mouse: [false; 8],
 			mouse_pos: Vec2::ZERO,
 			mouse_delta: Vec2::ZERO,
+			mouse_wheel_delta: 0.0,
 		}
 	}
 }
