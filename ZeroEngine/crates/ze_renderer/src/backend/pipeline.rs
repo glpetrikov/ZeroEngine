@@ -17,6 +17,11 @@ pub struct Builder<'a> {
 	fragment_entry: String,
 	pixel_format: wgpu::TextureFormat,
 	vertex_buffer_layouts: Vec<wgpu::VertexBufferLayout<'static>>,
+	topology: wgpu::PrimitiveTopology,
+	polygon_mode: wgpu::PolygonMode,
+	cull_mode: Option<wgpu::Face>,
+	depth_write_enabled: bool,
+	depth_compare: wgpu::CompareFunction,
 	name: String,
 	bind_group_layouts: Vec<Option<&'a wgpu::BindGroupLayout>>,
 	device: &'a wgpu::Device,
@@ -33,6 +38,11 @@ impl<'a> Builder<'a> {
 			fragment_entry: "fs_main".to_string(),
 			pixel_format: wgpu::TextureFormat::Bgra8UnormSrgb,
 			vertex_buffer_layouts: vec![],
+			topology: wgpu::PrimitiveTopology::TriangleList,
+			polygon_mode: wgpu::PolygonMode::Fill,
+			cull_mode: Some(wgpu::Face::Back),
+			depth_write_enabled: true,
+			depth_compare: wgpu::CompareFunction::Less,
 			name: "Unnamed Pipeline".to_string(),
 			bind_group_layouts: vec![],
 			device,
@@ -86,6 +96,31 @@ impl<'a> Builder<'a> {
 		self
 	}
 
+	pub fn with_topology(mut self, topology: wgpu::PrimitiveTopology) -> Self {
+		self.topology = topology;
+		self
+	}
+
+	pub fn with_polygon_mode(mut self, polygon_mode: wgpu::PolygonMode) -> Self {
+		self.polygon_mode = polygon_mode;
+		self
+	}
+
+	pub fn with_cull_mode(mut self, cull_mode: Option<wgpu::Face>) -> Self {
+		self.cull_mode = cull_mode;
+		self
+	}
+
+	pub fn with_depth_write_enabled(mut self, enabled: bool) -> Self {
+		self.depth_write_enabled = enabled;
+		self
+	}
+
+	pub fn with_depth_compare(mut self, compare: wgpu::CompareFunction) -> Self {
+		self.depth_compare = compare;
+		self
+	}
+
 	pub fn with_bind_group_layout(mut self, layout: &'a wgpu::BindGroupLayout) -> Self {
 		self.bind_group_layouts.push(Some(layout));
 		self
@@ -131,8 +166,8 @@ impl<'a> Builder<'a> {
 
 		let depth_stencil = wgpu::DepthStencilState {
 			format: wgpu::TextureFormat::Depth32Float,
-			depth_write_enabled: Some(true),
-			depth_compare: Some(wgpu::CompareFunction::Less),
+			depth_write_enabled: Some(self.depth_write_enabled),
+			depth_compare: Some(self.depth_compare),
 			stencil: wgpu::StencilState::default(),
 			bias: wgpu::DepthBiasState::default(),
 		};
@@ -155,11 +190,11 @@ impl<'a> Builder<'a> {
 				compilation_options: wgpu::PipelineCompilationOptions::default(),
 			}),
 			primitive: wgpu::PrimitiveState {
-				topology: wgpu::PrimitiveTopology::TriangleList,
+				topology: self.topology,
 				strip_index_format: None,
 				front_face: wgpu::FrontFace::Ccw,
-				cull_mode: Some(wgpu::Face::Back),
-				polygon_mode: wgpu::PolygonMode::Fill,
+				cull_mode: self.cull_mode,
+				polygon_mode: self.polygon_mode,
 				unclipped_depth: false,
 				conservative: false,
 			},

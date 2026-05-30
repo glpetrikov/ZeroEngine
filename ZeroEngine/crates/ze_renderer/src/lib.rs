@@ -8,6 +8,7 @@ use std::sync::Arc;
 pub use components::*;
 pub use editor_camera_system::*;
 pub use render_system::*;
+use wgpu::util::DeviceExt;
 use ze_core::{Mat4, ResourceManager, Vec3};
 
 use crate::backend::{
@@ -24,6 +25,7 @@ pub struct Renderer {
 	config: wgpu::SurfaceConfiguration,
 	size: winit::dpi::PhysicalSize<u32>,
 	pipeline: Pipeline,
+	debug_pipeline: Pipeline,
 	quad_mesh: Mesh,
 	texture_cache: TextureCache,
 	materials: Vec<SpriteMaterial>,
@@ -113,12 +115,27 @@ impl Renderer {
 				.with_shader_source(resources.engine_string("shaders/engine/sprite.wgsl")?)
 				.with_pixel_format(surface_format)
 				.with_vertex_buffer_layout(Vertex::get_layout())
+				.with_depth_write_enabled(false)
+				.with_depth_compare(wgpu::CompareFunction::Always)
 				.with_bind_group_layout(&material_bind_group_layout)
 				.with_bind_group_layout(&ubo_bind_group_layout)
 				.with_bind_group_layout(&ubo_bind_group_layout);
 
 			render_pipeline = pipeline_builder.build()?;
 		}
+
+		let debug_pipeline = pipeline::Builder::new(&device)
+			.with_name("Physics Debug Draw")
+			.with_shader_source(DEBUG_LINE_SHADER)
+			.with_pixel_format(surface_format)
+			.with_vertex_buffer_layout(Vertex::get_layout())
+			.with_bind_group_layout(&ubo_bind_group_layout)
+			.with_topology(wgpu::PrimitiveTopology::LineList)
+			.with_polygon_mode(wgpu::PolygonMode::Line)
+			.with_cull_mode(None)
+			.with_depth_write_enabled(false)
+			.with_depth_compare(wgpu::CompareFunction::Always)
+			.build()?;
 
 		let projection_ubo = Some(Ubo::new(&device, &ubo_bind_group_layout));
 		let texture_cache = TextureCache::new(&device, &queue);
@@ -131,6 +148,7 @@ impl Renderer {
 			config,
 			size,
 			pipeline: render_pipeline,
+			debug_pipeline,
 			quad_mesh,
 			texture_cache,
 			materials,
@@ -199,10 +217,11 @@ impl Renderer {
 	pub fn request_sprite_redraw(
 		&mut self,
 		items: &[render_system::SpriteRenderItem],
+		debug_lines: &[render_system::DebugLine],
 		camera: &render_system::CameraRenderData,
 		resources: &ResourceManager,
 	) {
-		match self.render_sprite_items(items, camera, resources) {
+		match self.render_sprite_items(items, debug_lines, camera, resources) {
 			Ok(_) => {}
 			Err(wgpu::SurfaceStatus::Lost) => {
 				let size = self.size;
@@ -222,6 +241,7 @@ impl Renderer {
 	fn render_sprite_items(
 		&mut self,
 		items: &[render_system::SpriteRenderItem],
+		debug_lines: &[render_system::DebugLine],
 		camera: &render_system::CameraRenderData,
 		resources: &ResourceManager,
 	) -> Result<(), wgpu::SurfaceStatus> {
@@ -260,6 +280,29 @@ impl Renderer {
 				&self.material_bind_group_layout,
 			));
 		}
+
+		let debug_vertices = debug_lines
+			.iter()
+			.flat_map(|line| {
+				[
+					Vertex {
+						position: line.start.to_array(),
+						color: line.color,
+					},
+					Vertex {
+						position: line.end.to_array(),
+						color: line.color,
+					},
+				]
+			})
+			.collect::<Vec<_>>();
+		let debug_vertex_buffer = (!debug_vertices.is_empty()).then(|| {
+			self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+				label: Some("Physics Debug Lines"),
+				contents: bytemuck::cast_slice(&debug_vertices),
+				usage: wgpu::BufferUsages::VERTEX,
+			})
+		});
 
 		let drawable = self.surface.get_current_texture();
 		let drawable = match drawable {
@@ -324,6 +367,13 @@ impl Renderer {
 			render_pass.draw_indexed(0..6, 0, 0..1);
 		}
 
+		if let Some(debug_vertex_buffer) = &debug_vertex_buffer {
+			render_pass.set_pipeline(&self.debug_pipeline.render_pipeline);
+			render_pass.set_bind_group(0, &self.projection_ubo.as_ref().unwrap().bind_group, &[]);
+			render_pass.set_vertex_buffer(0, debug_vertex_buffer.slice(..));
+			render_pass.draw(0..debug_vertices.len() as u32, 0..1);
+		}
+
 		drop(render_pass);
 		self.queue.submit(std::iter::once(command_encoder.finish()));
 
@@ -332,6 +382,33 @@ impl Renderer {
 		Ok(())
 	}
 }
+
+const DEBUG_LINE_SHADER: &str = r#"
+@group(0) @binding(0) var<uniform> view_projection: mat4x4<f32>;
+
+struct Vertex {
+    @location(0) position: vec3<f32>,
+    @location(1) color: vec4<f32>,
+}
+
+struct VertexOutput {
+    @builtin(position) position: vec4<f32>,
+    @location(0) color: vec4<f32>,
+}
+
+@vertex
+fn vs_main(vertex: Vertex) -> VertexOutput {
+    var out: VertexOutput;
+    out.position = view_projection * vec4<f32>(vertex.position, 1.0);
+    out.color = vertex.color;
+    return out;
+}
+
+@fragment
+fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
+    return in.color;
+}
+"#;
 
 fn sprite_size_to_world_scale(size: &components::SpriteSize, dimensions: (u32, u32)) -> [f32; 2] {
 	match size {

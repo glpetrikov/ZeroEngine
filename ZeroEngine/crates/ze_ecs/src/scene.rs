@@ -9,7 +9,7 @@ use shipyard::{Component, EntitiesView, EntityId, World};
 use ze_core::{Result, anyhow};
 
 use crate::{
-	components::{Inactive, Name, Tag, Transform},
+	components::{Collider, Inactive, Name, PhysicsSettings, RigidBody, Tag, Transform},
 	definitions::SaveFile,
 	entity::Entity,
 	registry::ComponentRegistry,
@@ -119,6 +119,9 @@ impl Scene {
 		registry.register::<Tag>("ze.tag");
 		registry.register::<Inactive>("ze.inactive");
 		registry.register::<Transform>("ze.transform");
+		registry.register::<RigidBody>("ze.physics_2d.rigidbody");
+		registry.register::<Collider>("ze.physics_2d.collider");
+		registry.register::<PhysicsSettings>("ze.physics_2d.settings");
 	}
 }
 

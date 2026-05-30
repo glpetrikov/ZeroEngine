@@ -1,5 +1,9 @@
-use ze_core::{AssetRef, Mat4, ResourceManager, Result, Vec3};
-use ze_ecs::{EntitiesView, Inactive, Scene, System, Transform};
+use ze_core::{AssetRef, Mat4, ResourceManager, Result, Vec2, Vec3};
+use ze_ecs::{
+	Collider, ColliderShape, EntitiesView, EntityId, Inactive, PhysicsSettings, RigidBody, RigidBodyType, Scene,
+	System, Transform,
+};
+use ze_input::{Input, ZKeyCode};
 
 use crate::{
 	Renderer,
@@ -21,9 +25,17 @@ pub struct SpriteRenderItem {
 	pub layer: i32,
 }
 
+#[derive(Debug, Clone)]
+pub struct DebugLine {
+	pub start: Vec3,
+	pub end: Vec3,
+	pub color: [f32; 4],
+}
+
 #[derive(Default)]
 pub struct RenderSystem {
 	items: Vec<SpriteRenderItem>,
+	debug_lines: Vec<DebugLine>,
 }
 
 impl RenderSystem {
@@ -40,7 +52,8 @@ impl RenderSystem {
 		};
 
 		self.items = Self::collect_items(scene);
-		renderer.request_sprite_redraw(&self.items, &camera, resources);
+		self.debug_lines = Self::collect_debug_lines(scene);
+		renderer.request_sprite_redraw(&self.items, &self.debug_lines, &camera, resources);
 		Ok(())
 	}
 
@@ -132,12 +145,201 @@ impl RenderSystem {
 		items.sort_by_key(|item| item.layer);
 		items
 	}
+
+	fn collect_debug_lines(scene: &Scene) -> Vec<DebugLine> {
+		if !Self::debug_draw_enabled(scene) {
+			return Vec::new();
+		}
+
+		let mut lines = Vec::new();
+		let world = scene.world();
+
+		world.run(|entities: EntitiesView| {
+			for entity in entities.iter() {
+				if world.get::<&Inactive>(entity).is_ok() {
+					continue;
+				}
+
+				let Ok((transform, collider)) = world.get::<(&Transform, &Collider)>(entity) else {
+					continue;
+				};
+
+				let rigid_body = world.get::<&RigidBody>(entity).ok();
+				let color = debug_color(&collider, rigid_body.as_deref().copied());
+				append_collider_lines(&mut lines, &transform, &collider, color);
+			}
+		});
+
+		lines
+	}
+
+	fn debug_draw_enabled(scene: &Scene) -> bool {
+		let world = scene.world();
+		let mut enabled = false;
+
+		world.run(|entities: EntitiesView| {
+			for entity in entities.iter() {
+				let Ok(settings) = world.get::<&PhysicsSettings>(entity) else {
+					continue;
+				};
+
+				enabled = settings.enable_debug_draw;
+				break;
+			}
+		});
+
+		enabled
+	}
+
+	fn toggle_debug_draw(scene: &mut Scene) -> Result<()> {
+		if let Some(entity) = settings_entity(scene) {
+			let mut settings = scene.world_mut().get::<&mut PhysicsSettings>(entity)?;
+			settings.enable_debug_draw = !settings.enable_debug_draw;
+			return Ok(());
+		}
+
+		let entity = scene.create_entity("PhysicsSettings");
+		scene.entity_mut(entity).add_component(PhysicsSettings {
+			enable_debug_draw: true,
+			..PhysicsSettings::default()
+		});
+		Ok(())
+	}
 }
 
 impl System for RenderSystem {
 	fn name(&self) -> &'static str { "RenderSystem" }
 
-	fn update(&mut self, _scene: &mut Scene, _dt: f32) -> Result<()> { Ok(()) }
+	fn update(&mut self, scene: &mut Scene, _dt: f32) -> Result<()> {
+		if Input::is_key_just_pressed(ZKeyCode::KF1) {
+			Self::toggle_debug_draw(scene)?;
+		}
+
+		Ok(())
+	}
 
 	fn as_any_mut(&mut self) -> &mut dyn std::any::Any { self }
+}
+
+fn settings_entity(scene: &Scene) -> Option<EntityId> {
+	let world = scene.world();
+	let mut matching_entity = None;
+
+	world.run(|entities: EntitiesView| {
+		for entity in entities.iter() {
+			if world.get::<&PhysicsSettings>(entity).is_ok() {
+				matching_entity = Some(entity);
+				break;
+			}
+		}
+	});
+
+	matching_entity
+}
+
+fn debug_color(collider: &Collider, rigid_body: Option<&RigidBody>) -> [f32; 4] {
+	if collider.is_sensor {
+		return [1.0, 0.0, 0.0, 1.0];
+	}
+
+	match rigid_body.map(|body| body.body_type) {
+		Some(RigidBodyType::Static) => [0.1, 0.35, 1.0, 1.0],
+		_ => [0.0, 1.0, 0.0, 1.0],
+	}
+}
+
+fn append_collider_lines(lines: &mut Vec<DebugLine>, transform: &Transform, collider: &Collider, color: [f32; 4]) {
+	match &collider.shape {
+		ColliderShape::Box { half_extents } => {
+			let points = [
+				Vec2::new(-half_extents.x, -half_extents.y),
+				Vec2::new(half_extents.x, -half_extents.y),
+				Vec2::new(half_extents.x, half_extents.y),
+				Vec2::new(-half_extents.x, half_extents.y),
+			];
+			append_closed_polyline(lines, transform, &points, color);
+		}
+		ColliderShape::Circle { radius } => {
+			let radius = radius * transform.scale.truncate().abs().max_element();
+			let points = circle_points(radius, 32);
+			append_world_space_closed_polyline(lines, transform, &points, color);
+		}
+		ColliderShape::Capsule { half_height, radius } => {
+			let scale = transform.scale.truncate().abs();
+			let half_height = half_height * scale.y;
+			let radius = radius * scale.max_element();
+			let points = capsule_points(half_height, radius, 12);
+			append_world_space_closed_polyline(lines, transform, &points, color);
+		}
+		ColliderShape::ConvexPolygon { points } => {
+			append_closed_polyline(lines, transform, points, color);
+		}
+	}
+}
+
+fn append_closed_polyline(lines: &mut Vec<DebugLine>, transform: &Transform, points: &[Vec2], color: [f32; 4]) {
+	if points.len() < 2 {
+		return;
+	}
+
+	for i in 0..points.len() {
+		lines.push(DebugLine {
+			start: transform_local_point(transform, points[i]),
+			end: transform_local_point(transform, points[(i + 1) % points.len()]),
+			color,
+		});
+	}
+}
+
+fn append_world_space_closed_polyline(
+	lines: &mut Vec<DebugLine>,
+	transform: &Transform,
+	points: &[Vec2],
+	color: [f32; 4],
+) {
+	if points.len() < 2 {
+		return;
+	}
+
+	for i in 0..points.len() {
+		lines.push(DebugLine {
+			start: transform_unscaled_point(transform, points[i]),
+			end: transform_unscaled_point(transform, points[(i + 1) % points.len()]),
+			color,
+		});
+	}
+}
+
+fn transform_local_point(transform: &Transform, point: Vec2) -> Vec3 {
+	let scaled = Vec3::new(point.x * transform.scale.x, point.y * transform.scale.y, 0.0);
+	transform.position + transform.rotation * scaled
+}
+
+fn transform_unscaled_point(transform: &Transform, point: Vec2) -> Vec3 {
+	transform.position + transform.rotation * Vec3::new(point.x, point.y, 0.0)
+}
+
+fn circle_points(radius: f32, segments: usize) -> Vec<Vec2> {
+	(0..segments)
+		.map(|i| {
+			let angle = i as f32 / segments as f32 * std::f32::consts::TAU;
+			Vec2::new(angle.cos() * radius, angle.sin() * radius)
+		})
+		.collect()
+}
+
+fn capsule_points(half_height: f32, radius: f32, arc_segments: usize) -> Vec<Vec2> {
+	let mut points = Vec::with_capacity((arc_segments + 1) * 2);
+
+	for i in 0..=arc_segments {
+		let angle = i as f32 / arc_segments as f32 * std::f32::consts::PI;
+		points.push(Vec2::new(angle.cos() * radius, half_height + angle.sin() * radius));
+	}
+
+	for i in 0..=arc_segments {
+		let angle = std::f32::consts::PI + i as f32 / arc_segments as f32 * std::f32::consts::PI;
+		points.push(Vec2::new(angle.cos() * radius, -half_height + angle.sin() * radius));
+	}
+
+	points
 }
