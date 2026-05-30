@@ -28,7 +28,7 @@
               "Orthographic": {
                 "far": 100.0,
                 "near": -100.0,
-                "size": 4.0
+                "size": 8.0
               }
             }
           }
@@ -44,7 +44,7 @@
           "value": {
             "position": [
               0.0,
-              0.0,
+              1.0,
               5.0
             ],
             "rotation": [
@@ -71,7 +71,71 @@
         {
           "component_type": "ze.name",
           "value": {
+            "name": "PhysicsSettings"
+          }
+        },
+        {
+          "component_type": "ze.physics_2d.settings",
+          "value": {
+            "enable_debug_draw": true,
+            "gravity": [
+              0.0,
+              -9.81
+            ]
+          }
+        },
+        {
+          "component_type": "ze.tag",
+          "value": {
+            "tag": "PhysicsSettings"
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "index": 2,
+        "gen": 0
+      },
+      "components": [
+        {
+          "component_type": "ze.name",
+          "value": {
             "name": "Square"
+          }
+        },
+        {
+          "component_type": "ze.physics_2d.rigidbody",
+          "value": {
+            "angular_damping": 0.0,
+            "body_type": "Dynamic",
+            "collision_detection": "Discrete",
+            "freeze_position_x": false,
+            "freeze_position_y": false,
+            "freeze_rotation_x": false,
+            "freeze_rotation_y": false,
+            "freeze_rotation_z": false,
+            "gravity_scale": 1.0,
+            "use_gravity": true,
+            "linear_damping": 0.05,
+            "mass": null
+          }
+        },
+        {
+          "component_type": "ze.physics_2d.collider",
+          "value": {
+            "density": 1.0,
+            "friction": 0.5,
+            "is_sensor": false,
+            "restitution": 0.0,
+            "shape": {
+              "Box": {
+                "half_extents": [
+                  0.5,
+                  0.5
+                ]
+              }
+            }
           }
         },
         {
@@ -86,7 +150,7 @@
             "settings": {
               "flip_x": false,
               "flip_y": false,
-              "layer": 0,
+              "layer": 1,
               "visible": true
             },
             "size": "Auto",
@@ -106,15 +170,15 @@
           "component_type": "ze.transform",
           "value": {
             "position": [
-              0.0,
-              -1.0,
+              1.5,
+              0.5,
               0.0
             ],
             "rotation": [
               0.0,
               0.0,
-              0.0,
-              1.0
+              0.3827,
+              0.9239
             ],
             "scale": [
               1.0,
@@ -127,7 +191,7 @@
     },
     {
       "id": {
-        "index": 2,
+        "index": 3,
         "gen": 0
       },
       "components": [
@@ -135,6 +199,50 @@
           "component_type": "ze.name",
           "value": {
             "name": "Triangle"
+          }
+        },
+        {
+          "component_type": "ze.physics_2d.rigidbody",
+          "value": {
+            "angular_damping": 0.0,
+            "body_type": "Static",
+            "collision_detection": "Discrete",
+            "freeze_position_x": false,
+            "freeze_position_y": false,
+            "freeze_rotation_x": false,
+            "freeze_rotation_y": false,
+            "freeze_rotation_z": false,
+            "gravity_scale": 1.0,
+            "use_gravity": true,
+            "linear_damping": 0.05,
+            "mass": null
+          }
+        },
+        {
+          "component_type": "ze.physics_2d.collider",
+          "value": {
+            "density": 1.0,
+            "friction": 0.5,
+            "is_sensor": false,
+            "restitution": 0.0,
+            "shape": {
+              "ConvexPolygon": {
+                "points": [
+                  [
+                    -0.5,
+                    -0.5
+                  ],
+                  [
+                    0.5,
+                    -0.5
+                  ],
+                  [
+                    0.0,
+                    0.5
+                  ]
+                ]
+              }
+            }
           }
         },
         {
@@ -169,8 +277,8 @@
           "component_type": "ze.transform",
           "value": {
             "position": [
-              1.0,
-              0.0,
+              -1.0,
+              -0.85,
               0.0
             ],
             "rotation": [
@@ -182,6 +290,197 @@
             "scale": [
               1.0,
               1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "index": 4,
+        "gen": 0
+      },
+      "components": [
+        {
+          "component_type": "ze.name",
+          "value": {
+            "name": "Circle"
+          }
+        },
+        {
+          "component_type": "ze.physics_2d.rigidbody",
+          "value": {
+            "angular_damping": 0.0,
+            "body_type": "Dynamic",
+            "collision_detection": "Discrete",
+            "freeze_position_x": false,
+            "freeze_position_y": false,
+            "freeze_rotation_x": false,
+            "freeze_rotation_y": false,
+            "freeze_rotation_z": false,
+            "gravity_scale": 1.0,
+            "use_gravity": true,
+            "linear_damping": 0.05,
+            "mass": null
+          }
+        },
+        {
+          "component_type": "ze.physics_2d.collider",
+          "value": {
+            "density": 1.0,
+            "friction": 0.5,
+            "is_sensor": false,
+            "restitution": 0.0,
+            "shape": {
+              "Circle": {
+                "radius": 0.5
+              }
+            }
+          }
+        },
+        {
+          "component_type": "ze.renderer.sprite",
+          "value": {
+            "color": {
+              "mode": "None",
+              "saturation_threshold": 0.15000000596046448,
+              "strength": 1.0,
+              "tint": null
+            },
+            "settings": {
+              "flip_x": false,
+              "flip_y": false,
+              "layer": 1,
+              "visible": true
+            },
+            "size": "Auto",
+            "texture": {
+              "path": "textures/circle.png",
+              "source": "Game"
+            }
+          }
+        },
+        {
+          "component_type": "ze.tag",
+          "value": {
+            "tag": "Circle"
+          }
+        },
+        {
+          "component_type": "ze.transform",
+          "value": {
+            "position": [
+              -0.5,
+              3.0,
+              0.0
+            ],
+            "rotation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": {
+        "index": 5,
+        "gen": 0
+      },
+      "components": [
+        {
+          "component_type": "ze.name",
+          "value": {
+            "name": "Ground"
+          }
+        },
+        {
+          "component_type": "ze.physics_2d.rigidbody",
+          "value": {
+            "angular_damping": 0.0,
+            "body_type": "Static",
+            "collision_detection": "Discrete",
+            "freeze_position_x": false,
+            "freeze_position_y": false,
+            "freeze_rotation_x": false,
+            "freeze_rotation_y": false,
+            "freeze_rotation_z": false,
+            "gravity_scale": 1.0,
+            "use_gravity": true,
+            "linear_damping": 0.05,
+            "mass": null
+          }
+        },
+        {
+          "component_type": "ze.physics_2d.collider",
+          "value": {
+            "density": 1.0,
+            "friction": 0.5,
+            "is_sensor": false,
+            "restitution": 0.0,
+            "shape": {
+              "Box": {
+                "half_extents": [
+                  0.5,
+                  0.5
+                ]
+              }
+            }
+          }
+        },
+        {
+          "component_type": "ze.renderer.sprite",
+          "value": {
+            "color": {
+              "mode": "None",
+              "saturation_threshold": 0.15000000596046448,
+              "strength": 1.0,
+              "tint": null
+            },
+            "settings": {
+              "flip_x": false,
+              "flip_y": false,
+              "layer": 0,
+              "visible": true
+            },
+            "size": "Auto",
+            "texture": {
+              "path": "textures/square.png",
+              "source": "Game"
+            }
+          }
+        },
+        {
+          "component_type": "ze.tag",
+          "value": {
+            "tag": "Ground"
+          }
+        },
+        {
+          "component_type": "ze.transform",
+          "value": {
+            "position": [
+              0.0,
+              -1.5,
+              0.0
+            ],
+            "rotation": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "scale": [
+              8.0,
+              0.3,
               1.0
             ]
           }

@@ -10,6 +10,7 @@ use winit::{
 use ze_core::{ResourceManager, Result, bail};
 use ze_ecs::{Scene, System, registry};
 use ze_input::*;
+use ze_physics::PhysicsSystem;
 use ze_renderer::{EditorCameraSystem, RenderSystem, register_renderer_components};
 
 const DEFAULT_SCENE_NAME: &str = "main";
@@ -130,6 +131,7 @@ pub fn load_main_scene(resources: &ResourceManager) -> Result<Scene> {
 		)
 	})?;
 	scene.add_system(EditorCameraSystem::new());
+	scene.add_system(PhysicsSystem::new());
 	scene.add_system(RenderSystem::new());
 	Ok(scene)
 }
