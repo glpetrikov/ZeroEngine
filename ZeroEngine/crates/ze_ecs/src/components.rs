@@ -48,6 +48,7 @@ pub struct Children {
 #[derive(Component, Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct Inactive;
 
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Component, Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct RigidBody {
 	pub body_type: RigidBodyType,
@@ -77,6 +78,8 @@ pub struct PhysicsSettings {
 	#[schemars(with = "[f32; 2]")]
 	pub gravity: Vec2,
 	pub enable_debug_draw: bool,
+	#[serde(default = "default_physics_timestep")]
+	pub physics_timestep: f32,
 }
 
 impl Default for PhysicsSettings {
@@ -84,9 +87,12 @@ impl Default for PhysicsSettings {
 		Self {
 			gravity: Vec2::new(0.0, -9.81),
 			enable_debug_draw: false,
+			physics_timestep: default_physics_timestep(),
 		}
 	}
 }
+
+fn default_physics_timestep() -> f32 { 1.0 / 70.0 }
 
 impl Default for RigidBody {
 	fn default() -> Self {
@@ -107,7 +113,7 @@ impl Default for RigidBody {
 	}
 }
 
-fn default_true() -> bool { true }
+const fn default_true() -> bool { true }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema)]
 pub enum RigidBodyType {

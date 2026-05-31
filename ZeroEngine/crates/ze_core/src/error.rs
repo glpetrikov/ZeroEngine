@@ -7,8 +7,8 @@ pub enum ZeroError {
 impl std::fmt::Display for ZeroError {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		match self {
-			ZeroError::WindowCreationFailed(s) => write!(f, "Window creation failed: {s}"),
-			ZeroError::Unknown(s) => write!(f, "Unknown error: {s}"),
+			Self::WindowCreationFailed(s) => write!(f, "Window creation failed: {s}"),
+			Self::Unknown(s) => write!(f, "Unknown error: {s}"),
 		}
 	}
 }

@@ -1,5 +1,5 @@
 use bytemuck::{Pod, Zeroable};
-use glam::*;
+use glam::{Vec3, Vec4, f32, u8, u16, u64};
 use wgpu::util::DeviceExt;
 
 pub struct Mesh {
@@ -15,31 +15,31 @@ pub struct Vertex {
 }
 
 impl Vertex {
-	pub fn get_layout() -> wgpu::VertexBufferLayout<'static> {
+	pub const fn get_layout() -> wgpu::VertexBufferLayout<'static> {
 		const ATTRIBUTES: [wgpu::VertexAttribute; 2] = wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x4];
 
 		wgpu::VertexBufferLayout {
-			array_stride: std::mem::size_of::<Vertex>() as u64,
+			array_stride: std::mem::size_of::<Self>() as u64,
 			step_mode: wgpu::VertexStepMode::Vertex,
 			attributes: &ATTRIBUTES,
 		}
 	}
 
 	pub fn make_quad(device: &wgpu::Device) -> Mesh {
-		let vertices: [Vertex; 4] = [
-			Vertex {
+		let vertices: [Self; 4] = [
+			Self {
 				position: Vec3::new(-0.5, -0.5, 0.0).to_array(),
 				color: Vec4::ONE.to_array(),
 			},
-			Vertex {
+			Self {
 				position: Vec3::new(0.5, -0.5, 0.0).to_array(),
 				color: Vec4::ONE.to_array(),
 			},
-			Vertex {
+			Self {
 				position: Vec3::new(0.5, 0.5, 0.0).to_array(),
 				color: Vec4::ONE.to_array(),
 			},
-			Vertex {
+			Self {
 				position: Vec3::new(-0.5, 0.5, 0.0).to_array(),
 				color: Vec4::ONE.to_array(),
 			},
@@ -57,7 +57,7 @@ impl Vertex {
 		};
 
 		let buffer = device.create_buffer_init(&buffer_descriptor);
-		let offset: u64 = bytes_1.len().try_into().unwrap();
+		let offset: u64 = bytes_1.len().try_into().expect("Cannon get len of bytes_1 as u64");
 
 		Mesh { buffer, offset }
 	}

@@ -86,7 +86,7 @@ impl<'a> Builder<'a> {
 		self
 	}
 
-	pub fn with_pixel_format(mut self, format: wgpu::TextureFormat) -> Self {
+	pub const fn with_pixel_format(mut self, format: wgpu::TextureFormat) -> Self {
 		self.pixel_format = format;
 		self
 	}
@@ -96,27 +96,27 @@ impl<'a> Builder<'a> {
 		self
 	}
 
-	pub fn with_topology(mut self, topology: wgpu::PrimitiveTopology) -> Self {
+	pub const fn with_topology(mut self, topology: wgpu::PrimitiveTopology) -> Self {
 		self.topology = topology;
 		self
 	}
 
-	pub fn with_polygon_mode(mut self, polygon_mode: wgpu::PolygonMode) -> Self {
+	pub const fn with_polygon_mode(mut self, polygon_mode: wgpu::PolygonMode) -> Self {
 		self.polygon_mode = polygon_mode;
 		self
 	}
 
-	pub fn with_cull_mode(mut self, cull_mode: Option<wgpu::Face>) -> Self {
+	pub const fn with_cull_mode(mut self, cull_mode: Option<wgpu::Face>) -> Self {
 		self.cull_mode = cull_mode;
 		self
 	}
 
-	pub fn with_depth_write_enabled(mut self, enabled: bool) -> Self {
+	pub const fn with_depth_write_enabled(mut self, enabled: bool) -> Self {
 		self.depth_write_enabled = enabled;
 		self
 	}
 
-	pub fn with_depth_compare(mut self, compare: wgpu::CompareFunction) -> Self {
+	pub const fn with_depth_compare(mut self, compare: wgpu::CompareFunction) -> Self {
 		self.depth_compare = compare;
 		self
 	}
@@ -136,7 +136,7 @@ impl<'a> Builder<'a> {
 			}
 			Some(ShaderSource::Source(source)) => source,
 			None => {
-				ze_core::bail!("Pipeline `{}` has no shader source", self.name.clone());
+				ze_core::bail!("Pipeline `{}` has no shader source", self.name);
 			}
 		};
 

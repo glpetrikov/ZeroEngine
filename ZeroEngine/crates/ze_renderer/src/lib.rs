@@ -12,10 +12,10 @@ use wgpu::util::DeviceExt;
 use ze_core::{Mat4, ResourceManager, Vec3};
 
 use crate::backend::{
-	mesh::*,
-	pipeline::{self, *},
+	mesh::{Mesh, Vertex},
+	pipeline::{self, Pipeline},
 	texture::{SpriteMaterial, SpriteMaterialUniform, TextureCache},
-	ubo::*,
+	ubo::{Ubo, UboGroup},
 };
 
 pub struct Renderer {
@@ -42,7 +42,7 @@ impl Renderer {
 	pub async fn new(window: Arc<winit::window::Window>) -> ze_core::Result<Self> {
 		let instance = wgpu::Instance::default();
 
-		let surface = instance.create_surface(window.clone()).unwrap();
+		let surface = instance.create_surface(window.clone())?;
 
 		let adapter_descriptor = wgpu::RequestAdapterOptionsBase {
 			power_preference: wgpu::PowerPreference::HighPerformance,
@@ -50,11 +50,16 @@ impl Renderer {
 			force_fallback_adapter: false,
 		};
 
-		let adapter = instance.request_adapter(&adapter_descriptor).await.unwrap();
+		let adapter = instance.request_adapter(&adapter_descriptor).await?;
 
 		let info = adapter.get_info();
 
-		ze_log::info!("Renderer: {} ({:?})", info.name, info.backend);
+		// ze_log::info!("Renderer: {} ({:?})", info.name, info.backend);
+
+		println!("Renderer:");
+		println!("-> Vendor: {}", info.vendor);
+		println!("-> Name: {}", info.name);
+		println!("-> Driver: {} {}", info.driver, info.driver_info);
 
 		let device_descriptor = wgpu::DeviceDescriptor {
 			required_features: wgpu::Features::POLYGON_MODE_LINE,
@@ -65,7 +70,7 @@ impl Renderer {
 			experimental_features: wgpu::ExperimentalFeatures::disabled(),
 		};
 
-		let (device, queue) = adapter.request_device(&device_descriptor).await.unwrap();
+		let (device, queue) = adapter.request_device(&device_descriptor).await?;
 
 		let size = window.inner_size();
 
@@ -74,7 +79,7 @@ impl Renderer {
 			.formats
 			.iter()
 			.copied()
-			.find(|f| f.is_srgb())
+			.find(wgpu::TextureFormat::is_srgb)
 			.unwrap_or(surface_capabilities.formats[0]);
 
 		let config = wgpu::SurfaceConfiguration {
@@ -221,20 +226,13 @@ impl Renderer {
 		camera: &render_system::CameraRenderData,
 		resources: &ResourceManager,
 	) {
-		match self.render_sprite_items(items, debug_lines, camera, resources) {
-			Ok(_) => {}
-			Err(wgpu::SurfaceStatus::Lost) => {
-				let size = self.size;
-				self.resize(size);
-			}
-			Err(e) => ze_log::error!("Render error: {:?}", e),
-		}
+		self.render_sprite_items(items, debug_lines, camera, resources);
 	}
 
 	fn update_projection(&mut self, camera: &render_system::CameraRenderData) {
 		self.projection_ubo
 			.as_mut()
-			.unwrap()
+			.expect("Cannon get projection_ubo as mut :(")
 			.upload(&camera.view_projection, &self.queue);
 	}
 
@@ -244,7 +242,7 @@ impl Renderer {
 		debug_lines: &[render_system::DebugLine],
 		camera: &render_system::CameraRenderData,
 		resources: &ResourceManager,
-	) -> Result<(), wgpu::SurfaceStatus> {
+	) {
 		self.ensure_ubos_for_objects(items.len());
 		self.update_projection(camera);
 
@@ -259,7 +257,10 @@ impl Renderer {
 			let sprite_size = sprite_size_to_world_scale(&item.size, texture.dimensions());
 			let transform = item.transform * Mat4::from_scale(Vec3::new(sprite_size[0], sprite_size[1], 1.0));
 
-			self.ubo.as_mut().unwrap().upload(i as u64, &transform, &self.queue);
+			self.ubo
+				.as_mut()
+				.expect("Cannon get ubo as mut ):")
+				.upload(i as u64, &transform, &self.queue);
 
 			let tint = item.color.tint.unwrap_or([1.0, 1.0, 1.0, 1.0]);
 			let mode = match item.color.mode {
@@ -305,11 +306,8 @@ impl Renderer {
 		});
 
 		let drawable = self.surface.get_current_texture();
-		let drawable = match drawable {
-			wgpu::CurrentSurfaceTexture::Timeout => return Ok(()),
-			wgpu::CurrentSurfaceTexture::Lost => return Ok(()),
-			wgpu::CurrentSurfaceTexture::Success(t) => t,
-			_ => return Ok(()),
+		let wgpu::CurrentSurfaceTexture::Success(drawable) = drawable else {
+			return;
 		};
 
 		let image_view_descriptor = wgpu::TextureViewDescriptor::default();
@@ -326,10 +324,10 @@ impl Renderer {
 			depth_slice: None,
 			ops: wgpu::Operations {
 				load: wgpu::LoadOp::Clear(wgpu::Color {
-					r: camera.clear_color[0] as f64,
-					g: camera.clear_color[1] as f64,
-					b: camera.clear_color[2] as f64,
-					a: camera.clear_color[3] as f64,
+					r: f64::from(camera.clear_color[0]),
+					g: f64::from(camera.clear_color[1]),
+					b: f64::from(camera.clear_color[2]),
+					a: f64::from(camera.clear_color[3]),
 				}),
 				store: wgpu::StoreOp::Store,
 			},
@@ -353,11 +351,23 @@ impl Renderer {
 
 		let mut render_pass = command_encoder.begin_render_pass(&render_pass_descriptor);
 		render_pass.set_pipeline(&self.pipeline.render_pipeline);
-		render_pass.set_bind_group(2, &self.projection_ubo.as_ref().unwrap().bind_group, &[]);
+		render_pass.set_bind_group(
+			2,
+			&self
+				.projection_ubo
+				.as_ref()
+				.expect("Cannon get projection_ubo as ref :(")
+				.bind_group,
+			&[],
+		);
 
 		for (i, material) in self.materials.iter().enumerate() {
 			render_pass.set_bind_group(0, &material.bind_group, &[]);
-			render_pass.set_bind_group(1, &self.ubo.as_ref().unwrap().bind_groups[i], &[]);
+			render_pass.set_bind_group(
+				1,
+				&self.ubo.as_ref().expect("Cannon get ubo as ref :(").bind_groups[i],
+				&[],
+			);
 
 			render_pass.set_vertex_buffer(0, self.quad_mesh.buffer.slice(..self.quad_mesh.offset));
 			render_pass.set_index_buffer(
@@ -369,7 +379,15 @@ impl Renderer {
 
 		if let Some(debug_vertex_buffer) = &debug_vertex_buffer {
 			render_pass.set_pipeline(&self.debug_pipeline.render_pipeline);
-			render_pass.set_bind_group(0, &self.projection_ubo.as_ref().unwrap().bind_group, &[]);
+			render_pass.set_bind_group(
+				0,
+				&self
+					.projection_ubo
+					.as_ref()
+					.expect("Cannon get projection_ubo as ref :(")
+					.bind_group,
+				&[],
+			);
 			render_pass.set_vertex_buffer(0, debug_vertex_buffer.slice(..));
 			render_pass.draw(0..debug_vertices.len() as u32, 0..1);
 		}
@@ -378,12 +396,10 @@ impl Renderer {
 		self.queue.submit(std::iter::once(command_encoder.finish()));
 
 		drawable.present();
-
-		Ok(())
 	}
 }
 
-const DEBUG_LINE_SHADER: &str = r#"
+const DEBUG_LINE_SHADER: &str = r"
 @group(0) @binding(0) var<uniform> view_projection: mat4x4<f32>;
 
 struct Vertex {
@@ -408,7 +424,7 @@ fn vs_main(vertex: Vertex) -> VertexOutput {
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     return in.color;
 }
-"#;
+";
 
 fn sprite_size_to_world_scale(size: &components::SpriteSize, dimensions: (u32, u32)) -> [f32; 2] {
 	match size {

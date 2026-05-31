@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc, time::Instant};
 
 use winit::{
 	application::ApplicationHandler,
@@ -9,9 +9,10 @@ use winit::{
 };
 use ze_core::{ResourceManager, Result, bail};
 use ze_ecs::{Scene, System, registry};
-use ze_input::*;
+use ze_input::{Input, ZKeyCode, ZMouseCode};
 use ze_physics::PhysicsSystem;
 use ze_renderer::{EditorCameraSystem, RenderSystem, register_renderer_components};
+use ze_scripting_cs::{ScriptingSystem, register_scripting_components};
 
 const DEFAULT_SCENE_NAME: &str = "main";
 
@@ -29,6 +30,7 @@ pub struct App {
 	minimized: bool,
 	scenes: HashMap<String, Scene>,
 	active_scene: String,
+	last_frame_time: Instant,
 	resources: ResourceManager,
 }
 impl Default for App {
@@ -65,6 +67,7 @@ impl App {
 			minimized: false,
 			scenes,
 			active_scene,
+			last_frame_time: Instant::now(),
 			resources,
 		})
 	}
@@ -118,9 +121,10 @@ pub fn load_main_scene(resources: &ResourceManager) -> Result<Scene> {
 
 	Scene::register_defaults(&mut registry);
 	register_renderer_components(&mut registry);
+	register_scripting_components(&mut registry);
 
 	let mut scene = Scene::from_path_with_registry(
-		resources
+		&resources
 			.game_assets_root()
 			.join(format!("scenes/{DEFAULT_SCENE_NAME}.zescene.json")),
 		registry,
@@ -131,7 +135,10 @@ pub fn load_main_scene(resources: &ResourceManager) -> Result<Scene> {
 		)
 	})?;
 	scene.add_system(EditorCameraSystem::new());
-	scene.add_system(PhysicsSystem::new());
+	let scripting_system = ScriptingSystem::new()?;
+	let scripting_runtime = scripting_system.runtime();
+	scene.add_system(scripting_system);
+	scene.add_system(PhysicsSystem::with_scripting(scripting_runtime));
 	scene.add_system(RenderSystem::new());
 	Ok(scene)
 }
@@ -176,17 +183,16 @@ impl ApplicationHandler<CustomEvents> for App {
 
 		self.window = Some(window);
 
-		let renderer = self.renderer.as_mut().unwrap_or_else(|| {
-			ze_log::error!("Renderer is not initialized!");
-			std::process::exit(1);
-		});
-
-		renderer.build_ubos_for_objects(2);
+		self.last_frame_time = Instant::now();
 	}
 	fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
 		ze_log::trace!("App update");
 
 		event_loop.set_control_flow(winit::event_loop::ControlFlow::Poll);
+
+		let now = Instant::now();
+		let dt = now.duration_since(self.last_frame_time).as_secs_f32().min(0.05);
+		self.last_frame_time = now;
 
 		if Input::is_key_just_pressed(ZKeyCode::Escape) {
 			ze_log::info!("Exiting...");
@@ -198,12 +204,12 @@ impl ApplicationHandler<CustomEvents> for App {
 			&& !self.occluded
 			&& !self.minimized
 		{
-			if let Err(error) = self.update_active_scene_systems(0.017) {
+			if let Err(error) = self.update_active_scene_systems(dt) {
 				ze_log::error!("System update failed: {error:?}");
 			}
 			window.request_redraw();
 		}
-		Input::update_globally(|i| i.late_update());
+		Input::update_globally(Input::late_update);
 	}
 
 	fn user_event(&mut self, event_loop: &ActiveEventLoop, event: CustomEvents) {
@@ -231,7 +237,7 @@ impl ApplicationHandler<CustomEvents> for App {
 				self.focused = focused;
 
 				if !focused {
-					Input::update_globally(|i| i.reset());
+					Input::update_globally(Input::reset);
 				}
 			}
 			WindowEvent::Occluded(occluded) => {
@@ -275,18 +281,18 @@ impl ApplicationHandler<CustomEvents> for App {
 						return;
 					};
 
-					let render_result = scene.with_system_mut::<RenderSystem, _>(|render_system, scene| {
-						render_system.render(scene, renderer, &self.resources)
+					scene.with_system_mut::<RenderSystem, _>(|render_system, scene| {
+						render_system.render(scene, renderer, &self.resources);
 					});
 
-					let Some(render_result) = render_result else {
-						ze_log::warn!("No RenderSystem found in scene `{}`", scene.name);
-						return;
-					};
+					// let Some(render_result) = render_result else {
+					// 	ze_log::warn!("No RenderSystem found in scene `{}`",
+					// scene.name); 	return;
+					// };
 
-					if let Err(error) = render_result {
-						ze_log::error!("Render system error: {error:?}");
-					}
+					// if let Err(error) = render_result {
+					// 	ze_log::error!("Render system error: {error:?}");
+					// }
 				}
 			}
 			_ => {}

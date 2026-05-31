@@ -7,6 +7,13 @@ authors.workspace = true
 version.workspace = true
 repository.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
-tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "time"] }
+tracing-subscriber = { version = "0.3", features = [
+    "env-filter",
+    "fmt",
+    "time",
+] }
 tracing = "0.1"

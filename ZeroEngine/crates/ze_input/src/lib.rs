@@ -85,11 +85,13 @@ impl Input {
 
 	// --- Updaters ---
 
-	pub fn set_key(&mut self, code: ZKeyCode, state: bool) { self.current_keys[code as usize] = state; }
+	pub const fn set_key(&mut self, code: ZKeyCode, state: bool) { self.current_keys[code as usize] = state; }
 
-	pub fn set_mouse_button(&mut self, button: ZMouseCode, state: bool) { self.current_mouse[button as usize] = state; }
+	pub const fn set_mouse_button(&mut self, button: ZMouseCode, state: bool) {
+		self.current_mouse[button as usize] = state;
+	}
 
-	pub fn set_mouse_pos(&mut self, x: f32, y: f32) { self.mouse_pos = Vec2::new(x, y); }
+	pub const fn set_mouse_pos(&mut self, x: f32, y: f32) { self.mouse_pos = Vec2::new(x, y); }
 
 	pub fn add_mouse_delta(&mut self, dx: f32, dy: f32) {
 		self.mouse_delta.x += dx;
@@ -98,14 +100,14 @@ impl Input {
 
 	pub fn add_mouse_wheel_delta(&mut self, dy: f32) { self.mouse_wheel_delta += dy; }
 
-	pub fn late_update(&mut self) {
+	pub const fn late_update(&mut self) {
 		self.previous_keys = self.current_keys;
 		self.previous_mouse = self.current_mouse;
 		self.mouse_delta = Vec2::new(0.0, 0.0);
 		self.mouse_wheel_delta = 0.0;
 	}
 
-	pub fn reset(&mut self) {
+	pub const fn reset(&mut self) {
 		self.current_keys = [false; 512];
 		self.previous_keys = [false; 512];
 		self.current_mouse = [false; 8];
@@ -117,29 +119,29 @@ impl Input {
 
 	// Keyboard
 
-	fn key_pressed(&self, code: ZKeyCode) -> bool { self.current_keys[code as usize] }
+	const fn key_pressed(&self, code: ZKeyCode) -> bool { self.current_keys[code as usize] }
 
-	fn key_just_pressed(&self, code: ZKeyCode) -> bool {
+	const fn key_just_pressed(&self, code: ZKeyCode) -> bool {
 		self.current_keys[code as usize] && !self.previous_keys[code as usize]
 	}
 
-	fn key_released(&self, key_code: ZKeyCode) -> bool { !self.current_keys[key_code as usize] }
+	const fn key_released(&self, key_code: ZKeyCode) -> bool { !self.current_keys[key_code as usize] }
 
-	fn key_just_released(&self, key_code: ZKeyCode) -> bool {
+	const fn key_just_released(&self, key_code: ZKeyCode) -> bool {
 		!self.key_pressed(key_code) && self.previous_keys[key_code as usize]
 	}
 
 	// Mouse
 
-	fn is_button_pressed(&self, code: ZMouseCode) -> bool { self.current_mouse[code as usize] }
+	const fn is_button_pressed(&self, code: ZMouseCode) -> bool { self.current_mouse[code as usize] }
 
-	fn is_button_just_pressed(&self, code: ZMouseCode) -> bool {
+	const fn is_button_just_pressed(&self, code: ZMouseCode) -> bool {
 		self.current_mouse[code as usize] && !self.previous_mouse[code as usize]
 	}
 
-	fn is_button_released(&self, mouse_code: ZMouseCode) -> bool { !self.current_mouse[mouse_code as usize] }
+	const fn is_button_released(&self, mouse_code: ZMouseCode) -> bool { !self.current_mouse[mouse_code as usize] }
 
-	fn is_button_just_released(&self, mouse_code: ZMouseCode) -> bool {
+	const fn is_button_just_released(&self, mouse_code: ZMouseCode) -> bool {
 		!self.is_button_pressed(mouse_code) && self.previous_mouse[mouse_code as usize]
 	}
 }
@@ -151,36 +153,73 @@ impl Input {
 impl Input {
 	// Keyboard
 
-	pub fn is_key_pressed(key: ZKeyCode) -> bool { Self::global().lock().unwrap().key_pressed(key) }
+	pub fn is_key_pressed(key: ZKeyCode) -> bool {
+		Self::global()
+			.lock()
+			.expect("Failed to get Global input")
+			.key_pressed(key)
+	}
 
-	pub fn is_key_just_pressed(key: ZKeyCode) -> bool { Self::global().lock().unwrap().key_just_pressed(key) }
+	pub fn is_key_just_pressed(key: ZKeyCode) -> bool {
+		Self::global()
+			.lock()
+			.expect("Failed to get Global input")
+			.key_just_pressed(key)
+	}
 
-	pub fn is_key_released(key: ZKeyCode) -> bool { Self::global().lock().unwrap().key_released(key) }
+	pub fn is_key_released(key: ZKeyCode) -> bool {
+		Self::global()
+			.lock()
+			.expect("Failed to get Global input")
+			.key_released(key)
+	}
 
-	pub fn is_key_just_released(key: ZKeyCode) -> bool { Self::global().lock().unwrap().key_just_released(key) }
+	pub fn is_key_just_released(key: ZKeyCode) -> bool {
+		Self::global()
+			.lock()
+			.expect("Failed to get Global input")
+			.key_just_released(key)
+	}
 
 	// Mouse
 
-	pub fn get_mouse_pos() -> Vec2 { Self::global().lock().unwrap().mouse_pos }
+	pub fn get_mouse_pos() -> Vec2 { Self::global().lock().expect("Failed to get Global input").mouse_pos }
 
-	pub fn get_mouse_delta() -> Vec2 { Self::global().lock().unwrap().mouse_delta }
+	pub fn get_mouse_delta() -> Vec2 { Self::global().lock().expect("Failed to get Global input").mouse_delta }
 
-	pub fn get_mouse_wheel_delta() -> f32 { Self::global().lock().unwrap().mouse_wheel_delta }
+	pub fn get_mouse_wheel_delta() -> f32 {
+		Self::global()
+			.lock()
+			.expect("Failed to get Global input")
+			.mouse_wheel_delta
+	}
 
 	pub fn is_mouse_button_pressed(button: ZMouseCode) -> bool {
-		Self::global().lock().unwrap().is_button_pressed(button)
+		Self::global()
+			.lock()
+			.expect("Failed to get Global input")
+			.is_button_pressed(button)
 	}
 
 	pub fn is_mouse_button_just_pressed(button: ZMouseCode) -> bool {
-		Self::global().lock().unwrap().is_button_just_pressed(button)
+		Self::global()
+			.lock()
+			.expect("Failed to get Global input")
+			.is_button_just_pressed(button)
 	}
 
 	pub fn is_mouse_button_released(button: ZMouseCode) -> bool {
-		Self::global().lock().unwrap().is_button_released(button)
+		Self::global()
+			.lock()
+			.expect("Failed to get Global input")
+			.is_button_released(button)
 	}
 
 	pub fn is_mouse_button_just_released(button: ZMouseCode) -> bool {
-		Self::global().lock().unwrap().is_button_just_released(button)
+		Self::global()
+			.lock()
+			.expect("Failed to get Global input")
+			.is_button_just_released(button)
 	}
 }
 
@@ -205,13 +244,13 @@ use ze_core::Vec2;
 static INPUT_INSTANCE: OnceLock<Mutex<Input>> = OnceLock::new();
 
 impl Input {
-	pub fn global() -> &'static Mutex<Input> { INPUT_INSTANCE.get_or_init(|| Mutex::new(Input::new())) }
+	pub fn global() -> &'static Mutex<Self> { INPUT_INSTANCE.get_or_init(|| Mutex::new(Self::new())) }
 
 	pub fn update_globally<F>(f: F)
 	where
-		F: FnOnce(&mut Input),
+		F: FnOnce(&mut Self),
 	{
-		let mut input = Self::global().lock().unwrap();
+		let mut input = Self::global().lock().expect("Failed to get Global input");
 		f(&mut input);
 	}
 }
@@ -291,12 +330,12 @@ impl_from_winit_keycode! {
 impl From<winit::event::MouseButton> for ZMouseCode {
 	fn from(button: winit::event::MouseButton) -> Self {
 		match button {
-			winit::event::MouseButton::Left => ZMouseCode::Left,
-			winit::event::MouseButton::Right => ZMouseCode::Right,
-			winit::event::MouseButton::Middle => ZMouseCode::Middle,
-			winit::event::MouseButton::Back => ZMouseCode::Back,
-			winit::event::MouseButton::Forward => ZMouseCode::Forward,
-			winit::event::MouseButton::Other(_) => ZMouseCode::Other,
+			winit::event::MouseButton::Left => Self::Left,
+			winit::event::MouseButton::Right => Self::Right,
+			winit::event::MouseButton::Middle => Self::Middle,
+			winit::event::MouseButton::Back => Self::Back,
+			winit::event::MouseButton::Forward => Self::Forward,
+			winit::event::MouseButton::Other(_) => Self::Other,
 		}
 	}
 }

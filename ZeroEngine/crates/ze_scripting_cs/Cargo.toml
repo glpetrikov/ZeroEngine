@@ -1,0 +1,24 @@
+[package]
+name = "ze_scripting_cs"
+readme = "Readme.md"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+version.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+netcorehost = { version = "0.20.1", default-features = false, features = [
+    "net10_0",
+] }
+fn-ptr = "0.9.1"
+schemars = { version = "1", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+shipyard = "0.11.3"
+ze_core = { version = "0.1.0", path = "../ze_core" }
+ze_ecs = { version = "0.1.0", path = "../ze_ecs" }
+ze_input = { version = "0.1.0", path = "../ze_input" }
+ze_renderer = { version = "0.1.0", path = "../ze_renderer" }

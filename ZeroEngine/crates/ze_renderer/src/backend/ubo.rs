@@ -10,10 +10,10 @@ pub struct UboGroup {
 
 impl UboGroup {
 	pub fn new(device: &wgpu::Device, object_count: usize, layout: &wgpu::BindGroupLayout) -> Self {
-		fn align_to(value: u64, alignment: u64) -> u64 { value.div_ceil(alignment) * alignment }
+		const fn align_to(value: u64, alignment: u64) -> u64 { value.div_ceil(alignment) * alignment }
 		let stride = align_to(
 			std::mem::size_of::<glam::Mat4>() as u64,
-			device.limits().min_uniform_buffer_offset_alignment as u64,
+			u64::from(device.limits().min_uniform_buffer_offset_alignment),
 		);
 
 		let buffer_descriptor = wgpu::BufferDescriptor {
@@ -32,7 +32,7 @@ impl UboGroup {
 			builder.add_buffer(
 				&buffer,
 				i as u64 * stride,
-				NonZeroU64::new(std::mem::size_of::<glam::Mat4>() as u64).unwrap(),
+				NonZeroU64::new(std::mem::size_of::<glam::Mat4>() as u64).expect("size of glam::Mat4 is zero"),
 			);
 			bind_groups.push(builder.build("Matrix"));
 		}
@@ -44,7 +44,7 @@ impl UboGroup {
 		}
 	}
 
-	pub fn upload(&mut self, i: u64, matrix: &glam::Mat4, queue: &wgpu::Queue) {
+	pub fn upload(&self, i: u64, matrix: &glam::Mat4, queue: &wgpu::Queue) {
 		let offset = i * self.allignment;
 		let data = bytemuck::bytes_of(matrix);
 		queue.write_buffer(&self.buffer, offset, data);
@@ -74,7 +74,7 @@ impl Ubo {
 			builder.add_buffer(
 				&buffer,
 				0,
-				NonZeroU64::new(std::mem::size_of::<glam::Mat4>() as u64).unwrap(),
+				NonZeroU64::new(std::mem::size_of::<glam::Mat4>() as u64).expect("size of glam::Mat4 is zero"),
 			);
 			bind_group = builder.build("Matrix");
 		}
@@ -82,7 +82,7 @@ impl Ubo {
 		Self { buffer, bind_group }
 	}
 
-	pub fn upload(&mut self, matrix: &glam::Mat4, queue: &wgpu::Queue) {
+	pub fn upload(&self, matrix: &glam::Mat4, queue: &wgpu::Queue) {
 		let data = bytemuck::bytes_of(matrix);
 		queue.write_buffer(&self.buffer, 0, data);
 	}

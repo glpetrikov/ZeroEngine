@@ -7,7 +7,7 @@ pub struct Builder<'a> {
 }
 
 impl<'a> Builder<'a> {
-	pub fn new(device: &'a wgpu::Device) -> Self {
+	pub const fn new(device: &'a wgpu::Device) -> Self {
 		// TODO: replace &'a to pointer
 		Self {
 			entries: Vec::new(),
@@ -16,7 +16,7 @@ impl<'a> Builder<'a> {
 		}
 	}
 
-	pub fn set_layout(&mut self, layout: &'a wgpu::BindGroupLayout) { self.layout = Some(layout); }
+	pub const fn set_layout(&mut self, layout: &'a wgpu::BindGroupLayout) { self.layout = Some(layout); }
 
 	fn reset(&mut self) { self.entries.clear(); }
 
@@ -34,7 +34,8 @@ impl<'a> Builder<'a> {
 		self.add_buffer(
 			buffer,
 			0,
-			NonZeroU64::new(std::mem::size_of::<crate::backend::texture::SpriteMaterialUniform>() as u64).unwrap(),
+			NonZeroU64::new(std::mem::size_of::<crate::backend::texture::SpriteMaterialUniform>() as u64)
+				.expect("size of SpriteMaterialUniform is zero"),
 		);
 	}
 
@@ -52,7 +53,7 @@ impl<'a> Builder<'a> {
 	pub fn build(&mut self, label: &str) -> wgpu::BindGroup {
 		let descriptor = wgpu::BindGroupDescriptor {
 			label: Some(label),
-			layout: self.layout.unwrap(),
+			layout: self.layout.expect("Layout is None..."),
 			entries: &self.entries,
 		};
 

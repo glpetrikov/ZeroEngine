@@ -1,7 +1,5 @@
 too-many-arguments-threshold = 8
 type-complexity-threshold = 300
 enum-variant-name-threshold = 4
-
-# useful for engine code
-cognitive-complexity-threshold = 30   # don't warn on complex render/update loops
-too-many-lines-threshold = 150        # allow longer impl blocks
+cognitive-complexity-threshold = 30
+too-many-lines-threshold = 150

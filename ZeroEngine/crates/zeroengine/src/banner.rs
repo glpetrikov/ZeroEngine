@@ -12,10 +12,9 @@ const BANNER_HORIZONTAL_PADDING: usize = 6;
 const DIRECTORY_LABEL: &str = "directory:";
 
 pub fn render_banner() {
-	let max_width = terminal_size()
-		.map(|(Width(width), _)| usize::from(width).saturating_sub(BANNER_TERMINAL_MARGIN))
-		.unwrap_or(usize::MAX)
-		.max(MIN_BANNER_WIDTH);
+	let max_width = terminal_size().map_or(usize::MAX, |(Width(width), _)| {
+		usize::from(width).saturating_sub(BANNER_TERMINAL_MARGIN)
+	});
 	let max_content_width = max_width.saturating_sub(BANNER_HORIZONTAL_PADDING);
 
 	let title = format!("ZeroEngine (v{})", env!("CARGO_PKG_VERSION"));
@@ -42,7 +41,7 @@ pub fn render_banner() {
 	);
 
 	let mut stdout = io::stdout().lock();
-	if let Err(error) = stdout.write_all(output.as_bytes()).and_then(|_| stdout.flush()) {
+	if let Err(error) = stdout.write_all(output.as_bytes()).and_then(|()| stdout.flush()) {
 		eprintln!("Failed to write banner: {error}");
 	}
 }
@@ -58,16 +57,17 @@ impl DirectoryLine {
 	fn raw_width(&self) -> usize { self.label.map_or(0, |label| label.chars().count() + 1) + self.path.chars().count() }
 
 	fn segments(&self) -> Vec<(String, String)> {
-		if let Some(label) = self.label {
-			let path_raw = format!(" {}", self.path);
-			let path_styled = format!("{}{}", " ".default_color(), directory_path_segment(&self.path));
-			vec![
-				(label.to_string(), label.bright_black().to_string()),
-				(path_raw, path_styled),
-			]
-		} else {
-			vec![(self.path.clone(), directory_path_segment(&self.path))]
-		}
+		self.label.map_or_else(
+			|| vec![(self.path.clone(), directory_path_segment(&self.path))],
+			|label| {
+				let path_raw = format!(" {}", self.path);
+				let path_styled = format!("{}{}", " ".default_color(), directory_path_segment(&self.path));
+				vec![
+					(label.to_string(), label.bright_black().to_string()),
+					(path_raw, path_styled),
+				]
+			},
+		)
 	}
 }
 
