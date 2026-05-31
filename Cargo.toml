@@ -7,6 +7,7 @@ members = [
     "ZeroEngine/crates/ze_log",
     "ZeroEngine/crates/ze_physics",
     "ZeroEngine/crates/ze_renderer",
+    "ZeroEngine/crates/ze_scripting_cs",
     "ZeroEngine/crates/ze_ecs",
     "ZeroEngine/crates/zeroengine",
 ]

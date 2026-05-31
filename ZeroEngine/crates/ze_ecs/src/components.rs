@@ -77,6 +77,8 @@ pub struct PhysicsSettings {
 	#[schemars(with = "[f32; 2]")]
 	pub gravity: Vec2,
 	pub enable_debug_draw: bool,
+	#[serde(default = "default_physics_timestep")]
+	pub physics_timestep: f32,
 }
 
 impl Default for PhysicsSettings {
@@ -84,9 +86,12 @@ impl Default for PhysicsSettings {
 		Self {
 			gravity: Vec2::new(0.0, -9.81),
 			enable_debug_draw: false,
+			physics_timestep: default_physics_timestep(),
 		}
 	}
 }
+
+fn default_physics_timestep() -> f32 { 1.0 / 70.0 }
 
 impl Default for RigidBody {
 	fn default() -> Self {

@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+	collections::{HashMap, HashSet},
+	sync::mpsc::{Receiver, Sender, channel},
+};
 
 use rapier2d::prelude::*;
 use ze_core::{Quat, Result, Vec2};
@@ -6,8 +9,10 @@ use ze_ecs::{
 	Collider, ColliderShape, CollisionDetection, EntitiesView, EntityId, PhysicsSettings, RigidBody, RigidBodyType,
 	Scene, System, Transform,
 };
+use ze_scripting_cs::ScriptingRuntimeHandle;
 
 pub const DEFAULT_GRAVITY: Vec2 = Vec2::new(0.0, -9.81);
+pub const DEFAULT_PHYSICS_TIMESTEP: f32 = 1.0 / 70.0;
 
 pub struct PhysicsWorld {
 	pipeline: PhysicsPipeline,
@@ -23,6 +28,13 @@ pub struct PhysicsWorld {
 	ccd_solver: CCDSolver,
 	entity_bodies: HashMap<EntityId, PhysicsBodyEntry>,
 	entity_colliders: HashMap<EntityId, ColliderHandle>,
+	collider_entities: HashMap<ColliderHandle, EntityId>,
+	active_contact_pairs: HashSet<ColliderPairKey>,
+	active_sensor_pairs: HashSet<ColliderPairKey>,
+	collision_event_sender: Sender<CollisionEvent>,
+	collision_event_receiver: Receiver<CollisionEvent>,
+	contact_force_event_sender: Sender<ContactForceEvent>,
+	contact_force_event_receiver: Receiver<ContactForceEvent>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -31,8 +43,13 @@ struct PhysicsBodyEntry {
 	body_type: RigidBodyType,
 }
 
+type ColliderPairKey = (ColliderHandle, ColliderHandle);
+
 impl PhysicsWorld {
 	pub fn new() -> Self {
+		let (collision_event_sender, collision_event_receiver) = channel();
+		let (contact_force_event_sender, contact_force_event_receiver) = channel();
+
 		Self {
 			pipeline: PhysicsPipeline::new(),
 			gravity: vector![DEFAULT_GRAVITY.x, DEFAULT_GRAVITY.y],
@@ -47,6 +64,13 @@ impl PhysicsWorld {
 			ccd_solver: CCDSolver::new(),
 			entity_bodies: HashMap::new(),
 			entity_colliders: HashMap::new(),
+			collider_entities: HashMap::new(),
+			active_contact_pairs: HashSet::new(),
+			active_sensor_pairs: HashSet::new(),
+			collision_event_sender,
+			collision_event_receiver,
+			contact_force_event_sender,
+			contact_force_event_receiver,
 		}
 	}
 
@@ -60,8 +84,13 @@ impl PhysicsWorld {
 
 	pub fn set_gravity(&mut self, gravity: Vec2) { self.gravity = vector![gravity.x, gravity.y]; }
 
-	pub fn step(&mut self, dt: f32) {
+	pub fn step(&mut self, dt: f32) -> Vec<CollisionEvent> {
 		self.integration_parameters.dt = dt.max(0.0);
+
+		let event_handler = ChannelEventCollector::new(
+			self.collision_event_sender.clone(),
+			self.contact_force_event_sender.clone(),
+		);
 
 		self.pipeline.step(
 			&self.gravity,
@@ -75,8 +104,11 @@ impl PhysicsWorld {
 			&mut self.multibody_joints,
 			&mut self.ccd_solver,
 			&(),
-			&(),
+			&event_handler,
 		);
+
+		self.contact_force_event_receiver.try_iter().for_each(drop);
+		self.collision_event_receiver.try_iter().collect()
 	}
 
 	pub fn register_entity(
@@ -119,6 +151,17 @@ impl PhysicsWorld {
 			},
 		);
 		self.entity_colliders.insert(entity, collider_handle);
+		self.collider_entities.insert(collider_handle, entity);
+	}
+
+	pub fn entity_for_collider(&self, collider: ColliderHandle) -> Option<EntityId> {
+		self.collider_entities.get(&collider).copied()
+	}
+
+	pub fn collider_is_sensor(&self, collider: ColliderHandle) -> bool {
+		self.colliders
+			.get(collider)
+			.is_some_and(rapier2d::geometry::Collider::is_sensor)
 	}
 
 	pub fn sync_from_ecs(&mut self, scene: &Scene) {
@@ -178,6 +221,8 @@ impl Default for PhysicsWorld {
 pub struct PhysicsSystem {
 	world: PhysicsWorld,
 	initialized: bool,
+	accumulator: f32,
+	scripting: Option<ScriptingRuntimeHandle>,
 }
 
 impl PhysicsSystem {
@@ -185,6 +230,17 @@ impl PhysicsSystem {
 		Self {
 			world: PhysicsWorld::new(),
 			initialized: false,
+			accumulator: 0.0,
+			scripting: None,
+		}
+	}
+
+	pub fn with_scripting(scripting: ScriptingRuntimeHandle) -> Self {
+		Self {
+			world: PhysicsWorld::new(),
+			initialized: false,
+			accumulator: 0.0,
+			scripting: Some(scripting),
 		}
 	}
 
@@ -227,31 +283,265 @@ impl System for PhysicsSystem {
 			self.initialized = true;
 		}
 
-		self.world.set_gravity(scene_gravity(scene));
-		self.world.sync_from_ecs(scene);
-		self.world.step(dt);
-		self.world.sync_to_ecs(scene)
+		let settings = scene_physics_settings(scene);
+		let fixed_dt = settings.physics_timestep.max(f32::EPSILON);
+
+		self.accumulator += dt.max(0.0);
+		while self.accumulator >= fixed_dt {
+			self.world.set_gravity(settings.gravity);
+			self.world.sync_from_ecs(scene);
+			let collision_events = self.world.step(fixed_dt);
+			self.world.sync_to_ecs(scene)?;
+
+			if let Some(scripting) = self.scripting.clone() {
+				scripting.fixed_update(scene, fixed_dt)?;
+				self.dispatch_script_collision_events(&scripting, collision_events);
+			}
+
+			self.accumulator -= fixed_dt;
+		}
+
+		Ok(())
 	}
 
 	fn as_any_mut(&mut self) -> &mut dyn std::any::Any { self }
 }
 
-fn scene_gravity(scene: &Scene) -> Vec2 {
+impl PhysicsSystem {
+	fn dispatch_script_collision_events(
+		&mut self,
+		scripting: &ScriptingRuntimeHandle,
+		collision_events: Vec<CollisionEvent>,
+	) {
+		let previous_contact_pairs = self.world.active_contact_pairs.clone();
+		let previous_sensor_pairs = self.world.active_sensor_pairs.clone();
+		let mut contact_events = Vec::new();
+		let mut sensor_events = Vec::new();
+
+		for event in collision_events {
+			if event.sensor() {
+				sensor_events.push(event);
+			} else {
+				contact_events.push(event);
+			}
+		}
+
+		for event in contact_events {
+			self.dispatch_contact_event(scripting, event.collider1(), event.collider2(), event.started());
+		}
+
+		let contact_stays = self
+			.world
+			.active_contact_pairs
+			.iter()
+			.copied()
+			.filter(|pair| previous_contact_pairs.contains(pair))
+			.collect::<Vec<_>>();
+
+		for (collider1, collider2) in contact_stays {
+			self.dispatch_contact_stay(scripting, collider1, collider2);
+		}
+
+		for event in sensor_events {
+			self.dispatch_sensor_event(scripting, event.collider1(), event.collider2(), event.started());
+		}
+
+		let sensor_stays = self
+			.world
+			.active_sensor_pairs
+			.iter()
+			.copied()
+			.filter(|pair| previous_sensor_pairs.contains(pair))
+			.collect::<Vec<_>>();
+
+		for (collider1, collider2) in sensor_stays {
+			self.dispatch_sensor_stay(scripting, collider1, collider2);
+		}
+	}
+
+	fn dispatch_contact_event(
+		&mut self,
+		scripting: &ScriptingRuntimeHandle,
+		collider1: ColliderHandle,
+		collider2: ColliderHandle,
+		started: bool,
+	) {
+		let Some((entity1, entity2)) = self.entities_for_pair(collider1, collider2) else {
+			return;
+		};
+
+		let pair = collider_pair_key(collider1, collider2);
+
+		if started {
+			self.world.active_contact_pairs.insert(pair);
+			scripting.on_contact_enter(entity1, entity2);
+			scripting.on_contact_enter(entity2, entity1);
+		} else {
+			self.world.active_contact_pairs.remove(&pair);
+			scripting.on_contact_exit(entity1, entity2);
+			scripting.on_contact_exit(entity2, entity1);
+		}
+	}
+
+	fn dispatch_contact_stay(
+		&self,
+		scripting: &ScriptingRuntimeHandle,
+		collider1: ColliderHandle,
+		collider2: ColliderHandle,
+	) {
+		let Some((entity1, entity2)) = self.entities_for_pair(collider1, collider2) else {
+			return;
+		};
+
+		scripting.on_contact_stay(entity1, entity2);
+		scripting.on_contact_stay(entity2, entity1);
+	}
+
+	fn dispatch_sensor_event(
+		&mut self,
+		scripting: &ScriptingRuntimeHandle,
+		collider1: ColliderHandle,
+		collider2: ColliderHandle,
+		started: bool,
+	) {
+		let pair = collider_pair_key(collider1, collider2);
+
+		if started {
+			self.world.active_sensor_pairs.insert(pair);
+			self.dispatch_sensor_enter(scripting, collider1, collider2);
+		} else {
+			self.world.active_sensor_pairs.remove(&pair);
+			self.dispatch_sensor_exit(scripting, collider1, collider2);
+		}
+	}
+
+	fn dispatch_sensor_stay(
+		&self,
+		scripting: &ScriptingRuntimeHandle,
+		collider1: ColliderHandle,
+		collider2: ColliderHandle,
+	) {
+		self.dispatch_sensor_callbacks(
+			scripting,
+			collider1,
+			collider2,
+			ScriptingRuntimeHandle::on_contact_stay,
+			ScriptingRuntimeHandle::on_sensor_stay,
+		);
+	}
+
+	fn dispatch_sensor_enter(
+		&self,
+		scripting: &ScriptingRuntimeHandle,
+		collider1: ColliderHandle,
+		collider2: ColliderHandle,
+	) {
+		self.dispatch_sensor_callbacks(
+			scripting,
+			collider1,
+			collider2,
+			ScriptingRuntimeHandle::on_contact_enter,
+			ScriptingRuntimeHandle::on_sensor_enter,
+		);
+	}
+
+	fn dispatch_sensor_exit(
+		&self,
+		scripting: &ScriptingRuntimeHandle,
+		collider1: ColliderHandle,
+		collider2: ColliderHandle,
+	) {
+		self.dispatch_sensor_callbacks(
+			scripting,
+			collider1,
+			collider2,
+			ScriptingRuntimeHandle::on_contact_exit,
+			ScriptingRuntimeHandle::on_sensor_exit,
+		);
+	}
+
+	fn dispatch_sensor_callbacks(
+		&self,
+		scripting: &ScriptingRuntimeHandle,
+		collider1: ColliderHandle,
+		collider2: ColliderHandle,
+		contact_callback: fn(&ScriptingRuntimeHandle, EntityId, EntityId),
+		sensor_callback: fn(&ScriptingRuntimeHandle, EntityId, EntityId),
+	) {
+		let Some((entity1, entity2)) = self.entities_for_pair(collider1, collider2) else {
+			return;
+		};
+
+		let collider1_is_sensor = self.world.collider_is_sensor(collider1);
+		let collider2_is_sensor = self.world.collider_is_sensor(collider2);
+
+		match (collider1_is_sensor, collider2_is_sensor) {
+			(true, false) => {
+				contact_callback(scripting, entity1, entity2);
+				sensor_callback(scripting, entity2, entity1);
+			}
+			(false, true) => {
+				contact_callback(scripting, entity2, entity1);
+				sensor_callback(scripting, entity1, entity2);
+			}
+			(true, true) => {
+				contact_callback(scripting, entity1, entity2);
+				contact_callback(scripting, entity2, entity1);
+				sensor_callback(scripting, entity1, entity2);
+				sensor_callback(scripting, entity2, entity1);
+			}
+			(false, false) => {}
+		}
+	}
+
+	fn entities_for_pair(&self, collider1: ColliderHandle, collider2: ColliderHandle) -> Option<(EntityId, EntityId)> {
+		Some((
+			self.world.entity_for_collider(collider1)?,
+			self.world.entity_for_collider(collider2)?,
+		))
+	}
+}
+
+fn collider_pair_key(collider1: ColliderHandle, collider2: ColliderHandle) -> ColliderPairKey {
+	if collider1.into_raw_parts() <= collider2.into_raw_parts() {
+		(collider1, collider2)
+	} else {
+		(collider2, collider1)
+	}
+}
+
+fn scene_physics_settings(scene: &Scene) -> PhysicsStepSettings {
 	let world = scene.world();
-	let mut gravity = DEFAULT_GRAVITY;
+	let mut settings = PhysicsStepSettings::default();
 
 	world.run(|entities: EntitiesView| {
 		for entity in entities.iter() {
-			let Ok(settings) = world.get::<&PhysicsSettings>(entity) else {
+			let Ok(physics_settings) = world.get::<&PhysicsSettings>(entity) else {
 				continue;
 			};
 
-			gravity = settings.gravity;
+			settings.gravity = physics_settings.gravity;
+			settings.physics_timestep = physics_settings.physics_timestep;
 			break;
 		}
 	});
 
-	gravity
+	settings
+}
+
+#[derive(Clone, Copy)]
+struct PhysicsStepSettings {
+	gravity: Vec2,
+	physics_timestep: f32,
+}
+
+impl Default for PhysicsStepSettings {
+	fn default() -> Self {
+		Self {
+			gravity: DEFAULT_GRAVITY,
+			physics_timestep: DEFAULT_PHYSICS_TIMESTEP,
+		}
+	}
 }
 
 fn to_rapier_body_type(body_type: RigidBodyType) -> rapier2d::dynamics::RigidBodyType {
@@ -306,7 +596,8 @@ fn build_collider(collider: &Collider, mass: Option<f32>, scale: Vec2) -> rapier
 	let builder = builder
 		.restitution(collider.restitution)
 		.friction(collider.friction)
-		.sensor(collider.is_sensor);
+		.sensor(collider.is_sensor)
+		.active_events(ActiveEvents::COLLISION_EVENTS);
 
 	let builder = if let Some(mass) = mass {
 		builder.mass(mass)
