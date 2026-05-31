@@ -4,7 +4,7 @@ pub struct Builder<'a> {
 }
 
 impl<'a> Builder<'a> {
-	pub fn new(device: &'a wgpu::Device) -> Self {
+	pub const fn new(device: &'a wgpu::Device) -> Self {
 		// TODO: replace &'a to pointer
 		Self {
 			entries: Vec::new(),

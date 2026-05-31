@@ -3,6 +3,9 @@ name = "zeroengine"
 version = "0.1.0"
 edition = "2024"
 
+[lints]
+workspace = true
+
 [dependencies]
 ctrlc = "3.5.2"
 winit = "0.30.13"

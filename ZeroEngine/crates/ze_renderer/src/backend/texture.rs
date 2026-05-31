@@ -51,7 +51,7 @@ impl TextureResource {
 			width: size.0,
 			height: size.1,
 		};
-		Ok(Self::from_rgba(source, device, queue))
+		Ok(Self::from_rgba(&source, device, queue))
 	}
 
 	pub fn fallback(device: &wgpu::Device, queue: &wgpu::Queue) -> Self {
@@ -62,10 +62,10 @@ impl TextureResource {
 			width: 2,
 			height: 2,
 		};
-		Self::from_rgba(source, device, queue)
+		Self::from_rgba(&source, device, queue)
 	}
 
-	fn from_rgba(source: RgbaTextureSource<'_>, device: &wgpu::Device, queue: &wgpu::Queue) -> Self {
+	fn from_rgba(source: &RgbaTextureSource<'_>, device: &wgpu::Device, queue: &wgpu::Queue) -> Self {
 		let texture_size = wgpu::Extent3d {
 			width: source.width,
 			height: source.height,
@@ -119,7 +119,7 @@ impl TextureResource {
 		}
 	}
 
-	pub fn dimensions(&self) -> (u32, u32) { (self.width, self.height) }
+	pub const fn dimensions(&self) -> (u32, u32) { (self.width, self.height) }
 }
 
 impl SpriteMaterial {

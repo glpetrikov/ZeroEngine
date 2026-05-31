@@ -9,7 +9,7 @@ use winit::{
 };
 use ze_core::{ResourceManager, Result, bail};
 use ze_ecs::{Scene, System, registry};
-use ze_input::*;
+use ze_input::{Input, ZKeyCode, ZMouseCode};
 use ze_physics::PhysicsSystem;
 use ze_renderer::{EditorCameraSystem, RenderSystem, register_renderer_components};
 use ze_scripting_cs::{ScriptingSystem, register_scripting_components};
@@ -124,7 +124,7 @@ pub fn load_main_scene(resources: &ResourceManager) -> Result<Scene> {
 	register_scripting_components(&mut registry);
 
 	let mut scene = Scene::from_path_with_registry(
-		resources
+		&resources
 			.game_assets_root()
 			.join(format!("scenes/{DEFAULT_SCENE_NAME}.zescene.json")),
 		registry,
@@ -194,8 +194,6 @@ impl ApplicationHandler<CustomEvents> for App {
 		let dt = now.duration_since(self.last_frame_time).as_secs_f32().min(0.05);
 		self.last_frame_time = now;
 
-		ze_log::info!("dt: {}", dt);
-
 		if Input::is_key_just_pressed(ZKeyCode::Escape) {
 			ze_log::info!("Exiting...");
 			event_loop.exit(); // TODO: TEMP
@@ -211,7 +209,7 @@ impl ApplicationHandler<CustomEvents> for App {
 			}
 			window.request_redraw();
 		}
-		Input::update_globally(|i| i.late_update());
+		Input::update_globally(Input::late_update);
 	}
 
 	fn user_event(&mut self, event_loop: &ActiveEventLoop, event: CustomEvents) {
@@ -239,7 +237,7 @@ impl ApplicationHandler<CustomEvents> for App {
 				self.focused = focused;
 
 				if !focused {
-					Input::update_globally(|i| i.reset());
+					Input::update_globally(Input::reset);
 				}
 			}
 			WindowEvent::Occluded(occluded) => {
@@ -283,18 +281,18 @@ impl ApplicationHandler<CustomEvents> for App {
 						return;
 					};
 
-					let render_result = scene.with_system_mut::<RenderSystem, _>(|render_system, scene| {
-						render_system.render(scene, renderer, &self.resources)
+					scene.with_system_mut::<RenderSystem, _>(|render_system, scene| {
+						render_system.render(scene, renderer, &self.resources);
 					});
 
-					let Some(render_result) = render_result else {
-						ze_log::warn!("No RenderSystem found in scene `{}`", scene.name);
-						return;
-					};
+					// let Some(render_result) = render_result else {
+					// 	ze_log::warn!("No RenderSystem found in scene `{}`",
+					// scene.name); 	return;
+					// };
 
-					if let Err(error) = render_result {
-						ze_log::error!("Render system error: {error:?}");
-					}
+					// if let Err(error) = render_result {
+					// 	ze_log::error!("Render system error: {error:?}");
+					// }
 				}
 			}
 			_ => {}

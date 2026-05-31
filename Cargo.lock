@@ -4838,6 +4838,8 @@ dependencies = [
  "shipyard",
  "ze_core",
  "ze_ecs",
+ "ze_input",
+ "ze_renderer",
 ]
 
 [[package]]

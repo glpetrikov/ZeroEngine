@@ -8,9 +8,9 @@ pub struct Entity<'a> {
 }
 
 impl<'a> Entity<'a> {
-	pub(crate) fn new(id: EntityId, scene: &'a mut crate::Scene) -> Self { Self { id, scene } }
+	pub(crate) const fn new(id: EntityId, scene: &'a mut crate::Scene) -> Self { Self { id, scene } }
 
-	pub fn id(&self) -> EntityId { self.id }
+	pub const fn id(&self) -> EntityId { self.id }
 
 	pub fn add_component<T>(&mut self, component: T) -> &mut Self
 	where

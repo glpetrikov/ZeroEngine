@@ -1,27 +1,27 @@
 using System;
-using System.Runtime.InteropServices;
+using ZeroEngine;
 
 namespace Scripts;
 
-public static class TrapScript
+public class TrapScript : ZEScript
 {
-    private const ulong CircleEntity = 4;
+    private const uint CircleEntityIndex = 4;
 
-    [UnmanagedCallersOnly]
-    public static void OnContactEnter(ulong otherEntity)
+    public override void OnContactEnter(ulong otherEntity)
     {
-        if (otherEntity == CircleEntity)
+        if (EntityIndexOf(otherEntity) == CircleEntityIndex)
         {
             Console.WriteLine("Circle trapped!");
         }
     }
 
-    [UnmanagedCallersOnly]
-    public static void OnContactExit(ulong otherEntity)
+    public override void OnContactExit(ulong otherEntity)
     {
-        if (otherEntity == CircleEntity)
+        if (EntityIndexOf(otherEntity) == CircleEntityIndex)
         {
             Console.WriteLine("Circle escaped!");
         }
     }
+
+    private static uint EntityIndexOf(ulong entityId) => (uint)(entityId & 0xFFFFFFFF);
 }

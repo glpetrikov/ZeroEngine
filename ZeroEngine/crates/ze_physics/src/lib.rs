@@ -9,7 +9,9 @@ use ze_ecs::{
 	Collider, ColliderShape, CollisionDetection, EntitiesView, EntityId, PhysicsSettings, RigidBody, RigidBodyType,
 	Scene, System, Transform,
 };
-use ze_scripting_cs::ScriptingRuntimeHandle;
+use ze_scripting_cs::{
+	ScriptingApiCommand, ScriptingRuntimeHandle, drain_scripting_api_commands, refresh_scripting_api_velocity_cache,
+};
 
 pub const DEFAULT_GRAVITY: Vec2 = Vec2::new(0.0, -9.81);
 pub const DEFAULT_PHYSICS_TIMESTEP: f32 = 1.0 / 70.0;
@@ -82,7 +84,41 @@ impl PhysicsWorld {
 
 	pub fn gravity(&self) -> Vec2 { Vec2::new(self.gravity.x, self.gravity.y) }
 
-	pub fn set_gravity(&mut self, gravity: Vec2) { self.gravity = vector![gravity.x, gravity.y]; }
+	pub const fn set_gravity(&mut self, gravity: Vec2) { self.gravity = vector![gravity.x, gravity.y]; }
+
+	pub fn add_2d_force(&mut self, entity: EntityId, force: Vec2) {
+		let Some(entry) = self.entity_bodies.get(&entity).copied() else {
+			return;
+		};
+		let Some(body) = self.rigid_bodies.get_mut(entry.handle) else {
+			return;
+		};
+
+		body.add_force(vector![force.x, force.y], true);
+	}
+
+	pub fn add_2d_impulse(&mut self, entity: EntityId, impulse: Vec2) {
+		let Some(entry) = self.entity_bodies.get(&entity).copied() else {
+			return;
+		};
+		let Some(body) = self.rigid_bodies.get_mut(entry.handle) else {
+			return;
+		};
+
+		body.apply_impulse(vector![impulse.x, impulse.y], true);
+	}
+
+	pub fn body_velocities(&self) -> Vec<(EntityId, f32, f32)> {
+		self.entity_bodies
+			.iter()
+			.filter_map(|(entity, entry)| {
+				self.rigid_bodies.get(entry.handle).map(|body| {
+					let velocity = body.linvel();
+					(*entity, velocity.x, velocity.y)
+				})
+			})
+			.collect()
+	}
 
 	pub fn step(&mut self, dt: f32) -> Vec<CollisionEvent> {
 		self.integration_parameters.dt = dt.max(0.0);
@@ -244,9 +280,9 @@ impl PhysicsSystem {
 		}
 	}
 
-	pub fn world(&self) -> &PhysicsWorld { &self.world }
+	pub const fn world(&self) -> &PhysicsWorld { &self.world }
 
-	pub fn world_mut(&mut self) -> &mut PhysicsWorld { &mut self.world }
+	pub const fn world_mut(&mut self) -> &mut PhysicsWorld { &mut self.world }
 
 	fn register_scene_bodies(&mut self, scene: &Scene) {
 		let ecs_world = scene.world();
@@ -287,15 +323,20 @@ impl System for PhysicsSystem {
 		let fixed_dt = settings.physics_timestep.max(f32::EPSILON);
 
 		self.accumulator += dt.max(0.0);
-		while self.accumulator >= fixed_dt {
+		let steps = (self.accumulator / fixed_dt) as usize;
+		for _ in 0..steps {
 			self.world.set_gravity(settings.gravity);
+			self.apply_scripting_api_commands();
 			self.world.sync_from_ecs(scene);
 			let collision_events = self.world.step(fixed_dt);
 			self.world.sync_to_ecs(scene)?;
 
 			if let Some(scripting) = self.scripting.clone() {
+				refresh_scripting_api_velocity_cache(self.world.body_velocities());
 				scripting.fixed_update(scene, fixed_dt)?;
+				self.apply_scripting_api_commands();
 				self.dispatch_script_collision_events(&scripting, collision_events);
+				self.apply_scripting_api_commands();
 			}
 
 			self.accumulator -= fixed_dt;
@@ -308,6 +349,19 @@ impl System for PhysicsSystem {
 }
 
 impl PhysicsSystem {
+	fn apply_scripting_api_commands(&mut self) {
+		for command in drain_scripting_api_commands() {
+			match command {
+				ScriptingApiCommand::Add2DForce { entity, x, y } => {
+					self.world.add_2d_force(entity, Vec2::new(x, y));
+				}
+				ScriptingApiCommand::Add2DImpulse { entity, x, y } => {
+					self.world.add_2d_impulse(entity, Vec2::new(x, y));
+				}
+			}
+		}
+	}
+
 	fn dispatch_script_collision_events(
 		&mut self,
 		scripting: &ScriptingRuntimeHandle,
@@ -544,7 +598,7 @@ impl Default for PhysicsStepSettings {
 	}
 }
 
-fn to_rapier_body_type(body_type: RigidBodyType) -> rapier2d::dynamics::RigidBodyType {
+const fn to_rapier_body_type(body_type: RigidBodyType) -> rapier2d::dynamics::RigidBodyType {
 	match body_type {
 		RigidBodyType::Static => rapier2d::dynamics::RigidBodyType::Fixed,
 		RigidBodyType::Dynamic => rapier2d::dynamics::RigidBodyType::Dynamic,
@@ -553,7 +607,7 @@ fn to_rapier_body_type(body_type: RigidBodyType) -> rapier2d::dynamics::RigidBod
 	}
 }
 
-fn is_kinematic(body_type: RigidBodyType) -> bool {
+const fn is_kinematic(body_type: RigidBodyType) -> bool {
 	matches!(
 		body_type,
 		RigidBodyType::KinematicPositionBased | RigidBodyType::KinematicVelocityBased

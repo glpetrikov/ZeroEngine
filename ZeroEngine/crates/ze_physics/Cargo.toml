@@ -3,6 +3,9 @@ name = "ze_physics"
 version = "0.1.0"
 edition = "2024"
 
+[lints]
+workspace = true
+
 [dependencies]
 rapier2d = "0.29"
 ze_core = { version = "0.1.0", path = "../ze_core" }

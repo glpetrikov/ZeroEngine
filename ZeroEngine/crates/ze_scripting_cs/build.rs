@@ -25,9 +25,7 @@ fn main() {
 		.status()
 		.unwrap_or_else(|error| panic!("failed to run dotnet build for {}: {error}", project_path.display()));
 
-	if !status.success() {
-		panic!("dotnet build failed for {}", project_path.display());
-	}
+	assert!(status.success(), "dotnet build failed for {}", project_path.display());
 }
 
 fn workspace_root() -> PathBuf {

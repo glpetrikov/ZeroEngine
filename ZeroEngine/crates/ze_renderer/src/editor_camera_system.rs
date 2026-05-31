@@ -11,7 +11,7 @@ pub struct EditorCameraSystem {
 }
 
 impl EditorCameraSystem {
-	pub fn new() -> Self {
+	pub const fn new() -> Self {
 		Self {
 			speed: 5.0,
 			fast_speed: 10.0,
@@ -94,7 +94,7 @@ impl System for EditorCameraSystem {
 			let mut camera = scene.world_mut().get::<&mut Camera>(entity)?;
 			match &mut camera.projection {
 				CameraProjection::Orthographic { size, .. } => {
-					let zoom_factor = (1.0 - wheel_delta * self.zoom_step).clamp(0.2, 5.0);
+					let zoom_factor = wheel_delta.mul_add(-self.zoom_step, 1.0).clamp(0.2, 5.0);
 					*size = (*size * zoom_factor).clamp(0.1, 1000.0);
 				}
 				CameraProjection::Perspective { fov_y_radians, .. } => {

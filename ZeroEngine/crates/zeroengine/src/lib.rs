@@ -2,7 +2,7 @@ mod banner;
 mod hooks;
 
 use winit::event_loop::{ControlFlow, EventLoop};
-use ze_app::*;
+use ze_app::{App, CustomEvents};
 
 pub fn run() {
 	ze_log::init(); // TODO: add file logging
@@ -13,7 +13,9 @@ pub fn run() {
 	// Creating Event Loop
 	// ===================================================
 	ze_log::debug!("Event Loop creating");
-	let event_loop = EventLoop::<CustomEvents>::with_user_event().build().unwrap();
+	let event_loop = EventLoop::<CustomEvents>::with_user_event()
+		.build()
+		.expect("Cannon create Event Loop");
 	let event_loop_proxy = event_loop.create_proxy();
 
 	ze_log::trace!("Event Loop setting control flow");
@@ -39,5 +41,5 @@ pub fn run() {
 	};
 
 	ze_log::debug!("Running App");
-	event_loop.run_app(&mut app).unwrap();
+	event_loop.run_app(&mut app).expect("Cannon run Application");
 }

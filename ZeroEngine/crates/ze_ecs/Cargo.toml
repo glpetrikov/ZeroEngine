@@ -3,6 +3,9 @@ name = "ze_ecs"
 version = "0.1.0"
 edition = "2024"
 
+[lints]
+workspace = true
+
 [dependencies]
 shipyard = { version = "0.11.3", features = ["serde1"] }
 serde = { version = "1", features = ["derive"] }

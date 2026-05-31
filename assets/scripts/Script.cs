@@ -1,85 +1,52 @@
 using System;
-using System.Runtime.InteropServices;
+using ZeroEngine;
 
 namespace Scripts;
 
-public static class Script
+public class Script : ZEScript
 {
-    [UnmanagedCallersOnly]
-    public static void OnCreate()
+    private Rigidbody? rb;
+    private bool moveLeft;
+    private bool moveRight;
+    private bool jumpRequested;
+
+    public override void OnStart()
     {
-        Console.WriteLine("Create");
+        rb = GetComponent<Rigidbody>();
     }
 
-    [UnmanagedCallersOnly]
-    public static void OnStart()
+    public override void OnUpdate()
     {
-        Console.WriteLine("Start");
+        moveLeft = Input.IsKeyPressed(KeyCode.A);
+        moveRight = Input.IsKeyPressed(KeyCode.D);
+
+        if (Input.IsKeyJustPressed(KeyCode.Space))
+        {
+            jumpRequested = true;
+        }
     }
 
-    [UnmanagedCallersOnly]
-    public static void OnDestroy()
+    public override void OnFixedUpdate()
     {
-        Console.WriteLine("Destroy");
-    }
+        if (rb is null) return;
 
-    [UnmanagedCallersOnly]
-    public static void OnUpdate(float dt)
-    {
-        // Console.WriteLine($"Hello from C#! dt={dt}");
-    }
+        const float moveForce = 0.5f;
+        const float jumpForce = 2.0f;
+        var maxVelocity = new Vector2(2.5f, 5.0f);
 
-    [UnmanagedCallersOnly]
-    public static void OnFixedUpdate(float dt)
-    {
-        // Console.WriteLine("FixedUpdate");
-    }
+        if (moveLeft)
+        {
+            rb.Add2DForceWithMax(new Vector2(-moveForce, 0.0f), maxVelocity);
+        }
+        else if (moveRight)
+        {
+            rb.Add2DForceWithMax(new Vector2(moveForce, 0.0f), maxVelocity);
+        }
 
-    [UnmanagedCallersOnly]
-    public static void OnEnable()
-    {
-        Console.WriteLine("Enable");
-    }
-
-    [UnmanagedCallersOnly]
-    public static void OnDisable()
-    {
-        Console.WriteLine("Disable");
-    }
-
-    [UnmanagedCallersOnly]
-    public static void OnContactEnter(ulong otherEntity)
-    {
-        Console.WriteLine("ContactEnter");
-    }
-
-    [UnmanagedCallersOnly]
-    public static void OnContactStay(ulong otherEntity)
-    {
-        Console.WriteLine("ContactStay");
-    }
-
-    [UnmanagedCallersOnly]
-    public static void OnContactExit(ulong otherEntity)
-    {
-        Console.WriteLine("ContactExit");
-    }
-
-    [UnmanagedCallersOnly]
-    public static void OnSensorEnter(ulong otherEntity)
-    {
-        Console.WriteLine("SensorEnter");
-    }
-
-    [UnmanagedCallersOnly]
-    public static void OnSensorStay(ulong otherEntity)
-    {
-        Console.WriteLine("SensorStay");
-    }
-
-    [UnmanagedCallersOnly]
-    public static void OnSensorExit(ulong otherEntity)
-    {
-        Console.WriteLine("SensorExit");
+        if (jumpRequested)
+        {
+            rb.Add2DForceWithMax(new Vector2(0.0f, jumpForce), maxVelocity);
+            jumpRequested = false;
+        }
     }
 }

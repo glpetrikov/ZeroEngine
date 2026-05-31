@@ -46,9 +46,9 @@ impl Color {
 		a: 0.0,
 	};
 
-	pub fn new(r: f32, g: f32, b: f32, a: f32) -> Self { Self { r, g, b, a } }
-	pub fn rgb(r: f32, g: f32, b: f32) -> Self { Self { r, g, b, a: 1.0 } }
-	pub fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self { Self { r, g, b, a } }
+	pub const fn new(r: f32, g: f32, b: f32, a: f32) -> Self { Self { r, g, b, a } }
+	pub const fn rgb(r: f32, g: f32, b: f32) -> Self { Self { r, g, b, a: 1.0 } }
+	pub const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self { Self { r, g, b, a } }
 
 	pub fn new_u8(r: u8, g: u8, b: u8, a: u8) -> Self {
 		Self {
@@ -111,7 +111,7 @@ impl RgbaInput {
 	}
 }
 
-fn byte_channel_to_float(channel: u8) -> f32 { channel as f32 / 255.0 }
+fn byte_channel_to_float(channel: u8) -> f32 { f32::from(channel) / 255.0 }
 
 fn validate_float_rgba(color: [f32; 4]) -> Result<(), &'static str> {
 	if color

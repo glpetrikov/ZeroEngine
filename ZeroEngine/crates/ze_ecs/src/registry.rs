@@ -22,7 +22,7 @@ struct ComponentRegistration {
 }
 
 impl ComponentRegistry {
-	pub fn new() -> Self {
+	pub const fn new() -> Self {
 		Self {
 			components: BTreeMap::new(),
 		}

@@ -30,7 +30,7 @@ impl From<EntityId> for SavedEntityId {
 }
 
 impl From<SavedEntityId> for EntityId {
-	fn from(id: SavedEntityId) -> Self { EntityId::new_from_index_and_gen(id.index, id.generation) }
+	fn from(id: SavedEntityId) -> Self { Self::new_from_index_and_gen(id.index, id.generation) }
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]

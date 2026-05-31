@@ -41,7 +41,7 @@ pub fn test() -> Result<()> {
 	let scene_directory = "assets/scenes";
 
 	Scene::write_schema(schema_directory.into())?;
-	scene.save(scene_directory.into(), "main")?;
+	scene.save(&scene_directory.into(), "main")?;
 
 	let loaded_scene = Scene::from_name(scene_directory.into(), "main")?;
 

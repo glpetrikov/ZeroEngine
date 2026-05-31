@@ -41,20 +41,19 @@ pub struct RenderSystem {
 impl RenderSystem {
 	pub fn new() -> Self { Self::default() }
 
-	pub fn render(&mut self, scene: &Scene, renderer: &mut Renderer, resources: &ResourceManager) -> Result<()> {
-		self.render_scene(scene, renderer, resources)
+	pub fn render(&mut self, scene: &Scene, renderer: &mut Renderer, resources: &ResourceManager) {
+		self.render_scene(scene, renderer, resources);
 	}
 
-	fn render_scene(&mut self, scene: &Scene, renderer: &mut Renderer, resources: &ResourceManager) -> Result<()> {
+	fn render_scene(&mut self, scene: &Scene, renderer: &mut Renderer, resources: &ResourceManager) {
 		let Some(camera) = Self::find_primary_camera(scene, renderer.aspect_ratio()) else {
 			ze_log::warn!("No primary camera found in scene `{}`", scene.name);
-			return Ok(());
+			return;
 		};
 
 		self.items = Self::collect_items(scene);
 		self.debug_lines = Self::collect_debug_lines(scene);
 		renderer.request_sprite_redraw(&self.items, &self.debug_lines, &camera, resources);
-		Ok(())
 	}
 
 	fn find_primary_camera(scene: &Scene, aspect: f32) -> Option<CameraRenderData> {
@@ -333,12 +332,19 @@ fn capsule_points(half_height: f32, radius: f32, arc_segments: usize) -> Vec<Vec
 
 	for i in 0..=arc_segments {
 		let angle = i as f32 / arc_segments as f32 * std::f32::consts::PI;
-		points.push(Vec2::new(angle.cos() * radius, half_height + angle.sin() * radius));
+		points.push(Vec2::new(
+			angle.cos() * radius,
+			angle.sin().mul_add(radius, half_height),
+		));
 	}
 
 	for i in 0..=arc_segments {
-		let angle = std::f32::consts::PI + i as f32 / arc_segments as f32 * std::f32::consts::PI;
-		points.push(Vec2::new(angle.cos() * radius, -half_height + angle.sin() * radius));
+		let angle =
+			std::f32::consts::PI + (i as f32 / arc_segments as f32).mul_add(std::f32::consts::PI, std::f32::consts::PI);
+		points.push(Vec2::new(
+			angle.cos() * radius,
+			-angle.sin().mul_add(radius, half_height),
+		));
 	}
 
 	points

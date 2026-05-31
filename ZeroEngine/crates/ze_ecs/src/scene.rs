@@ -52,13 +52,13 @@ impl Scene {
 }
 
 impl Scene {
-	pub fn world(&self) -> &World { &self.world }
+	pub const fn world(&self) -> &World { &self.world }
 
-	pub fn world_mut(&mut self) -> &mut World { &mut self.world }
+	pub const fn world_mut(&mut self) -> &mut World { &mut self.world }
 
-	pub fn registry(&self) -> &ComponentRegistry { &self.registry }
+	pub const fn registry(&self) -> &ComponentRegistry { &self.registry }
 
-	pub fn registry_mut(&mut self) -> &mut ComponentRegistry { &mut self.registry }
+	pub const fn registry_mut(&mut self) -> &mut ComponentRegistry { &mut self.registry }
 }
 
 impl Scene {
@@ -132,7 +132,7 @@ impl Scene {
 
 	pub fn destroy_entity(&mut self, entity: EntityId) { self.world.delete_entity(entity); }
 
-	pub fn entity_mut(&mut self, entity: EntityId) -> Entity<'_> { Entity::new(entity, self) }
+	pub const fn entity_mut(&mut self, entity: EntityId) -> Entity<'_> { Entity::new(entity, self) }
 
 	pub(crate) fn add_component<T>(&mut self, entity: EntityId, component: T)
 	where
@@ -153,21 +153,21 @@ impl Scene {
 		let mut local_registry = registry; // ?
 		Self::register_defaults(&mut local_registry);
 		let path = scene_path(directory, name);
-		Self::from_path_with_registry(path, local_registry)
+		Self::from_path_with_registry(&path, local_registry)
 	}
 
-	pub fn from_path(path: PathBuf) -> Result<Self> {
+	pub fn from_path(path: &PathBuf) -> Result<Self> {
 		let registry = ComponentRegistry::new();
 		Self::from_path_with_registry(path, registry)
 	}
 
-	pub fn from_path_with_registry(path: PathBuf, registry: ComponentRegistry) -> Result<Self> {
-		let json_text = fs::read_to_string(&path)?;
+	pub fn from_path_with_registry(path: &PathBuf, registry: ComponentRegistry) -> Result<Self> {
+		let json_text = fs::read_to_string(path)?;
 		let json_value: serde_json::Value = serde_json::from_str(&json_text)?;
 
 		let schema = Self::schema_value();
 
-		jsonschema::validate(&schema, &json_value).map_err(|err| anyhow!("Invalid scene file: {}", err))?;
+		jsonschema::validate(&schema, &json_value).map_err(|err| anyhow!("Invalid scene file: {err}"))?;
 
 		let save_file: SaveFile = serde_json::from_value(json_value)?;
 
@@ -191,7 +191,7 @@ impl Scene {
 			for component in saved_entity.components {
 				registry
 					.load_component(entity, &mut world, component)
-					.map_err(|err| anyhow!("Cannot load scene: {:?}", err))?;
+					.map_err(|err| anyhow!("Cannot load scene: {err:?}"))?;
 			}
 		}
 
@@ -203,10 +203,10 @@ impl Scene {
 		})
 	}
 
-	pub fn save(&self, directory: PathBuf, file_name: &str) -> Result<()> {
-		fs::create_dir_all(&directory)?;
+	pub fn save(&self, directory: &PathBuf, file_name: &str) -> Result<()> {
+		fs::create_dir_all(directory)?;
 
-		let path = scene_path(&directory, file_name);
+		let path = scene_path(directory, file_name);
 
 		let save_file = self.world.run(|entities: EntitiesView| SaveFile {
 			schema: SCENE_SCHEMA_REF.to_string(),

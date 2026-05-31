@@ -9,6 +9,9 @@
     <OutputPath>bin/</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../ZeroEngine/api/cs/**/*.cs" Link="ZeroEngine/api/cs/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
 </Project>
-

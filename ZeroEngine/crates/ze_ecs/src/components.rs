@@ -48,6 +48,7 @@ pub struct Children {
 #[derive(Component, Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct Inactive;
 
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Component, Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct RigidBody {
 	pub body_type: RigidBodyType,
@@ -112,7 +113,7 @@ impl Default for RigidBody {
 	}
 }
 
-fn default_true() -> bool { true }
+const fn default_true() -> bool { true }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema)]
 pub enum RigidBodyType {
