@@ -31,5 +31,6 @@ cargo run -p ZeroEngine
 
 ## License
 
-ZeroEngine is distributed under the **Apache 2.0 License**.
-See [LICENSE](LICENSE?style=flat-square) for details.
+ZeroEngine is distributed under the **Apache 2.0 License** OR **Blue Oak Model License 1.0.0**.
+See [LICENSE.APACHE-2.0](LICENSE.APACHE-2.0?style=flat-square) for details.
+See [LICENSE.BLUE-OAK-1.0.0](LICENSE.BLUE-OAK-1.0.0?style=flat-square) for details.
