@@ -136,7 +136,7 @@ impl Scene {
 
 	pub(crate) fn add_component<T>(&mut self, entity: EntityId, component: T)
 	where
-		T: Component + Clone + Serialize + for<'de> Deserialize<'de>,
+		T: Component + Clone + Serialize + for<'de> Deserialize<'de> + JsonSchema + 'static,
 	{
 		self.world.add_component(entity, (component,));
 	}

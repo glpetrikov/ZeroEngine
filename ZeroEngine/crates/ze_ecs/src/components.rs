@@ -1,19 +1,22 @@
+use bevy_reflect::Reflect;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use shipyard::{Component, EntityId};
+use shipyard::Component;
 use ze_core::{Quat, Vec2, Vec3};
 
-#[derive(Component, Debug, Clone, Serialize, Deserialize, JsonSchema)]
+use crate::ze_entity_id::ZeEntityId;
+
+#[derive(Component, Reflect, Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct Name {
 	pub name: String,
 }
 
-#[derive(Component, Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[derive(Component, Reflect, Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct Tag {
 	pub tag: String,
 }
 
-#[derive(Component, Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[derive(Component, Reflect, Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct Transform {
 	#[schemars(with = "[f32; 3]")]
 	pub position: Vec3,
@@ -35,21 +38,21 @@ impl Default for Transform {
 	}
 }
 
-#[derive(Component, Debug, Clone, Serialize, Deserialize)]
+#[derive(Component, Reflect, Debug, Clone, Serialize, Deserialize)]
 pub struct Parent {
-	pub id: EntityId,
+	pub id: ZeEntityId,
 }
 
-#[derive(Component, Debug, Clone, Serialize, Deserialize)]
+#[derive(Component, Reflect, Debug, Clone, Serialize, Deserialize)]
 pub struct Children {
-	pub ids: Vec<EntityId>,
+	pub ids: Vec<ZeEntityId>,
 }
 
-#[derive(Component, Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[derive(Component, Reflect, Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct Inactive;
 
 #[allow(clippy::struct_excessive_bools)]
-#[derive(Component, Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[derive(Component, Reflect, Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct RigidBody {
 	pub body_type: RigidBodyType,
 	#[serde(default = "default_true")]
@@ -73,7 +76,7 @@ pub struct RigidBody {
 	pub collision_detection: CollisionDetection,
 }
 
-#[derive(Component, Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[derive(Component, Reflect, Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct PhysicsSettings {
 	#[schemars(with = "[f32; 2]")]
 	pub gravity: Vec2,
@@ -115,7 +118,7 @@ impl Default for RigidBody {
 
 const fn default_true() -> bool { true }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema)]
+#[derive(Reflect, Debug, Clone, Copy, Serialize, Deserialize, JsonSchema)]
 pub enum RigidBodyType {
 	Static,
 	Dynamic,
@@ -123,14 +126,14 @@ pub enum RigidBodyType {
 	KinematicVelocityBased,
 }
 
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[derive(Reflect, Debug, Clone, Copy, Default, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 pub enum CollisionDetection {
 	#[default]
 	Discrete,
 	Continuous,
 }
 
-#[derive(Component, Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[derive(Component, Reflect, Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct Collider {
 	pub shape: ColliderShape,
 	pub friction: f32,
@@ -153,7 +156,7 @@ impl Default for Collider {
 	}
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[derive(Reflect, Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub enum ColliderShape {
 	Box {
 		#[schemars(with = "[f32; 2]")]

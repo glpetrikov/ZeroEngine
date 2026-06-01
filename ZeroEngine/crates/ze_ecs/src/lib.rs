@@ -4,6 +4,7 @@ pub mod entity;
 pub mod registry;
 pub mod scene;
 pub mod system;
+pub mod ze_entity_id;
 
 pub use components::*;
 pub use definitions::*;
