@@ -11,7 +11,7 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
-glam = { version = "0.33.0", features = [
+glam = { version = "0.32.1", features = [
     "bytemuck",
     "serde",
     "zerocopy",

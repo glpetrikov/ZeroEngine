@@ -68,6 +68,10 @@ impl ResourceManager {
 			};
 		}
 
+		if exe_dir.as_ref().is_some_and(|dir| path_contains_target(dir)) {
+			return Self::new(fallback_assets_root);
+		}
+
 		if let Some(exe_assets_root) = exe_dir.map(|dir| dir.join("assets"))
 			&& exe_assets_root.exists()
 		{
@@ -107,18 +111,14 @@ impl ResourceManager {
 
 	pub fn engine_bytes(&self, path: &str) -> Result<&'static [u8]> {
 		match path {
-			"shaders/engine/sprite.wgsl" | "shaders/sprite.wgsl" => {
-				Ok(include_bytes!(concat!(env!("OUT_DIR"), "/engine_sprite.wgsl")))
-			}
+			"shaders/engine/sprite.wgsl" | "shaders/sprite.wgsl" => Ok(ze_build::ENGINE_SPRITE_WGSL_BYTES),
 			_ => bail!("unknown engine asset: {path}"),
 		}
 	}
 
 	pub fn engine_string(&self, path: &str) -> Result<&'static str> {
 		match path {
-			"shaders/engine/sprite.wgsl" | "shaders/sprite.wgsl" => {
-				Ok(include_str!(concat!(env!("OUT_DIR"), "/engine_sprite.wgsl")))
-			}
+			"shaders/engine/sprite.wgsl" | "shaders/sprite.wgsl" => Ok(ze_build::ENGINE_SPRITE_WGSL),
 			_ => bail!("unknown engine asset: {path}"),
 		}
 	}
@@ -181,6 +181,11 @@ impl ResourceManager {
 				.join(shader_path),
 		)
 	}
+}
+
+fn path_contains_target(path: &Path) -> bool {
+	path.components()
+		.any(|component| matches!(component, Component::Normal(name) if name == std::ffi::OsStr::new("target")))
 }
 
 fn compile_wesl_directory(

@@ -18,7 +18,7 @@ winit = "0.30.13"
 ze_assets = { path = "../ze_assets" }
 ze_core = { path = "../ze_core" }
 ze_log = { path = "../ze_log" }
-glam = "0.33.0"
+glam = "0.32.1"
 bytemuck = "1.25.0"
 ze_input = { path = "../ze_input" }
 ze_ecs = { path = "../ze_ecs" }

@@ -21,6 +21,4 @@ ze_scripting_cs = { path = "../ze_scripting_cs" }
 winit = "0.30.13"
 ze_renderer = { version = "0.1.0", path = "../ze_renderer" }
 tokio = { version = "1.52.3", features = ["full"] }
-
-[build-dependencies]
-zepack = { version = "0.1.0", path = "../zepack" }
+ze_build = { path = "../ze_build" }

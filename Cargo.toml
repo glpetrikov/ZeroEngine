@@ -4,6 +4,7 @@ members = [
     "ZeroEngine/cli/zepack",
     "ZeroEngine/crates/ze_app",
     "ZeroEngine/crates/ze_assets",
+    "ZeroEngine/crates/ze_build",
     "ZeroEngine/crates/ze_core",
     "ZeroEngine/crates/ze_input",
     "ZeroEngine/crates/ze_log",

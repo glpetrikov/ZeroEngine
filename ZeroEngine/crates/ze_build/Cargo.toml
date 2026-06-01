@@ -1,5 +1,5 @@
 [package]
-name = "ze_assets"
+name = "ze_build"
 readme = "Readme.md"
 edition.workspace = true
 license.workspace = true
@@ -11,9 +11,7 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
-anyhow = "1.0.102"
-schemars = { version = "1", features = ["derive"] }
-serde = { version = "1", features = ["derive"] }
+
+[build-dependencies]
 wesl = "0.4.0"
-ze_build = { path = "../ze_build" }
 zepack = { version = "0.1.0", path = "../zepack" }

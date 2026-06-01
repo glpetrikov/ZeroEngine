@@ -9,7 +9,7 @@ use std::{
 };
 
 const MAGIC: &[u8; 10] = b"ZEPACK0.1\0";
-const INDEX_HEADER_LEN: u64 = 16;
+const INDEX_HEADER_LEN: u64 = 18;
 const TAR_BLOCK_LEN: usize = 512;
 
 pub type Result<T> = std::result::Result<T, Error>;
