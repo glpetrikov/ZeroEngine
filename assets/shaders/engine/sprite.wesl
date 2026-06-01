@@ -31,13 +31,25 @@ fn vs_main(vertex: Vertex) -> VertexOutput {
     return out;
 }
 
+fn rotate_tex_coord(tex_coord: vec2<f32>, angle: f32) -> vec2<f32> {
+    let centered = tex_coord - vec2<f32>(0.5, 0.5);
+    let sine = sin(angle);
+    let cosine = cos(angle);
+    return vec2<f32>(
+        centered.x * cosine - centered.y * sine,
+        centered.x * sine + centered.y * cosine,
+    ) + vec2<f32>(0.5, 0.5);
+}
+
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let mode = material.params.x;
     let strength = material.params.y;
     let saturation_threshold = material.params.z;
+    let texture_rotation = material.params.w;
 
-    let sampled = textureSample(sprite_texture, sprite_sampler, in.tex_coord) * in.color;
+    let tex_coord = rotate_tex_coord(in.tex_coord, texture_rotation);
+    let sampled = textureSample(sprite_texture, sprite_sampler, tex_coord) * in.color;
 
     if mode < 0.5 {
         return sampled;

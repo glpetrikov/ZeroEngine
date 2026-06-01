@@ -35,6 +35,8 @@ pub struct SpriteSettings {
 	pub flip_x: bool,
 	pub flip_y: bool,
 	pub layer: i32,
+	#[serde(default)]
+	pub texture_rotation_degrees: f32,
 }
 
 impl Default for SpriteSettings {
@@ -44,6 +46,7 @@ impl Default for SpriteSettings {
 			flip_x: false,
 			flip_y: false,
 			layer: 0,
+			texture_rotation_degrees: 0.0,
 		}
 	}
 }

@@ -15,6 +15,8 @@ public unsafe struct EngineAPI
     public delegate* unmanaged<ulong, float*, float*, void> get_velocity;
     public delegate* unmanaged<ulong, float, float, void> add_2d_force;
     public delegate* unmanaged<ulong, float, float, void> add_2d_impulse;
+    public delegate* unmanaged<ulong, float> get_sprite_texture_rotation_degrees;
+    public delegate* unmanaged<ulong, float, void> set_sprite_texture_rotation_degrees;
 
     private static EngineAPI* current;
 

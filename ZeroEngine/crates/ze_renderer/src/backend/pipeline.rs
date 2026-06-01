@@ -40,7 +40,7 @@ impl<'a> Builder<'a> {
 			vertex_buffer_layouts: vec![],
 			topology: wgpu::PrimitiveTopology::TriangleList,
 			polygon_mode: wgpu::PolygonMode::Fill,
-			cull_mode: Some(wgpu::Face::Back),
+			cull_mode: None, // Some(wgpu::Face::Back),
 			depth_write_enabled: true,
 			depth_compare: wgpu::CompareFunction::Less,
 			name: "Unnamed Pipeline".to_string(),

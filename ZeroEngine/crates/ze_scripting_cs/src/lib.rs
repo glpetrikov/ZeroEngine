@@ -19,6 +19,7 @@ use ze_core::{Context, Result, anyhow};
 use ze_ecs::{
 	Component, Deserialize, EntitiesView, EntityId, JsonSchema, Scene, Serialize, System, registry::ComponentRegistry,
 };
+use ze_renderer::Sprite;
 
 const ASSEMBLY_PATH: &str = "assets/scripts/bin/Scripts.dll";
 const RUNTIME_CONFIG_PATH: &str = "assets/scripts/bin/Scripts.runtimeconfig.json";
@@ -44,6 +45,8 @@ pub struct EngineAPI {
 	pub get_velocity: extern "C" fn(u64, *mut f32, *mut f32),
 	pub add_2d_force: extern "C" fn(u64, f32, f32),
 	pub add_2d_impulse: extern "C" fn(u64, f32, f32),
+	pub get_sprite_texture_rotation_degrees: extern "C" fn(u64) -> f32,
+	pub set_sprite_texture_rotation_degrees: extern "C" fn(u64, f32),
 }
 
 #[repr(C)]
@@ -92,6 +95,8 @@ static ENGINE_API: EngineAPI = EngineAPI {
 	get_velocity: api::get_velocity,
 	add_2d_force: api::add_2d_force,
 	add_2d_impulse: api::add_2d_impulse,
+	get_sprite_texture_rotation_degrees: api::get_sprite_texture_rotation_degrees,
+	set_sprite_texture_rotation_degrees: api::set_sprite_texture_rotation_degrees,
 };
 
 #[derive(Component, Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -385,11 +390,18 @@ pub enum ScriptingApiCommand {
 	Add2DImpulse { entity: EntityId, x: f32, y: f32 },
 }
 
+#[derive(Debug, Clone, Copy)]
+enum ScriptingSceneCommand {
+	SetSpriteTextureRotationDegrees { entity: EntityId, degrees: f32 },
+}
+
 pub fn refresh_scripting_api_velocity_cache(velocities: impl IntoIterator<Item = (EntityId, f32, f32)>) {
 	api::refresh_velocity_cache(velocities);
 }
 
 pub fn drain_scripting_api_commands() -> Vec<ScriptingApiCommand> { api::drain_commands() }
+
+fn drain_scripting_scene_commands() -> Vec<ScriptingSceneCommand> { api::drain_scene_commands() }
 
 struct ScriptInstance {
 	path: String,
@@ -486,7 +498,7 @@ impl ScriptingRuntime {
 		instance.lifecycle.on_destroy(entity);
 	}
 
-	fn update(&mut self, scene: &Scene, dt: f32) -> Result<()> {
+	fn update(&mut self, scene: &mut Scene, dt: f32) -> Result<()> {
 		api::begin_update(dt);
 		api::refresh_scene_cache(scene);
 		let scripts = scene_scripts(scene);
@@ -501,10 +513,13 @@ impl ScriptingRuntime {
 			instance.lifecycle.on_update(*entity);
 		}
 
+		apply_scripting_scene_commands(scene)?;
+		api::refresh_scene_cache(scene);
+
 		Ok(())
 	}
 
-	fn fixed_update(&mut self, scene: &Scene, dt: f32) -> Result<()> {
+	fn fixed_update(&mut self, scene: &mut Scene, dt: f32) -> Result<()> {
 		api::begin_fixed_update(dt);
 		api::refresh_scene_cache(scene);
 		let scripts = scene_scripts(scene);
@@ -513,6 +528,9 @@ impl ScriptingRuntime {
 		for (entity, instance) in self.instances.iter().filter(|(_, instance)| instance.enabled) {
 			instance.lifecycle.on_fixed_update(*entity);
 		}
+
+		apply_scripting_scene_commands(scene)?;
+		api::refresh_scene_cache(scene);
 
 		Ok(())
 	}
@@ -571,9 +589,9 @@ pub struct ScriptingRuntimeHandle(Rc<RefCell<ScriptingRuntime>>);
 impl ScriptingRuntimeHandle {
 	pub fn new() -> Result<Self> { Ok(Self(Rc::new(RefCell::new(ScriptingRuntime::new()?)))) }
 
-	pub fn update(&self, scene: &Scene, dt: f32) -> Result<()> { self.0.borrow_mut().update(scene, dt) }
+	pub fn update(&self, scene: &mut Scene, dt: f32) -> Result<()> { self.0.borrow_mut().update(scene, dt) }
 
-	pub fn fixed_update(&self, scene: &Scene, dt: f32) -> Result<()> { self.0.borrow_mut().fixed_update(scene, dt) }
+	pub fn fixed_update(&self, scene: &mut Scene, dt: f32) -> Result<()> { self.0.borrow_mut().fixed_update(scene, dt) }
 
 	pub fn on_contact_enter(&self, entity: EntityId, other_entity: EntityId) {
 		self.0.borrow().contact_enter(entity, other_entity);
@@ -628,6 +646,19 @@ impl System for ScriptingSystem {
 
 impl Drop for ScriptingSystem {
 	fn drop(&mut self) { self.runtime.destroy_all(); }
+}
+
+fn apply_scripting_scene_commands(scene: &mut Scene) -> Result<()> {
+	for command in drain_scripting_scene_commands() {
+		match command {
+			ScriptingSceneCommand::SetSpriteTextureRotationDegrees { entity, degrees } => {
+				let mut sprite = scene.world_mut().get::<&mut Sprite>(entity)?;
+				sprite.settings.texture_rotation_degrees = degrees;
+			}
+		}
+	}
+
+	Ok(())
 }
 
 fn scene_scripts(scene: &Scene) -> Vec<(EntityId, Script)> {
@@ -756,13 +787,15 @@ mod api {
 	use ze_input::{Input, ZKeyCode, ZMouseCode};
 	use ze_renderer::{Camera, Sprite};
 
-	use crate::{Script, ScriptingApiCommand, ScriptingTimeState, script_arg_to_entity_id};
+	use crate::{Script, ScriptingApiCommand, ScriptingSceneCommand, ScriptingTimeState, script_arg_to_entity_id};
 
 	#[derive(Default)]
 	struct ApiState {
 		commands: Vec<ScriptingApiCommand>,
+		scene_commands: Vec<ScriptingSceneCommand>,
 		components: HashSet<(EntityId, ComponentKind)>,
 		velocities: HashMap<EntityId, (f32, f32)>,
+		sprite_texture_rotations: HashMap<EntityId, f32>,
 	}
 
 	struct TimeStateCell(UnsafeCell<ScriptingTimeState>);
@@ -795,6 +828,10 @@ mod api {
 		API_STATE.with(|state| state.borrow_mut().commands.drain(..).collect())
 	}
 
+	pub fn drain_scene_commands() -> Vec<ScriptingSceneCommand> {
+		API_STATE.with(|state| state.borrow_mut().scene_commands.drain(..).collect())
+	}
+
 	fn time_state_mut() -> &'static mut ScriptingTimeState { unsafe { &mut *TIME_STATE.0.get() } }
 
 	pub fn begin_update(dt: f32) {
@@ -824,6 +861,7 @@ mod api {
 	pub fn refresh_scene_cache(scene: &Scene) {
 		let world = scene.world();
 		let mut components = HashSet::new();
+		let mut sprite_texture_rotations = HashMap::new();
 
 		world.run(|entities: EntitiesView| {
 			for entity in entities.iter() {
@@ -854,8 +892,9 @@ mod api {
 				if world.get::<&Collider>(entity).is_ok() {
 					components.insert((entity, ComponentKind::Collider));
 				}
-				if world.get::<&Sprite>(entity).is_ok() {
+				if let Ok(sprite) = world.get::<&Sprite>(entity) {
 					components.insert((entity, ComponentKind::Sprite));
+					sprite_texture_rotations.insert(entity, sprite.settings.texture_rotation_degrees);
 				}
 				if world.get::<&Camera>(entity).is_ok() {
 					components.insert((entity, ComponentKind::Camera));
@@ -867,7 +906,9 @@ mod api {
 		});
 
 		API_STATE.with(|state| {
-			state.borrow_mut().components = components;
+			let mut state = state.borrow_mut();
+			state.components = components;
+			state.sprite_texture_rotations = sprite_texture_rotations;
 		});
 	}
 
@@ -948,6 +989,29 @@ mod api {
 			entity: script_arg_to_entity_id(entity),
 			x,
 			y,
+		});
+	}
+
+	pub extern "C" fn get_sprite_texture_rotation_degrees(entity: u64) -> f32 {
+		let entity = script_arg_to_entity_id(entity);
+		API_STATE.with(|state| {
+			state
+				.borrow()
+				.sprite_texture_rotations
+				.get(&entity)
+				.copied()
+				.unwrap_or(0.0)
+		})
+	}
+
+	pub extern "C" fn set_sprite_texture_rotation_degrees(entity: u64, degrees: f32) {
+		let entity = script_arg_to_entity_id(entity);
+		API_STATE.with(|state| {
+			let mut state = state.borrow_mut();
+			state.sprite_texture_rotations.insert(entity, degrees);
+			state
+				.scene_commands
+				.push(ScriptingSceneCommand::SetSpriteTextureRotationDegrees { entity, degrees });
 		});
 	}
 

@@ -57,8 +57,9 @@ impl Renderer {
 		// ze_log::info!("Renderer: {} ({:?})", info.name, info.backend);
 
 		println!("Renderer:");
-		println!("-> Vendor: {}", info.vendor);
+		println!("-> Vendor: {}", info.driver);
 		println!("-> Name: {}", info.name);
+		println!("-> Backend: {}", info.backend);
 		println!("-> Driver: {} {}", info.driver, info.driver_info);
 
 		let device_descriptor = wgpu::DeviceDescriptor {
@@ -270,7 +271,12 @@ impl Renderer {
 			};
 			let uniform = SpriteMaterialUniform {
 				tint,
-				params: [mode, item.color.strength, item.color.saturation_threshold, 1.0],
+				params: [
+					mode,
+					item.color.strength,
+					item.color.saturation_threshold,
+					item.texture_rotation_degrees.to_radians(),
+				],
 			};
 
 			self.materials.push(SpriteMaterial::new(
