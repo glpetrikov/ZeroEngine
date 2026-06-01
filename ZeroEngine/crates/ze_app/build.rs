@@ -12,7 +12,13 @@ fn main() {
 		panic!("cannot determine target profile directory from {}", out_dir.display());
 	};
 
-	copy_assets(source_assets_dir, &profile_dir.join("assets")).expect("failed to copy assets to target profile dir");
+	if matches!(profile.as_str(), "release" | "dist") {
+		zepack::pack_directory_excluding_names(source_assets_dir, profile_dir.join("assets.zepack"), &[".compiled"])
+			.expect("failed to pack assets to target profile dir");
+	} else {
+		copy_assets(source_assets_dir, &profile_dir.join("assets"))
+			.expect("failed to copy assets to target profile dir");
+	}
 }
 
 fn copy_assets(source: &std::path::Path, target: &std::path::Path) -> std::io::Result<()> {

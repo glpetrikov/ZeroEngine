@@ -2,6 +2,7 @@ use std::{
 	borrow::Cow,
 	fs,
 	path::{Component, Path, PathBuf},
+	sync::Arc,
 };
 
 use anyhow::{Result, anyhow, bail};
@@ -39,22 +40,35 @@ impl AssetRef {
 #[derive(Debug, Clone)]
 pub struct ResourceManager {
 	game_assets_root: PathBuf,
+	game_pack: Option<Arc<zepack::SmartZepack>>,
 }
 
 impl ResourceManager {
 	pub fn new(game_assets_root: impl Into<PathBuf>) -> Self {
 		Self {
 			game_assets_root: game_assets_root.into(),
+			game_pack: None,
 		}
 	}
 
 	pub fn for_runtime(fallback_assets_root: impl Into<PathBuf>) -> Self {
 		let fallback_assets_root = fallback_assets_root.into();
-		let exe_assets_root = std::env::current_exe()
+		let exe_dir = std::env::current_exe()
 			.ok()
-			.and_then(|path| path.parent().map(|parent| parent.join("assets")));
+			.and_then(|path| path.parent().map(Path::to_path_buf));
 
-		if let Some(exe_assets_root) = exe_assets_root
+		if let Some(package_path) = exe_dir.as_ref().map(|dir| dir.join("assets.zepack"))
+			&& package_path.exists()
+			&& let Ok(package) = zepack::SmartZepack::open(&package_path)
+			&& let Ok(game_assets_root) = package.materialize_to_temp()
+		{
+			return Self {
+				game_assets_root,
+				game_pack: Some(Arc::new(package)),
+			};
+		}
+
+		if let Some(exe_assets_root) = exe_dir.map(|dir| dir.join("assets"))
 			&& exe_assets_root.exists()
 		{
 			return Self::new(exe_assets_root);
@@ -79,9 +93,17 @@ impl ResourceManager {
 		}
 	}
 
-	pub fn game_bytes(&self, path: &str) -> Result<Vec<u8>> { Ok(fs::read(self.resolve_game_path(path)?)?) }
+	pub fn game_bytes(&self, path: &str) -> Result<Vec<u8>> {
+		if let Some(package) = &self.game_pack
+			&& package.contains(path)
+		{
+			return Ok(package.read_file(path)?);
+		}
 
-	pub fn game_string(&self, path: &str) -> Result<String> { Ok(fs::read_to_string(self.resolve_game_path(path)?)?) }
+		Ok(fs::read(self.resolve_game_path(path)?)?)
+	}
+
+	pub fn game_string(&self, path: &str) -> Result<String> { Ok(String::from_utf8(self.game_bytes(path)?)?) }
 
 	pub fn engine_bytes(&self, path: &str) -> Result<&'static [u8]> {
 		match path {
@@ -102,6 +124,10 @@ impl ResourceManager {
 	}
 
 	pub fn compile_game_shaders(&self) -> Result<()> {
+		if self.game_pack.is_some() {
+			return Ok(());
+		}
+
 		let source_root = self.game_assets_root.join("shaders").join("game");
 		let target_root = self.game_assets_root.join(".compiled").join("shaders").join("game");
 

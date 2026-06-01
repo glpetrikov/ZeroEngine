@@ -1,0 +1,16 @@
+[package]
+name = "zepack"
+readme = "Readme.md"
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+version.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+effective-limits = "0.5.5"
+ruzstd = "0.8.1"
+tar = "0.4"

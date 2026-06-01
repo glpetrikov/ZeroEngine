@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "ZeroEngine/",
+    "ZeroEngine/cli/zepack",
     "ZeroEngine/crates/ze_app",
     "ZeroEngine/crates/ze_assets",
     "ZeroEngine/crates/ze_core",
@@ -9,6 +10,7 @@ members = [
     "ZeroEngine/crates/ze_physics",
     "ZeroEngine/crates/ze_renderer",
     "ZeroEngine/crates/ze_scripting_cs",
+    "ZeroEngine/crates/zepack",
     "ZeroEngine/crates/ze_ecs",
     "ZeroEngine/crates/zeroengine",
 ]
