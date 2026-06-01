@@ -18,7 +18,7 @@ pub const DEFAULT_PHYSICS_TIMESTEP: f32 = 1.0 / 70.0;
 
 pub struct PhysicsWorld {
 	pipeline: PhysicsPipeline,
-	gravity: Vector<Real>,
+	gravity: Vector,
 	integration_parameters: IntegrationParameters,
 	island_manager: IslandManager,
 	broad_phase: BroadPhaseBvh,
@@ -54,7 +54,7 @@ impl PhysicsWorld {
 
 		Self {
 			pipeline: PhysicsPipeline::new(),
-			gravity: vector![DEFAULT_GRAVITY.x, DEFAULT_GRAVITY.y],
+			gravity: Vector::new(DEFAULT_GRAVITY.x, DEFAULT_GRAVITY.y),
 			integration_parameters: IntegrationParameters::default(),
 			island_manager: IslandManager::new(),
 			broad_phase: BroadPhaseBvh::new(),
@@ -82,9 +82,9 @@ impl PhysicsWorld {
 		world
 	}
 
-	pub fn gravity(&self) -> Vec2 { Vec2::new(self.gravity.x, self.gravity.y) }
+	pub const fn gravity(&self) -> Vec2 { Vec2::new(self.gravity.x, self.gravity.y) }
 
-	pub const fn set_gravity(&mut self, gravity: Vec2) { self.gravity = vector![gravity.x, gravity.y]; }
+	pub const fn set_gravity(&mut self, gravity: Vec2) { self.gravity = Vector::new(gravity.x, gravity.y); }
 
 	pub fn add_2d_force(&mut self, entity: EntityId, force: Vec2) {
 		let Some(entry) = self.entity_bodies.get(&entity).copied() else {
@@ -94,7 +94,7 @@ impl PhysicsWorld {
 			return;
 		};
 
-		body.add_force(vector![force.x, force.y], true);
+		body.add_force(Vector::new(force.x, force.y), true);
 	}
 
 	pub fn add_2d_impulse(&mut self, entity: EntityId, impulse: Vec2) {
@@ -105,7 +105,7 @@ impl PhysicsWorld {
 			return;
 		};
 
-		body.apply_impulse(vector![impulse.x, impulse.y], true);
+		body.apply_impulse(Vector::new(impulse.x, impulse.y), true);
 	}
 
 	pub fn body_velocities(&self) -> Vec<(EntityId, f32, f32)> {
@@ -129,7 +129,7 @@ impl PhysicsWorld {
 		);
 
 		self.pipeline.step(
-			&self.gravity,
+			self.gravity,
 			&self.integration_parameters,
 			&mut self.island_manager,
 			&mut self.broad_phase,
@@ -159,7 +159,7 @@ impl PhysicsWorld {
 		}
 
 		let body = RigidBodyBuilder::new(to_rapier_body_type(rigid_body.body_type))
-			.translation(vector![transform.position.x, transform.position.y])
+			.translation(Vector::new(transform.position.x, transform.position.y))
 			.rotation(transform.rotation.to_euler(ze_core::glam::EulerRot::XYZ).2)
 			.gravity_scale(if rigid_body.use_gravity {
 				rigid_body.gravity_scale
@@ -223,7 +223,7 @@ impl PhysicsWorld {
 			};
 
 			let angle = rotation.to_euler(ze_core::glam::EulerRot::XYZ).2;
-			body.set_position(Isometry::new(vector![x, y], angle), true);
+			body.set_position(Pose::new(Vector::new(x, y), angle), true);
 		}
 	}
 
@@ -640,7 +640,7 @@ fn build_collider(collider: &Collider, mass: Option<f32>, scale: Vec2) -> rapier
 		ColliderShape::ConvexPolygon { ref points } => {
 			let scaled_points = points
 				.iter()
-				.map(|point| point![point.x * scale.x, point.y * scale.y])
+				.map(|point| Vector::new(point.x * scale.x, point.y * scale.y))
 				.collect::<Vec<_>>();
 
 			ColliderBuilder::convex_hull(&scaled_points).unwrap_or_else(|| ColliderBuilder::cuboid(0.5, 0.5))

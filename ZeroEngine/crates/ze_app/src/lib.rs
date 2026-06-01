@@ -7,7 +7,8 @@ use winit::{
 	keyboard::{KeyCode, PhysicalKey},
 	window::{Window, WindowId},
 };
-use ze_core::{ResourceManager, Result, bail};
+use ze_assets::ResourceManager;
+use ze_core::{Result, bail};
 use ze_ecs::{Scene, System, registry};
 use ze_input::{Input, ZKeyCode, ZMouseCode};
 use ze_physics::PhysicsSystem;

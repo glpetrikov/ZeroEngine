@@ -14,9 +14,10 @@ image = { version = "0.25.10", default-features = false, features = [
 ] }
 wgpu = "29.0.3"
 winit = "0.30.13"
-ze_core = { version = "0.1.0", path = "../ze_core" }
-ze_log = { version = "0.1.0", path = "../ze_log" }
+ze_assets = { path = "../ze_assets" }
+ze_core = { path = "../ze_core" }
+ze_log = { path = "../ze_log" }
 glam = "0.33.0"
 bytemuck = "1.25.0"
-ze_input = { version = "0.1.0", path = "../ze_input" }
-ze_ecs = { version = "0.1.0", path = "../ze_ecs" }
+ze_input = { path = "../ze_input" }
+ze_ecs = { path = "../ze_ecs" }

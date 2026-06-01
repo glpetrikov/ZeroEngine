@@ -9,7 +9,8 @@ pub use components::*;
 pub use editor_camera_system::*;
 pub use render_system::*;
 use wgpu::util::DeviceExt;
-use ze_core::{Mat4, ResourceManager, Vec3};
+use ze_assets::ResourceManager;
+use ze_core::{Mat4, Vec3};
 
 use crate::backend::{
 	mesh::{Mesh, Vertex},

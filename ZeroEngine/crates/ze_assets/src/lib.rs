@@ -4,10 +4,9 @@ use std::{
 	path::{Component, Path, PathBuf},
 };
 
+use anyhow::{Result, anyhow, bail};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-
-use crate::{Result, anyhow, bail};
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum AssetSource {

@@ -1,4 +1,5 @@
-use ze_core::{AssetRef, Mat4, ResourceManager, Result, Vec2, Vec3};
+use ze_assets::{AssetRef, ResourceManager};
+use ze_core::{Mat4, Result, Vec2, Vec3};
 use ze_ecs::{
 	Collider, ColliderShape, EntitiesView, EntityId, Inactive, PhysicsSettings, RigidBody, RigidBodyType, Scene,
 	System, Transform,

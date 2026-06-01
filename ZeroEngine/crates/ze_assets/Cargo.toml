@@ -1,5 +1,5 @@
 [package]
-name = "ze_core"
+name = "ze_assets"
 readme = "Readme.md"
 edition.workspace = true
 license.workspace = true
@@ -11,14 +11,10 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
-glam = { version = "0.33.0", features = [
-    "bytemuck",
-    "serde",
-    "zerocopy",
-    "mint",
-    "encase",
-    "fast-math",
-] }
 anyhow = "1.0.102"
-thiserror = "2.0.18"
+schemars = { version = "1", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
+wesl = "0.4.0"
+
+[build-dependencies]
+wesl = "0.4.0"

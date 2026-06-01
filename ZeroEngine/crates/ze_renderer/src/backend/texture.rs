@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use bytemuck::{Pod, Zeroable};
 use image::GenericImageView;
 use wgpu::util::DeviceExt;
-use ze_core::{AssetRef, ResourceManager, Result};
+use ze_assets::{AssetRef, ResourceManager};
+use ze_core::Result;
 
 use super::bind_group;
 

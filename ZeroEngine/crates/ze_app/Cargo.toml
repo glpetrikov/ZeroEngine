@@ -11,6 +11,7 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
+ze_assets = { path = "../ze_assets" }
 ze_core = { path = "../ze_core" }
 ze_input = { path = "../ze_input" }
 ze_log = { path = "../ze_log" }

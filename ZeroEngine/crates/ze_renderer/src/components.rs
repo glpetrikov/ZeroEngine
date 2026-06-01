@@ -1,4 +1,4 @@
-use ze_core::AssetRef;
+use ze_assets::AssetRef;
 use ze_ecs::{Deserialize, JsonSchema, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]

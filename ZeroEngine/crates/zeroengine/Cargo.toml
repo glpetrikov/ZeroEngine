@@ -11,6 +11,6 @@ ctrlc = "3.5.2"
 winit = "0.30.13"
 ze_app = { path = "../ze_app" }
 ze_log = { path = "../ze_log" }
-ze_ecs = { version = "0.1.0", path = "../ze_ecs" }
+ze_ecs = { path = "../ze_ecs" }
 owo-colors = "4.3.0"
 terminal_size = "0.4.4"

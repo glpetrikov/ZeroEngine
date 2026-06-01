@@ -7,7 +7,7 @@ edition = "2024"
 workspace = true
 
 [dependencies]
-rapier2d = "0.29"
-ze_core = { version = "0.1.0", path = "../ze_core" }
-ze_ecs = { version = "0.1.0", path = "../ze_ecs" }
-ze_scripting_cs = { version = "0.1.0", path = "../ze_scripting_cs" }
+rapier2d = "0.32.0"
+ze_core = { path = "../ze_core" }
+ze_ecs = { path = "../ze_ecs" }
+ze_scripting_cs = { path = "../ze_scripting_cs" }
