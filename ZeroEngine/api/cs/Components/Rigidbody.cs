@@ -1,5 +1,11 @@
 namespace ZeroEngine;
 
+public enum ForceMode
+{
+    Force,
+    Impulse,
+}
+
 public sealed unsafe class Rigidbody : ZEComponent
 {
     internal override ComponentType ComponentType => ComponentType.Rigidbody;
@@ -15,22 +21,32 @@ public sealed unsafe class Rigidbody : ZEComponent
         }
     }
 
-    public void Add2DForce(float x, float y)
+    public void Add2DForce(float x, float y, ForceMode mode = ForceMode.Impulse)
     {
-        EngineAPI.Current->add_2d_impulse(EntityId, x, y);
+        switch (mode)
+        {
+            case ForceMode.Force:
+                EngineAPI.Current->add_2d_force(EntityId, x, y);
+                break;
+            case ForceMode.Impulse:
+                EngineAPI.Current->add_2d_impulse(EntityId, x, y);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+        }
     }
 
-    public void Add2DForce(Vector2 force)
+    public void Add2DForce(Vector2 force, ForceMode mode = ForceMode.Impulse)
     {
-        Add2DForce(force.X, force.Y);
+        Add2DForce(force.X, force.Y, mode);
     }
 
-    public void Add2DForceWithMax(Vector2 force, Vector2 maxVelocity)
+    public void Add2DForceWithMax(Vector2 force, Vector2 maxVelocity, ForceMode mode = ForceMode.Impulse)
     {
-        Add2DForceWithMax(force.X, force.Y, maxVelocity.X, maxVelocity.Y);
+        Add2DForceWithMax(force.X, force.Y, maxVelocity.X, maxVelocity.Y, mode);
     }
 
-    public void Add2DForceWithMax(float x, float y, float maxX, float maxY)
+    public void Add2DForceWithMax(float x, float y, float maxX, float maxY, ForceMode mode = ForceMode.Impulse)
     {
         var currentVel = Velocity;
         float requiredX = x;
@@ -47,6 +63,6 @@ public sealed unsafe class Rigidbody : ZEComponent
             return;
         }
 
-        Add2DForce(requiredX, requiredY);
+        Add2DForce(requiredX, requiredY, mode);
     }
 }

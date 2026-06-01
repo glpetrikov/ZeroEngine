@@ -1,6 +1,6 @@
 fn main() {
 	let source_assets_dir = std::path::Path::new("../../../assets");
-	println!("cargo:rerun-if-changed={}", source_assets_dir.display());
+	emit_asset_rerun_files(source_assets_dir).expect("failed to watch asset files");
 
 	let out_dir = std::path::PathBuf::from(std::env::var("OUT_DIR").expect("OUT_DIR is not set"));
 	let profile = std::env::var("PROFILE").expect("PROFILE is not set");
@@ -34,6 +34,25 @@ fn copy_assets(source: &std::path::Path, target: &std::path::Path) -> std::io::R
 				std::fs::create_dir_all(parent)?;
 			}
 			std::fs::copy(&source_path, &target_path)?;
+		}
+	}
+
+	Ok(())
+}
+
+fn emit_asset_rerun_files(directory: &std::path::Path) -> std::io::Result<()> {
+	for entry in std::fs::read_dir(directory)? {
+		let entry = entry?;
+		let path = entry.path();
+
+		if entry.file_name() == ".compiled" {
+			continue;
+		}
+
+		if path.is_dir() {
+			emit_asset_rerun_files(&path)?;
+		} else {
+			println!("cargo:rerun-if-changed={}", path.display());
 		}
 	}
 

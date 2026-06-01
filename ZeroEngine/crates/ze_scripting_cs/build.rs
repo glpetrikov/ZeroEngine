@@ -6,10 +6,12 @@ use std::{
 
 fn main() {
 	let scripts_dir = workspace_root().join("assets/scripts");
+	let api_dir = workspace_root().join("ZeroEngine/api/cs");
 	let project_path = scripts_dir.join("Scripts.csproj");
 
 	println!("cargo:rerun-if-changed={}", project_path.display());
-	println!("cargo:rerun-if-changed={}", scripts_dir.join("Script.cs").display());
+	emit_cs_rerun_files(&scripts_dir).expect("failed to watch C# script files");
+	emit_cs_rerun_files(&api_dir).expect("failed to watch ZeroEngine C# API files");
 
 	let configuration = match env::var("PROFILE").as_deref() {
 		Ok("release" | "dist") => "Release",
@@ -39,3 +41,18 @@ fn workspace_root() -> PathBuf {
 }
 
 fn is_workspace_root(path: &Path) -> bool { path.join("Cargo.toml").is_file() && path.join("ZeroEngine").is_dir() }
+
+fn emit_cs_rerun_files(directory: &Path) -> std::io::Result<()> {
+	for entry in std::fs::read_dir(directory)? {
+		let entry = entry?;
+		let path = entry.path();
+
+		if path.is_dir() {
+			emit_cs_rerun_files(&path)?;
+		} else if path.extension().is_some_and(|extension| extension == "cs") {
+			println!("cargo:rerun-if-changed={}", path.display());
+		}
+	}
+
+	Ok(())
+}
